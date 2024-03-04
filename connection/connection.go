@@ -20,5 +20,7 @@ func Connect() {
 	DB = connection
 
 	connection.AutoMigrate(&models.Users{})
+	connection.AutoMigrate(&models.Business{})
+	connection.AutoMigrate(&models.Applicant{})
 
 }
