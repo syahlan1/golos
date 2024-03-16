@@ -24,10 +24,30 @@ func Setup(app *fiber.App) {
 	app.Get("/api/business/show", controllers.BusinessShow)
 	app.Put("/api/business/update/:id", controllers.BusinessUpdate)
 	app.Delete("/api/business/delete/:id", controllers.BusinessDelete)
+	app.Get("/api/business/showcompanyfirstname", controllers.ShowCompanyFirstName)
+	app.Get("/api/business/showcompanytype", controllers.ShowCompanyType)
+	app.Get("/api/business/showbusinessaddresstype", controllers.ShowBusinessAddressType)
+	app.Get("/api/business/showratingclass", controllers.ShowRatingClass)
+	app.Get("/api/business/showkodebursa", controllers.ShowKodeBursa)
+	app.Get("/api/business/showbusinesstype", controllers.ShowBusinessType)
 
 	//applicant
 	app.Post("/api/applicant/create", controllers.ApplicantCreate)
 	app.Get("/api/applicant/show", controllers.ApplicantShow)
 	app.Put("/api/applicant/update/:id", controllers.ApplicantUpdate)
 	app.Delete("/api/applicant/delete/:id", controllers.ApplicantDelete)
+	app.Get("/api/applicant/showhomestatus", controllers.ShowHomeStatus)
+	app.Get("/api/applicant/showapplicantaddresstype", controllers.ShowApplicantAddressType)
+	app.Get("/api/applicant/showeducation", controllers.ShowEducation)
+	app.Get("/api/applicant/showjobposition", controllers.ShowJobPosition)
+	app.Get("/api/applicant/showbusinesssector", controllers.ShowBusinessSector)
+	app.Get("/api/applicant/showkodeinstansi", controllers.ShowKodeInstansi)
+	app.Get("/api/applicant/shownegara", controllers.ShowNegara)
+
+	//zipcode
+	app.Get("/api/provinces", controllers.GetProvinces)
+	app.Get("/api/cities", controllers.GetCitiesByProvince)
+	app.Get("/api/districts", controllers.GetDistrictByCity)
+	app.Get("/api/subdistricts", controllers.GetSubdistrictByDistrict)
+	app.Get("/api/zip-codes", controllers.GetZipCodesBySubdistrict)
 }

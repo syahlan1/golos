@@ -52,6 +52,7 @@ func BusinessCreate(c *fiber.Ctx) error {
 		TglPenerbitan:        data["tgl_penerbitan"].(string),
 		TglJatuhTempo:        data["tgl_jatuh_tempo"].(string),
 		ContactPerson:        data["contact_person"].(string),
+		ApproveStatus:        1,
 	}
 
 	// Buat data bisnis ke database
@@ -137,4 +138,119 @@ func BusinessDelete(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"message": "item deleted",
 	})
+}
+
+func ShowCompanyFirstName(c *fiber.Ctx) error {
+	var companyFirstNames []string
+
+	if err := connection.DB.Model(&models.CompanyFirstName{}).Pluck("name", &companyFirstNames).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(companyFirstNames)
+}
+
+func ShowCompanyType(c *fiber.Ctx) error {
+	var companyType []string
+
+	if err := connection.DB.Model(&models.CompanyType{}).Pluck("name", &companyType).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(companyType)
+}
+
+func ShowBusinessAddressType(c *fiber.Ctx) error {
+	var businessAddressType []string
+
+	if err := connection.DB.Model(&models.BusinessAddressType{}).Pluck("name", &businessAddressType).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(businessAddressType)
+}
+
+func ShowEternalRatingCompany(c *fiber.Ctx) error {
+	var eternalRatingCompany []string
+
+	if err := connection.DB.Model(&models.EternalRatingCompany{}).Pluck("name", &eternalRatingCompany).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(eternalRatingCompany)
+}
+
+func ShowRatingClass(c *fiber.Ctx) error {
+	var ratingClass []string
+
+	if err := connection.DB.Model(&models.RatingClass{}).Pluck("name", &ratingClass).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(ratingClass)
+}
+
+func ShowKodeBursa(c *fiber.Ctx) error {
+	var kodeBursa []string
+
+	if err := connection.DB.Model(&models.KodeBursa{}).Pluck("name", &kodeBursa).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(kodeBursa)
+}
+
+func ShowBusinessType(c *fiber.Ctx) error {
+	var businessType []string
+
+	if err := connection.DB.Model(&models.BusinessType{}).Pluck("name", &businessType).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(businessType)
+}
+
+// zipcode
+func GetProvinces(c *fiber.Ctx) error {
+	var provinces []string
+	if err := connection.DB.Model(&models.ZipCode{}).Distinct("province").Pluck("province", &provinces).Error; err != nil {
+		return err
+	}
+	return c.JSON(provinces)
+}
+
+func GetCitiesByProvince(c *fiber.Ctx) error {
+	province := c.Query("province")
+	var cities []string
+	if err := connection.DB.Model(&models.ZipCode{}).Distinct("city").Where("province = ?", province).Pluck("city", &cities).Error; err != nil {
+		return err
+	}
+	return c.JSON(cities)
+}
+
+func GetDistrictByCity(c *fiber.Ctx) error {
+	city := c.Query("city")
+	var district []string
+	if err := connection.DB.Model(&models.ZipCode{}).Distinct("district").Where("city = ?", city).Pluck("district", &district).Error; err != nil {
+		return err
+	}
+	return c.JSON(district)
+}
+
+func GetSubdistrictByDistrict(c *fiber.Ctx) error {
+	district := c.Query("district")
+	var subdistrict []string
+	if err := connection.DB.Model(&models.ZipCode{}).Where("district = ?", district).Pluck("subdistrict", &subdistrict).Error; err != nil {
+		return err
+	}
+	return c.JSON(subdistrict)
+}
+
+func GetZipCodesBySubdistrict(c *fiber.Ctx) error {
+	subdistrict := c.Query("subdistrict")
+	var zipCodes []string
+	if err := connection.DB.Model(&models.ZipCode{}).Where("subdistrict = ?", subdistrict).Pluck("zip_code", &zipCodes).Error; err != nil {
+		return err
+	}
+	return c.JSON(zipCodes)
 }

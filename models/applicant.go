@@ -1,40 +1,7 @@
 package models
 
-type Business struct {
-	Id                   int    `json:"id"`
-	Cif                  int    `json:"cif"`
-	CompanyName          string `json:"company_name"`
-	CompanyType          string `json:"company_type"`
-	EstablishDate        string `json:"establishment_date"`
-	EstablishPlace       string `json:"establish_place"`
-	CompanyAddress       string `json:"company_address"`
-	District             string `json:"district"`
-	City                 string `json:"city"`
-	ZipCode              int    `json:"zip_code"`
-	AddressType          string `json:"address_type"`
-	EternalRatingCompany string `json:"eternal_rating_company"`
-	RatingClass          string `json:"rating_class"`
-	RatingDate           string `json:"rating_date"`
-	ListingBursaCode     int    `json:"listing_bursa_code"`
-	ListingBursaDate     string `json:"listing_bursa_date"`
-	BusinessType         string `json:"business_type"`
-	AktaPendirian        string `json:"akta_pendirian"`
-	TglTerbit            string `json:"tgl_terbit"`
-	AktaLastChange       string `json:"akta_last_change"`
-	LastChangeDate       string `json:"last_change_date"`
-	NotarisName          string `json:"notaris_name"`
-	JumlahKaryawan       int    `json:"jumlah_karyawan"`
-	NoTelp               int    `json:"no_telp"`
-	NoFax                int    `json:"no_fax"`
-	NPWP                 int    `json:"npwp"`
-	TDP                  string `json:"tdp"`
-	TglPenerbitan        string `json:"tgl_penerbitan"`
-	TglJatuhTempo        string `json:"tgl_jatuh_tempo"`
-	ContactPerson        string `json:"contact_person"`
-}
-
 type Applicant struct {
-	Id                  int    `json:"id"`
+	Id                  int    `json:"id" gorm:"primaryKey"`
 	TitleBeforeName     string `json:"title_before_name"`
 	CustomerName        string `json:"customer_name"`
 	TitleAfterName      string `json:"title_after_name"`
@@ -78,4 +45,49 @@ type Applicant struct {
 	NamaInstansi        string `json:"nama_instansi"`
 	KodeInstansi        string `json:"kode_instansi"`
 	NoPegawai           int    `json:"no_pegawai"`
+	ApproveStatus       int    `json:"approve_status"`
+}
+
+type HomeStatus struct {
+	Id   int    `json: "id" gorm:"primaryKey"`
+	Name string `json: "name"`
+}
+
+type ApplicantAddressType struct {
+	Id   int    `json: "id" gorm:"primaryKey"`
+	Name string `json: "name"`
+}
+
+type Education struct {
+	Id   int    `json: "id" gorm:"primaryKey"`
+	Name string `json: "name"`
+}
+
+type JobPosition struct {
+	Id   int    `json: "id" gorm:"primaryKey"`
+	Name string `json: "name"`
+}
+
+type BusinessSector struct {
+	Id   int    `json: "id" gorm:"primaryKey"`
+	Name string `json: "name"`
+}
+
+type KodeInstansi struct {
+	Id   int    `json: "id" gorm:"primaryKey"`
+	Name string `json: "name"`
+}
+
+type Negara struct {
+	Id   int    `json: "id" gorm:"primaryKey"`
+	Name string `json: "name"`
+}
+
+type ZipCode struct {
+	Id          int    `json: "id" gorm:"primaryKey"`
+	ZipCode     string `json: "zip_code"`
+	Subdistrict string `json:"subdistrict"`
+	District    string `json: "district"`
+	City        string `json: "city"`
+	Province    string `json: "province"`
 }

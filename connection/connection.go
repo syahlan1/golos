@@ -20,7 +20,27 @@ func Connect() {
 	DB = connection
 
 	connection.AutoMigrate(&models.Users{})
+	// connection.AutoMigrate(&models.Roles{})
+	// connection.AutoMigrate(&models.UserRole{})
 	connection.AutoMigrate(&models.Business{})
 	connection.AutoMigrate(&models.Applicant{})
+
+	connection.AutoMigrate(&models.CompanyFirstName{})
+	connection.AutoMigrate(&models.CompanyType{})
+	connection.AutoMigrate(&models.BusinessAddressType{})
+	connection.AutoMigrate(&models.EternalRatingCompany{})
+	connection.AutoMigrate(&models.RatingClass{})
+	connection.AutoMigrate(&models.KodeBursa{})
+	connection.AutoMigrate(&models.BusinessType{})
+
+	connection.AutoMigrate(&models.HomeStatus{})
+	connection.AutoMigrate(&models.ApplicantAddressType{})
+	connection.AutoMigrate(&models.Education{})
+	connection.AutoMigrate(&models.JobPosition{})
+	connection.AutoMigrate(&models.BusinessSector{})
+	connection.AutoMigrate(&models.KodeInstansi{})
+	connection.AutoMigrate(&models.Negara{})
+
+	connection.AutoMigrate(&models.ZipCode{})
 
 }

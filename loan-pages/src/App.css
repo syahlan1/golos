@@ -1,0 +1,281 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap");
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+:root {
+  --white-color: #fff;
+  --red-color: #ff6b6b;
+  --grey-color: #707070;
+  --grey-color-light: #aaa;
+}
+body {
+  background-color: #ecf0f1;
+  transition: all 0.5s ease;
+}
+body.dark {
+  background-color: #333;
+}
+body.dark {
+  --white-color: #333;
+  --red-color: #fff;
+  --grey-color: #f2f2f2;
+  --grey-color-light: #aaa;
+}
+/*----------*/
+
+/*Alert box*/
+.alert {
+  position: fixed;
+  left: 50%;
+  transform: translate(-60%, -200%);
+  width: 315px;
+  height: auto;
+  padding: 10px;
+  margin: 30px;
+  line-height: 1.8;
+  border-radius: 5px;
+  cursor: hand;
+  cursor: pointer;
+  font-family: sans-serif;
+  font-weight: 400;
+}
+
+.alertCheckbox {
+  display: none;
+}
+
+:checked + .alert {
+  display: none;
+}
+
+.alertText {
+  display: table;
+  margin: 0 auto;
+  text-align: center;
+  font-size: 16px;
+}
+
+.alertClose {
+  float: right;
+  padding-top: 5px;
+  font-size: 10px;
+}
+
+.clear {
+  clear: both;
+}
+
+.error {
+  background-color: #FEE;
+  border: 1px solid #EDD;
+  color: #A66;
+}
+/*End Alert box*/
+
+/* Form Login */
+.form-bg {
+  background-color: #ecf0f1;
+  display: flex;
+  justify-content: center;
+  width: 210vh;
+  height: 50vh;
+}
+
+.form-horizontal {
+  background: #fff;
+  padding-bottom: 40px;
+  border-radius: 15px;
+  text-align: center;
+}
+
+.form-horizontal .heading{
+  display: block;
+  font-size: 35px;
+  font-weight: 700;
+  padding: 35px 0;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 30px;
+}
+.form-horizontal .form-group{
+  padding: 0 40px;
+  margin: 0 0 25px 0;
+  position: relative;
+}
+.form-horizontal .form-control{
+  background: #f0f0f0;
+  border: none;
+  border-radius: 20px;
+  box-shadow: none;
+  padding: 0 20px 0 45px;
+  height: 40px;
+  transition: all 0.3s ease 0s;
+}
+.form-horizontal .form-control:focus{
+  background: #e0e0e0;
+  box-shadow: none;
+  outline: 0 none;
+}
+.form-horizontal .text{
+  float: left;
+  margin-left: 7px;
+  line-height: 20px;
+  padding-top: 5px;
+  text-transform: capitalize;
+}
+.form-horizontal .btn{
+  float: right;
+  font-size: 14px;
+  color: #fff;
+  background: #ff6b6b;
+  border-radius: 30px;
+  padding: 10px 25px;
+  border: none;
+  text-transform: capitalize;
+  transition: all 0.5s ease 0s;
+}
+@media only screen and (max-width: 479px){
+  .form-horizontal .form-group{
+      padding: 0 25px;
+  }
+  .form-horizontal .btn{
+      padding: 10px 20px;
+  }
+}
+/*-------------------*/
+
+/**********Home************/
+/* navbar */
+.navbar {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  left: 0;
+  background-color: var(--white-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 40px;
+  z-index: 1000;
+  box-shadow: 0 0 2px var(--grey-color-light);
+}
+.logo_item {
+  display: flex;
+  align-items: center;
+  column-gap: 10px;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--red-color);
+}
+.navbar img {
+  width: 35px;
+  height: 35px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.navbar_content {
+  display: flex;
+  align-items: center;
+  column-gap: 25px;
+}
+.navbar-icon {
+  cursor: pointer;
+  font-size: 20px;
+  color: var(--grey-color);
+}
+
+/* sidebar */
+.sidebar {
+  background-color: var(--white-color);
+  width: 260px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  padding: 80px 20px;
+  z-index: 100;
+  overflow-y: scroll;
+  box-shadow: 0 0 1px var(--grey-color-light);
+  transition: all 0.5s ease;
+}
+.sidebar::-webkit-scrollbar {
+  display: none;
+}
+.menu_content {
+  position: relative;
+}
+.menu_title {
+  margin: 15px 0;
+  padding: 0 20px;
+  font-size: 18px;
+}
+.sidebar.close .menu_title {
+  padding: 6px 30px;
+}
+.menu_title::before {
+  color: var(--grey-color);
+  white-space: nowrap;
+}
+.menu_dashboard::before {
+  content: "Dashboard";
+}
+.menu_editor::before {
+  content: "Editor";
+}
+.menu_setting::before {
+  content: "Setting";
+}
+.menu_items {
+  padding: 0;
+  list-style: none;
+}
+.navlink_icon {
+  position: relative;
+  font-size: 22px;
+  min-width: 50px;
+  line-height: 40px;
+  display: inline-block;
+  text-align: center;
+  border-radius: 6px;
+}
+.navlink_icon::before {
+  content: "";
+  position: absolute;
+  height: 100%;
+  width: calc(100% + 100px);
+  left: -20px;
+}
+.navlink_icon:hover {
+  background: var(--red-color);
+}
+.sidebar .nav_link {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 4px 15px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--grey-color);
+  white-space: nowrap;
+}
+.nav_link:hover {
+  color: var(--white-color);
+  background: var(--red-color);
+}
+@media screen and (max-width: 768px) {
+  #sidebarOpen {
+    font-size: 25px;
+    display: block;
+    margin-right: 10px;
+    cursor: pointer;
+    color: var(--grey-color);
+  }
+  .sidebar.close {
+    left: -100%;
+  }
+  .sidebar.close .bottom_content {
+    left: -100%;
+  }
+}

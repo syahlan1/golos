@@ -15,6 +15,20 @@ func ApplicantShow(c *fiber.Ctx) error {
 }
 
 func ApplicantCreate(c *fiber.Ctx) error {
+	// userRole, err := getUserRoleFromToken(c)
+	// if err != nil {
+	//     return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+	//         "error": err.Error(),
+	//     })
+	// }
+
+	// // Cek apakah peran pengguna diizinkan untuk membuat entri
+	// if userRole != "admin" {
+	//     return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+	//         "error": "You do not have permission to access this resource",
+	//     })
+	// }
+
 	var data map[string]interface{}
 
 	if err := c.BodyParser(&data); err != nil {
@@ -66,6 +80,7 @@ func ApplicantCreate(c *fiber.Ctx) error {
 		NamaInstansi:        data["nama_instansi"].(string),
 		KodeInstansi:        data["kode_instansi"].(string),
 		NoPegawai:           int(data["no_pegawai"].(float64)),
+		ApproveStatus:       1,
 	}
 
 	// Buat data bisnis ke database
@@ -164,4 +179,74 @@ func ApplicantDelete(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"message": "item deleted",
 	})
+}
+
+func ShowHomeStatus(c *fiber.Ctx) error {
+	var HomeStatus []string
+
+	if err := connection.DB.Model(&models.HomeStatus{}).Pluck("name", &HomeStatus).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(HomeStatus)
+}
+
+func ShowApplicantAddressType(c *fiber.Ctx) error {
+	var applicantAddressType []string
+
+	if err := connection.DB.Model(&models.ApplicantAddressType{}).Pluck("name", &applicantAddressType).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(applicantAddressType)
+}
+
+func ShowEducation(c *fiber.Ctx) error {
+	var education []string
+
+	if err := connection.DB.Model(&models.Education{}).Pluck("name", &education).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(education)
+}
+
+func ShowJobPosition(c *fiber.Ctx) error {
+	var jobPosition []string
+
+	if err := connection.DB.Model(&models.Education{}).Pluck("name", &jobPosition).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(jobPosition)
+}
+
+func ShowBusinessSector(c *fiber.Ctx) error {
+	var businessSector []string
+
+	if err := connection.DB.Model(&models.BusinessSector{}).Pluck("name", &businessSector).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(businessSector)
+}
+
+func ShowKodeInstansi(c *fiber.Ctx) error {
+	var kodeInstansi []string
+
+	if err := connection.DB.Model(&models.KodeInstansi{}).Pluck("name", &kodeInstansi).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(kodeInstansi)
+}
+
+func ShowNegara(c *fiber.Ctx) error {
+	var negara []string
+
+	if err := connection.DB.Model(&models.Negara{}).Pluck("name", &negara).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(negara)
 }
