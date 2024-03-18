@@ -140,6 +140,39 @@ func BusinessDelete(c *fiber.Ctx) error {
 	})
 }
 
+func BusinessApproveUpdate(c *fiber.Ctx) error {
+	businessID := c.Params("id")
+
+	var business models.Business
+	if err := connection.DB.First(&business, businessID).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"status": "Id Not Found",
+		})
+	}
+
+	// Periksa nilai ApproveStatus dan sesuaikan sesuai kondisi yang diinginkan
+	if business.ApproveStatus == 1 {
+		business.ApproveStatus = 2
+	} else if business.ApproveStatus == 2 {
+		business.ApproveStatus = 3
+	} else {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status": "Invalid ApproveStatus value",
+		})
+	}
+
+	if err := connection.DB.Save(&business).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status": "Failed to update the data",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"data":   business,
+		"status": "ApproveStatus berhasil diperbarui!",
+	})
+}
+
 func ShowCompanyFirstName(c *fiber.Ctx) error {
 	var companyFirstNames []string
 
@@ -240,7 +273,7 @@ func GetDistrictByCity(c *fiber.Ctx) error {
 func GetSubdistrictByDistrict(c *fiber.Ctx) error {
 	district := c.Query("district")
 	var subdistrict []string
-	if err := connection.DB.Model(&models.ZipCode{}).Where("district = ?", district).Pluck("subdistrict", &subdistrict).Error; err != nil {
+	if err := connection.DB.Model(&models.ZipCode{}).Distinct("subdistrict").Where("district = ?", district).Pluck("subdistrict", &subdistrict).Error; err != nil {
 		return err
 	}
 	return c.JSON(subdistrict)
@@ -249,7 +282,7 @@ func GetSubdistrictByDistrict(c *fiber.Ctx) error {
 func GetZipCodesBySubdistrict(c *fiber.Ctx) error {
 	subdistrict := c.Query("subdistrict")
 	var zipCodes []string
-	if err := connection.DB.Model(&models.ZipCode{}).Where("subdistrict = ?", subdistrict).Pluck("zip_code", &zipCodes).Error; err != nil {
+	if err := connection.DB.Model(&models.ZipCode{}).Where("subdistrict = ?", subdistrict).Pluck("zip_code", &zipCodes).First(&zipCodes).Error; err != nil {
 		return err
 	}
 	return c.JSON(zipCodes)

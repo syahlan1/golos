@@ -8,7 +8,7 @@ import (
 
 func Setup(app *fiber.App) {
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:5174",
+		AllowOrigins:     "http://localhost:5173",
 		AllowHeaders:     "Origin, Content-Type, Accept",
 		AllowMethods:     "GET, POST, PUT, DELETE",
 		AllowCredentials: true,
@@ -50,4 +50,8 @@ func Setup(app *fiber.App) {
 	app.Get("/api/districts", controllers.GetDistrictByCity)
 	app.Get("/api/subdistricts", controllers.GetSubdistrictByDistrict)
 	app.Get("/api/zip-codes", controllers.GetZipCodesBySubdistrict)
+
+	//approve
+	app.Put("/api/business/approve/:id", controllers.BusinessApproveUpdate)
+	app.Put("/api/applicant/approve/:id", controllers.ApplicantApproveUpdate)
 }

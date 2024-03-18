@@ -181,6 +181,39 @@ func ApplicantDelete(c *fiber.Ctx) error {
 	})
 }
 
+func ApplicantApproveUpdate(c *fiber.Ctx) error {
+	applicantID := c.Params("id")
+
+	var applicant models.Applicant
+	if err := connection.DB.First(&applicant, applicantID).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"status": "Id Not Found",
+		})
+	}
+
+	// Periksa nilai ApproveStatus dan sesuaikan sesuai kondisi yang diinginkan
+	if applicant.ApproveStatus == 1 {
+		applicant.ApproveStatus = 2
+	} else if applicant.ApproveStatus == 2 {
+		applicant.ApproveStatus = 3
+	} else {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status": "Invalid ApproveStatus value",
+		})
+	}
+
+	if err := connection.DB.Save(&applicant).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status": "Failed to update the data",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"data":   applicant,
+		"status": "ApproveStatus berhasil diperbarui!",
+	})
+}
+
 func ShowHomeStatus(c *fiber.Ctx) error {
 	var HomeStatus []string
 
