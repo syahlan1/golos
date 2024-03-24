@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"os"
 	"strconv"
 	"time"
 
@@ -11,7 +12,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var SecretKey = "secret"
+var SecretKey = []byte(os.Getenv("JWT_PRIVATE_KEY"))
 
 func Register(c *fiber.Ctx) error {
 	var data map[string]string
@@ -37,20 +38,13 @@ func Register(c *fiber.Ctx) error {
 	// Create new user entry
 	newUser := models.Users{
 		Username: data["username"],
+		Email:    data["email"],
 		Password: hashedPassword,
 		IsLogin:  0, // IsLogin default nya 0
+		RoleId:   1,
 	}
 	if err := connection.DB.Create(&newUser).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create user"})
-	}
-
-	// Assign default role to the new user
-	newUserRole := models.UserRole{
-		UserId: newUser.Id,
-		RoleId: 1,
-	}
-	if err := connection.DB.Create(&newUserRole).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to assign role to user"})
 	}
 
 	// Return success response
@@ -89,15 +83,17 @@ func Login(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := connection.DB.Model(&user).Update("status", 1).Error; err != nil {
+	if err := connection.DB.Model(&user).Update("is_login", 1).Error; err != nil {
 		c.Status(fiber.StatusInternalServerError)
 		return c.JSON(fiber.Map{
 			"message": "Failed to update user status"})
 	}
 
+	tokenTTL, _ := strconv.Atoi(os.Getenv("TOKEN_TTL"))
+
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		Issuer:    strconv.Itoa(int(user.Id)),
-		ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
+		ExpiresAt: time.Now().Add(time.Second * time.Duration(tokenTTL)).Unix(),
 	})
 
 	token, err := claims.SignedString([]byte(SecretKey))
@@ -112,7 +108,7 @@ func Login(c *fiber.Ctx) error {
 	cookie := fiber.Cookie{
 		Name:     "jwt",
 		Value:    token,
-		Expires:  time.Now().Add(time.Hour * 45),
+		Expires:  time.Now().Add(time.Second * time.Duration(tokenTTL)),
 		HTTPOnly: true,
 		Secure:   true,
 	}
@@ -128,10 +124,10 @@ func Login(c *fiber.Ctx) error {
 func User(c *fiber.Ctx) error {
 	cookie := c.Cookies("jwt")
 
+	// Memverifikasi token dan mendapatkan klaim
 	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(SecretKey), nil
 	})
-
 	if err != nil {
 		c.Status(fiber.StatusUnauthorized)
 		return c.JSON(fiber.Map{
@@ -141,9 +137,16 @@ func User(c *fiber.Ctx) error {
 
 	claims := token.Claims.(*jwt.StandardClaims)
 
+	// Mendapatkan data pengguna (user) dari database
 	var user models.Users
+	if err := connection.DB.Where("id = ?", claims.Issuer).Preload("Role").First(&user).Error; err != nil {
+		return err
+	}
 
-	connection.DB.Where("id = ?", claims.Issuer).First(&user)
+	// Preload izin-izin (permissions) dari peran (role) pengguna
+	if err := connection.DB.Model(&user.Role).Association("Permissions").Find(&user.Role.Permissions); err != nil {
+		return err
+	}
 
 	return c.JSON(user)
 }
@@ -163,7 +166,7 @@ func Logout(c *fiber.Ctx) error {
 
 	var user models.Users
 
-	connection.DB.Model(&user).Where("id = ?", userId).Update("status", 0)
+	connection.DB.Model(&user).Where("id = ?", userId).Update("is_login", 0)
 
 	return c.JSON(fiber.Map{
 		"message": "Logged out Successfully!",
@@ -191,47 +194,49 @@ func getUserIdFromToken(c *fiber.Ctx) uint {
 	return uint(userId)
 }
 
-// func getUserRoleFromToken(c *fiber.Ctx) (string, error) {
-// 	// Mendapatkan token dari cookie "jwt"
-// 	cookie := c.Cookies("jwt")
+func CreateRole(c *fiber.Ctx) error {
+	// Parse request body
+	var req struct {
+		Name        string   `json:"name"`
+		Permissions []string `json:"permissions"`
+	}
+	if err := c.BodyParser(&req); err != nil {
+		return err
+	}
 
-// 	// Verifikasi token dan ambil klaim
-// 	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-// 		return []byte(SecretKey), nil
-// 	})
-// 	if err != nil {
-// 		return "", err
-// 	}
+	// Cek apakah role dengan nama yang sama sudah ada
+	var existingRole models.Roles
+	if err := connection.DB.Where("name = ?", req.Name).First(&existingRole).Error; err == nil {
+		// Role sudah ada, kirim respons konflik
+		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"message": "Role already exists"})
+	}
 
-// 	// Memeriksa apakah token valid
-// 	if !token.Valid {
-// 		return "", errors.New("invalid token")
-// 	}
+	// Buat role baru
+	newRole := models.Roles{Name: req.Name}
 
-// 	// Mendapatkan klaim dari token
-// 	claims, ok := token.Claims.(*jwt.StandardClaims)
-// 	if !ok {
-// 		return "", errors.New("invalid token claims")
-// 	}
+	// Simpan role baru ke dalam database
+	if err := connection.DB.Create(&newRole).Error; err != nil {
+		return err
+	}
 
-// 	// Dapatkan ID pengguna dari klaim
-// 	userID, err := strconv.Atoi(claims.Subject)
-// 	if err != nil {
-// 		return "", err
-// 	}
+	// Dapatkan ID permissions berdasarkan nama permissions yang diberikan
+	var permissions []models.Permission
+	if err := connection.DB.Where("name IN ?", req.Permissions).Find(&permissions).Error; err != nil {
+		return err
+	}
 
-// 	// Dapatkan peran pengguna dari tabel UserRole
-// 	var userRole models.UserRole
-// 	if err := connection.DB.Where("user_id = ?", userID).First(&userRole).Error; err != nil {
-// 		return "", err
-// 	}
+	// Buat entri RolePermission untuk setiap permission yang terkait dengan role baru
+	for _, permission := range permissions {
+		// Periksa apakah RolePermission sudah ada
+		var existingRolePermission models.RolePermission
+		if err := connection.DB.Where("roles_id = ? AND permission_id = ?", newRole.Id, permission.Id).First(&existingRolePermission).Error; err != nil {
+			// RolePermission belum ada, tambahkan entri baru
+			rolePermission := models.RolePermission{RolesId: newRole.Id, PermissionId: permission.Id}
+			if err := connection.DB.Create(&rolePermission).Error; err != nil {
+				return err
+			}
+		}
+	}
 
-// 	// Dapatkan informasi peran dari ID peran
-// 	var role models.Roles
-// 	if err := connection.DB.Where("id = ?", userRole.RoleId).First(&role).Error; err != nil {
-// 		return "", err
-// 	}
-
-// 	// Kembalikan peran pengguna
-// 	return role.RoleName, nil
-// }
+	return c.JSON(fiber.Map{"message": "Role created successfully"})
+}

@@ -20,10 +20,10 @@ func Setup(app *fiber.App) {
 	app.Post("/api/logout", controllers.Logout)
 
 	//business
-	app.Post("/api/business/create", controllers.BusinessCreate)
+	app.Post("/api/business/create", controllers.Authorize("create"), controllers.BusinessCreate)
 	app.Get("/api/business/show", controllers.BusinessShow)
-	app.Put("/api/business/update/:id", controllers.BusinessUpdate)
-	app.Delete("/api/business/delete/:id", controllers.BusinessDelete)
+	app.Put("/api/business/update/:id", controllers.Authorize("update"), controllers.BusinessUpdate)
+	app.Delete("/api/business/delete/:id", controllers.Authorize("delete"), controllers.BusinessDelete)
 	app.Get("/api/business/showcompanyfirstname", controllers.ShowCompanyFirstName)
 	app.Get("/api/business/showcompanytype", controllers.ShowCompanyType)
 	app.Get("/api/business/showbusinessaddresstype", controllers.ShowBusinessAddressType)
@@ -32,10 +32,10 @@ func Setup(app *fiber.App) {
 	app.Get("/api/business/showbusinesstype", controllers.ShowBusinessType)
 
 	//applicant
-	app.Post("/api/applicant/create", controllers.ApplicantCreate)
+	app.Post("/api/applicant/create", controllers.Authorize("create"), controllers.ApplicantCreate)
 	app.Get("/api/applicant/show", controllers.ApplicantShow)
-	app.Put("/api/applicant/update/:id", controllers.ApplicantUpdate)
-	app.Delete("/api/applicant/delete/:id", controllers.ApplicantDelete)
+	app.Put("/api/applicant/update/:id", controllers.Authorize("update"), controllers.ApplicantUpdate)
+	app.Delete("/api/applicant/delete/:id", controllers.Authorize("delete"), controllers.ApplicantDelete)
 	app.Get("/api/applicant/showhomestatus", controllers.ShowHomeStatus)
 	app.Get("/api/applicant/showapplicantaddresstype", controllers.ShowApplicantAddressType)
 	app.Get("/api/applicant/showeducation", controllers.ShowEducation)
@@ -52,6 +52,10 @@ func Setup(app *fiber.App) {
 	app.Get("/api/zip-codes", controllers.GetZipCodesBySubdistrict)
 
 	//approve
-	app.Put("/api/business/approve/:id", controllers.BusinessApproveUpdate)
-	app.Put("/api/applicant/approve/:id", controllers.ApplicantApproveUpdate)
+	app.Put("/api/business/approve/:id", controllers.Authorize("approve"), controllers.BusinessApproveUpdate)
+	app.Put("/api/applicant/approve/:id", controllers.Authorize("approve"), controllers.ApplicantApproveUpdate)
+
+	//role
+	app.Post("/api/create_role", controllers.Authorize("create_role"), controllers.CreateRole)
+
 }

@@ -23,7 +23,7 @@ func BusinessCreate(c *fiber.Ctx) error {
 
 	// Buat objek bisnis dengan nilai-nilai yang diberikan
 	business := models.Business{
-		Cif:                  int(data["cif"].(float64)),
+		Cif:                  data["cif"].(string),
 		CompanyName:          data["company_name"].(string),
 		CompanyType:          data["company_type"].(string),
 		EstablishDate:        data["establishment_date"].(string),
@@ -31,12 +31,12 @@ func BusinessCreate(c *fiber.Ctx) error {
 		CompanyAddress:       data["company_address"].(string),
 		District:             data["district"].(string),
 		City:                 data["city"].(string),
-		ZipCode:              int(data["zip_code"].(float64)),
+		ZipCode:              data["zip_code"].(string),
 		AddressType:          data["address_type"].(string),
 		EternalRatingCompany: data["eternal_rating_company"].(string),
 		RatingClass:          data["rating_class"].(string),
 		RatingDate:           data["rating_date"].(string),
-		ListingBursaCode:     int(data["listing_bursa_code"].(float64)),
+		ListingBursaCode:     data["listing_bursa_code"].(string),
 		ListingBursaDate:     data["listing_bursa_date"].(string),
 		BusinessType:         data["business_type"].(string),
 		AktaPendirian:        data["akta_pendirian"].(string),
@@ -45,14 +45,14 @@ func BusinessCreate(c *fiber.Ctx) error {
 		LastChangeDate:       data["last_change_date"].(string),
 		NotarisName:          data["notaris_name"].(string),
 		JumlahKaryawan:       int(data["jumlah_karyawan"].(float64)),
-		NoTelp:               int(data["no_telp"].(float64)),
-		NoFax:                int(data["no_fax"].(float64)),
-		NPWP:                 int(data["npwp"].(float64)),
+		NoTelp:               data["no_telp"].(string),
+		NoFax:                data["no_fax"].(string),
+		NPWP:                 data["npwp"].(string),
 		TDP:                  data["tdp"].(string),
 		TglPenerbitan:        data["tgl_penerbitan"].(string),
 		TglJatuhTempo:        data["tgl_jatuh_tempo"].(string),
 		ContactPerson:        data["contact_person"].(string),
-		ApproveStatus:        1,
+		ApproveStatus:        "draft",
 	}
 
 	// Buat data bisnis ke database
@@ -151,15 +151,15 @@ func BusinessApproveUpdate(c *fiber.Ctx) error {
 	}
 
 	// Periksa nilai ApproveStatus dan sesuaikan sesuai kondisi yang diinginkan
-	if business.ApproveStatus == 1 {
-		business.ApproveStatus = 2
-	} else if business.ApproveStatus == 2 {
-		business.ApproveStatus = 3
-	} else {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": "Invalid ApproveStatus value",
-		})
-	}
+	// if business.ApproveStatus == 1 {
+	// 	business.ApproveStatus = 2
+	// } else if business.ApproveStatus == 2 {
+	// 	business.ApproveStatus = 3
+	// } else {
+	// 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+	// 		"status": "Invalid ApproveStatus value",
+	// 	})
+	// }
 
 	if err := connection.DB.Save(&business).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

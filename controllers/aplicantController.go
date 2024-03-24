@@ -15,20 +15,6 @@ func ApplicantShow(c *fiber.Ctx) error {
 }
 
 func ApplicantCreate(c *fiber.Ctx) error {
-	// userRole, err := getUserRoleFromToken(c)
-	// if err != nil {
-	//     return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-	//         "error": err.Error(),
-	//     })
-	// }
-
-	// // Cek apakah peran pengguna diizinkan untuk membuat entri
-	// if userRole != "admin" {
-	//     return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-	//         "error": "You do not have permission to access this resource",
-	//     })
-	// }
-
 	var data map[string]interface{}
 
 	if err := c.BodyParser(&data); err != nil {
@@ -44,34 +30,34 @@ func ApplicantCreate(c *fiber.Ctx) error {
 		HomeAddress:         data["home_address"].(string),
 		District:            data["district"].(string),
 		City:                data["city"].(string),
-		ZipCode:             int(data["zip_code"].(float64)),
+		ZipCode:             data["zip_code"].(string),
 		HomeStatus:          data["home_status"].(string),
 		StaySince:           data["stay_since"].(string),
-		NoTelp:              int(data["no_telp"].(float64)),
-		NoFax:               int(data["no_fax"].(float64)),
+		NoTelp:              data["no_telp"].(string),
+		NoFax:               data["no_fax"].(string),
 		BirthPlace:          data["birth_place"].(string),
 		BirthDate:           data["birth_date"].(string),
 		MaritalStatus:       data["marital_status"].(string),
 		Gender:              data["gender"].(string),
 		Nationality:         data["nationality"].(string),
 		NumberOfChildren:    int(data["number_of_children"].(float64)),
-		NoKartuKeluarga:     int(data["no_kartu_keluarga"].(float64)),
+		NoKartuKeluarga:     data["no_kartu_keluarga"].(string),
 		SpouseName:          data["spouse_name"].(string),
-		SpouseIdCard:        int(data["spouse_id_card"].(float64)),
+		SpouseIdCard:        data["spouse_id_Card"].(string),
 		SpouseAddress:       data["spouse_address"].(string),
 		IdCardIssuedDate:    data["id_card_issued_date"].(string),
-		IdCard:              int(data["id_card"].(float64)),
+		IdCard:              data["id_card"].(string),
 		IdCardExpireDate:    data["id_card_expire_date"].(string),
 		IdCardAddress:       data["id_card_address"].(string),
 		IdCardDistrict:      data["id_card_district"].(string),
 		IdCardCity:          data["id_card_city"].(string),
-		IdCardZipCode:       int(data["id_card_zip_code"].(float64)),
+		IdCardZipCode:       data["id_card_zip_code"].(string),
 		AddressType:         data["address_type"].(string),
 		Education:           data["education"].(string),
 		JobPosition:         data["job_position"].(string),
 		BusinessSector:      data["business_sector"].(string),
 		EstablishDate:       data["establish_date"].(string),
-		NPWP:                int(data["npwp"].(float64)),
+		NPWP:                data["npwp"].(string),
 		GrossIncomePerMonth: int(data["gross_income_per_month"].(float64)),
 		NumberOfEmployees:   int(data["number_of_employees"].(float64)),
 		MotherName:          data["mother_name"].(string),
@@ -79,8 +65,8 @@ func ApplicantCreate(c *fiber.Ctx) error {
 		NegaraDomisili:      data["negara_domisili"].(string),
 		NamaInstansi:        data["nama_instansi"].(string),
 		KodeInstansi:        data["kode_instansi"].(string),
-		NoPegawai:           int(data["no_pegawai"].(float64)),
-		ApproveStatus:       1,
+		NoPegawai:           data["no_pegawai"].(string),
+		ApproveStatus:       "draft",
 	}
 
 	// Buat data bisnis ke database
@@ -192,15 +178,15 @@ func ApplicantApproveUpdate(c *fiber.Ctx) error {
 	}
 
 	// Periksa nilai ApproveStatus dan sesuaikan sesuai kondisi yang diinginkan
-	if applicant.ApproveStatus == 1 {
-		applicant.ApproveStatus = 2
-	} else if applicant.ApproveStatus == 2 {
-		applicant.ApproveStatus = 3
-	} else {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": "Invalid ApproveStatus value",
-		})
-	}
+	// if applicant.ApproveStatus == 1 {
+	// 	applicant.ApproveStatus = 2
+	// } else if applicant.ApproveStatus == 2 {
+	// 	applicant.ApproveStatus = 3
+	// } else {
+	// 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+	// 		"status": "Invalid ApproveStatus value",
+	// 	})
+	// }
 
 	if err := connection.DB.Save(&applicant).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

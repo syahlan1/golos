@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import './App.css';
 import Register from "./pages/Register";
 import Test from "./menus/Test";
+import InfoUser from "./menus/InfoUser";
 
 function App() {
 
@@ -15,6 +16,7 @@ function App() {
           <Route path="/test" element= { <Test/>} />
           <Route path= "/login" element={<Login />}/>
           <Route path= "/registrasi" element={<Register />}/>
+          <Route path= "/info-user" element={<InfoUser />}/>
         </Routes>
       </BrowserRouter>
     </div>

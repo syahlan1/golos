@@ -1,17 +1,26 @@
 package connection
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/syahlan1/golos/models"
-	"gorm.io/driver/sqlserver"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 var DB *gorm.DB
 
 func Connect() {
-	dsn := "sqlserver://sa:12345@127.0.0.1:1434?database=LOS&connection+timeout=30"
+	host := os.Getenv("DB_HOST")
+	username := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	dbname := os.Getenv("DB_NAME")
+	port := os.Getenv("DB_PORT")
 
-	connection, err := gorm.Open(sqlserver.Open(dsn), &gorm.Config{})
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Jakarta", host, username, password, dbname, port)
+
+	connection, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
 		panic("Failed to connect to database")
@@ -19,9 +28,10 @@ func Connect() {
 
 	DB = connection
 
+	connection.AutoMigrate(&models.RolePermission{})
+	connection.AutoMigrate(&models.Permission{})
+	connection.AutoMigrate(&models.Roles{})
 	connection.AutoMigrate(&models.Users{})
-	// connection.AutoMigrate(&models.Roles{})
-	// connection.AutoMigrate(&models.UserRole{})
 	connection.AutoMigrate(&models.Business{})
 	connection.AutoMigrate(&models.Applicant{})
 

@@ -2,7 +2,7 @@ package models
 
 type Business struct {
 	Id                   int    `json:"id" gorm:"primaryKey"`
-	Cif                  int    `json:"cif"`
+	Cif                  string `json:"cif"`
 	CompanyFirstName     string `json:"company_first_name"`
 	CompanyName          string `json:"company_name"`
 	CompanyType          string `json:"company_type"`
@@ -11,12 +11,12 @@ type Business struct {
 	CompanyAddress       string `json:"company_address"`
 	District             string `json:"district"`
 	City                 string `json:"city"`
-	ZipCode              int    `json:"zip_code"`
+	ZipCode              string `json:"zip_code"`
 	AddressType          string `json:"address_type"`
 	EternalRatingCompany string `json:"eternal_rating_company"`
 	RatingClass          string `json:"rating_class"`
 	RatingDate           string `json:"rating_date"`
-	ListingBursaCode     int    `json:"listing_bursa_code"`
+	ListingBursaCode     string `json:"listing_bursa_code"`
 	ListingBursaDate     string `json:"listing_bursa_date"`
 	BusinessType         string `json:"business_type"`
 	AktaPendirian        string `json:"akta_pendirian"`
@@ -25,14 +25,14 @@ type Business struct {
 	LastChangeDate       string `json:"last_change_date"`
 	NotarisName          string `json:"notaris_name"`
 	JumlahKaryawan       int    `json:"jumlah_karyawan"`
-	NoTelp               int    `json:"no_telp"`
-	NoFax                int    `json:"no_fax"`
-	NPWP                 int    `json:"npwp"`
+	NoTelp               string `json:"no_telp"`
+	NoFax                string `json:"no_fax"`
+	NPWP                 string `json:"npwp"`
 	TDP                  string `json:"tdp"`
 	TglPenerbitan        string `json:"tgl_penerbitan"`
 	TglJatuhTempo        string `json:"tgl_jatuh_tempo"`
 	ContactPerson        string `json:"contact_person"`
-	ApproveStatus        int    `json:"approve_status"`
+	ApproveStatus        string `json:"approve_status"`
 }
 
 type CompanyFirstName struct {

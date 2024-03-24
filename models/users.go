@@ -1,20 +1,33 @@
 package models
 
+import "gorm.io/gorm"
+
 type Users struct {
-	Id       int    `json:"id" gorm:"primaryKey"`
+	Id       uint   `json:"id" gorm:"primaryKey"`
 	Username string `json:"username" gorm:"unique"`
+	Email    string `json:"email" gorm:"unique"`
 	IsLogin  int    `json:"is_login"`
 	Password []byte `json:"-"`
+	RoleId   uint
+	Role     Roles
+	gorm.Model
 }
 
 type Roles struct {
-	Id       int    `json:"id"`
-	RoleName string `json:"role_name"`
+	Id          uint         `gorm:"primaryKey"`
+	Name        string       `gorm:"unique"`
+	Permissions []Permission `gorm:"many2many:role_permissions;"`
+	Users       []Users      `gorm:"foreignKey:RoleId"`
+	gorm.Model
 }
 
-type UserRole struct {
-	UserId int   `json:"user_id"`
-	RoleId int   `json:"role_id"`
-	Role   Roles `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
-	User   Users `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
+type Permission struct {
+	Id   uint   `gorm:"primaryKey"`
+	Name string `gorm:"unique"`
+	gorm.Model
+}
+
+type RolePermission struct {
+	RolesId      uint `json:"roles_id"`
+	PermissionId uint `json:"permission_id"`
 }
