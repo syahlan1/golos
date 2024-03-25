@@ -41,7 +41,7 @@ func Register(c *fiber.Ctx) error {
 		Email:    data["email"],
 		Password: hashedPassword,
 		IsLogin:  0, // IsLogin default nya 0
-		RoleId:   1,
+		RoleId:   0,
 	}
 	if err := connection.DB.Create(&newUser).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create user"})
