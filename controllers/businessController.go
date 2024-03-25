@@ -24,6 +24,7 @@ func BusinessCreate(c *fiber.Ctx) error {
 	// Buat objek bisnis dengan nilai-nilai yang diberikan
 	business := models.Business{
 		Cif:                  data["cif"].(string),
+		CompanyFirstName:     data["company_first_name"].(string),
 		CompanyName:          data["company_name"].(string),
 		CompanyType:          data["company_type"].(string),
 		EstablishDate:        data["establishment_date"].(string),
@@ -52,7 +53,6 @@ func BusinessCreate(c *fiber.Ctx) error {
 		TglPenerbitan:        data["tgl_penerbitan"].(string),
 		TglJatuhTempo:        data["tgl_jatuh_tempo"].(string),
 		ContactPerson:        data["contact_person"].(string),
-		ApproveStatus:        "draft",
 	}
 
 	// Buat data bisnis ke database
@@ -83,6 +83,7 @@ func BusinessUpdate(c *fiber.Ctx) error {
 	}
 
 	businesses.Cif = updatedBusiness.Cif
+	businesses.CompanyFirstName = updatedBusiness.CompanyFirstName
 	businesses.CompanyName = updatedBusiness.CompanyName
 	businesses.CompanyType = updatedBusiness.CompanyType
 	businesses.EstablishDate = updatedBusiness.EstablishDate
