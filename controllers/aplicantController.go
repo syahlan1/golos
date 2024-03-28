@@ -199,7 +199,7 @@ func ShowEducation(c *fiber.Ctx) error {
 func ShowJobPosition(c *fiber.Ctx) error {
 	var jobPosition []string
 
-	if err := connection.DB.Model(&models.Education{}).Pluck("name", &jobPosition).Error; err != nil {
+	if err := connection.DB.Model(&models.JobPosition{}).Pluck("name", &jobPosition).Error; err != nil {
 		return err
 	}
 
