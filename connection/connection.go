@@ -50,7 +50,18 @@ func Connect() {
 	connection.AutoMigrate(&models.BusinessSector{})
 	connection.AutoMigrate(&models.KodeInstansi{})
 	connection.AutoMigrate(&models.Negara{})
+	connection.AutoMigrate(&models.SektorEkonomi{})
+	connection.AutoMigrate(&models.HubunganNasabah{})
+	connection.AutoMigrate(&models.HubunganKeluarga{})
+	connection.AutoMigrate(&models.LokasiPabrik{})
+	connection.AutoMigrate(&models.MaritalStatus{})
 
 	connection.AutoMigrate(&models.ZipCode{})
+
+	connection.AutoMigrate(&models.Approval{})
+	connection.AutoMigrate(&models.ApprovalSetting{})
+	connection.AutoMigrate(&models.ApprovalWorkflow{})
+	connection.AutoMigrate(&models.ApprovalHistory{})
+	connection.AutoMigrate(&models.ApprovalWorkflowRole{})
 
 }

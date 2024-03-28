@@ -45,7 +45,6 @@ type Applicant struct {
 	NamaInstansi        string `json:"nama_instansi"`
 	KodeInstansi        string `json:"kode_instansi"`
 	NoPegawai           string `json:"no_pegawai"`
-	ApproveStatus       string `json:"approve_status"`
 }
 
 type HomeStatus struct {
@@ -83,6 +82,30 @@ type Negara struct {
 	Name string `json: "name"`
 }
 
+type SektorEkonomi struct {
+	Id   int    `json: "id" gorm:"primaryKey"`
+	Name string `json: "name"`
+}
+
+type HubunganNasabah struct {
+	Id   int    `json: "id" gorm:"primaryKey"`
+	Name string `json: "name"`
+}
+
+type HubunganKeluarga struct {
+	Id   int    `json: "id" gorm:"primaryKey"`
+	Name string `json: "name"`
+}
+
+type LokasiPabrik struct {
+	Id   int    `json: "id" gorm:"primaryKey"`
+	Name string `json: "name"`
+}
+
+type MaritalStatus struct {
+	Id   int    `json: "id" gorm:"primaryKey"`
+	Name string `json: "name"`
+}
 type ZipCode struct {
 	Id          int    `json: "id" gorm:"primaryKey"`
 	ZipCode     string `json: "zip_code"`

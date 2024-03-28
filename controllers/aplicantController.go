@@ -43,7 +43,7 @@ func ApplicantCreate(c *fiber.Ctx) error {
 		NumberOfChildren:    int(data["number_of_children"].(float64)),
 		NoKartuKeluarga:     data["no_kartu_keluarga"].(string),
 		SpouseName:          data["spouse_name"].(string),
-		SpouseIdCard:        data["spouse_id_Card"].(string),
+		SpouseIdCard:        data["spouse_id_card"].(string),
 		SpouseAddress:       data["spouse_address"].(string),
 		IdCardIssuedDate:    data["id_card_issued_date"].(string),
 		IdCard:              data["id_card"].(string),
@@ -66,7 +66,6 @@ func ApplicantCreate(c *fiber.Ctx) error {
 		NamaInstansi:        data["nama_instansi"].(string),
 		KodeInstansi:        data["kode_instansi"].(string),
 		NoPegawai:           data["no_pegawai"].(string),
-		ApproveStatus:       "draft",
 	}
 
 	// Buat data bisnis ke database
@@ -167,39 +166,6 @@ func ApplicantDelete(c *fiber.Ctx) error {
 	})
 }
 
-func ApplicantApproveUpdate(c *fiber.Ctx) error {
-	applicantID := c.Params("id")
-
-	var applicant models.Applicant
-	if err := connection.DB.First(&applicant, applicantID).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "Id Not Found",
-		})
-	}
-
-	// Periksa nilai ApproveStatus dan sesuaikan sesuai kondisi yang diinginkan
-	// if applicant.ApproveStatus == 1 {
-	// 	applicant.ApproveStatus = 2
-	// } else if applicant.ApproveStatus == 2 {
-	// 	applicant.ApproveStatus = 3
-	// } else {
-	// 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-	// 		"status": "Invalid ApproveStatus value",
-	// 	})
-	// }
-
-	if err := connection.DB.Save(&applicant).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Failed to update the data",
-		})
-	}
-
-	return c.JSON(fiber.Map{
-		"data":   applicant,
-		"status": "ApproveStatus berhasil diperbarui!",
-	})
-}
-
 func ShowHomeStatus(c *fiber.Ctx) error {
 	var HomeStatus []string
 
@@ -268,4 +234,54 @@ func ShowNegara(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(negara)
+}
+
+func ShowSektorEkonomi(c *fiber.Ctx) error {
+	var sektorEkonomi []string
+
+	if err := connection.DB.Model(&models.SektorEkonomi{}).Pluck("name", &sektorEkonomi).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(sektorEkonomi)
+}
+
+func ShowHubunganNasabah(c *fiber.Ctx) error {
+	var hubunganNasabah []string
+
+	if err := connection.DB.Model(&models.HubunganNasabah{}).Pluck("name", &hubunganNasabah).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(hubunganNasabah)
+}
+
+func ShowHubunganKeluarga(c *fiber.Ctx) error {
+	var hubunganKeluarga []string
+
+	if err := connection.DB.Model(&models.HubunganKeluarga{}).Pluck("name", &hubunganKeluarga).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(hubunganKeluarga)
+}
+
+func ShowLokasiPabrik(c *fiber.Ctx) error {
+	var lokasiPabrik []string
+
+	if err := connection.DB.Model(&models.LokasiPabrik{}).Pluck("name", &lokasiPabrik).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(lokasiPabrik)
+}
+
+func ShowMaritalStatus(c *fiber.Ctx) error {
+	var maritalStatus []string
+
+	if err := connection.DB.Model(&models.MaritalStatus{}).Pluck("name", &maritalStatus).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(maritalStatus)
 }
