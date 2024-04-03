@@ -57,12 +57,13 @@ func Setup(app *fiber.App) {
 	app.Get("/api/zip-codes", controllers.GetZipCodesBySubdistrict)
 
 	//approve
-	app.Post("/api/create-approval", controllers.CreateApprovalSetting)
+	app.Post("/api/approval/create", controllers.CreateApprovalSetting)
 	app.Post("/api/approval/:id", controllers.UpdateApprovalStatus)
 	app.Put("/api/approval/:id/reject", controllers.RejectApproval)
 	app.Get("/api/approval/show", controllers.ShowAllData)
 
 	//role
-	app.Post("/api/create_role", controllers.Authorize("create_role"), controllers.CreateRole)
+	app.Post("/api/role/create", controllers.Authorize("create_role"), controllers.CreateRole)
+	app.Put("/api/role/update/:id", controllers.UpdateRole)
 
 }

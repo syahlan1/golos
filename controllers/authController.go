@@ -240,3 +240,65 @@ func CreateRole(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{"message": "Role created successfully"})
 }
+
+func UpdateRole(c *fiber.Ctx) error {
+	// Parse request body
+	var req struct {
+		Name        string   `json:"name"`
+		Permissions []string `json:"permissions"`
+	}
+	if err := c.BodyParser(&req); err != nil {
+		return err
+	}
+
+	// Get role ID from URL parameter
+	roleID := c.Params("id")
+
+	// Find existing role by ID
+	var existingRole models.Roles
+	if err := connection.DB.Where("id = ?", roleID).First(&existingRole).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "Role not found"})
+	}
+
+	// Update role name
+	existingRole.Name = req.Name
+
+	// Save the updated role to database
+	if err := connection.DB.Save(&existingRole).Error; err != nil {
+		return err
+	}
+
+	// Get IDs of permissions from the input
+	var permissions []models.Permission
+	if err := connection.DB.Where("name IN ?", req.Permissions).Find(&permissions).Error; err != nil {
+		return err
+	}
+
+	// Collect IDs of permissions from the input
+	var permissionIDs []uint
+	for _, permission := range permissions {
+		permissionIDs = append(permissionIDs, permission.Id)
+	}
+
+	// Update RolePermission entries for the role
+	// Update existing RolePermission entries based on input permissions
+	for _, permission := range permissions {
+		// Check if the RolePermission already exists
+		var existingRolePermission models.RolePermission
+		err := connection.DB.Where("roles_id = ? AND permission_id = ?", existingRole.Id, permission.Id).First(&existingRolePermission).Error
+		if err != nil {
+			// RolePermission doesn't exist, create a new one
+			rolePermission := models.RolePermission{RolesId: existingRole.Id, PermissionId: permission.Id}
+			if err := connection.DB.Create(&rolePermission).Error; err != nil {
+				return err
+			}
+		}
+	}
+
+	// Delete existing RolePermission entries not present in req.Permissions
+	if err := connection.DB.Where("roles_id = ? AND permission_id NOT IN ?", existingRole.Id, permissionIDs).Delete(&models.RolePermission{}).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(fiber.Map{"message": "Role updated successfully"})
+}
