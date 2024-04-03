@@ -5,6 +5,7 @@ import './App.css';
 import Register from "./pages/Register";
 import Test from "./menus/Test";
 import InfoUser from "./menus/InfoUser";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
 
@@ -12,7 +13,7 @@ function App() {
     <div className="app">
       <BrowserRouter>
         <Routes>
-          <Route path="/" element= { <Home/>} />
+        <Route path="/" element={<ProtectedRoute children={<Home />} />} />
           <Route path="/test" element= { <Test/>} />
           <Route path= "/login" element={<Login />}/>
           <Route path= "/registrasi" element={<Register />}/>

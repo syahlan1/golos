@@ -36,13 +36,18 @@ func Setup(app *fiber.App) {
 	app.Get("/api/applicant/show", controllers.ApplicantShow)
 	app.Put("/api/applicant/update/:id", controllers.Authorize("update"), controllers.ApplicantUpdate)
 	app.Delete("/api/applicant/delete/:id", controllers.Authorize("delete"), controllers.ApplicantDelete)
-	app.Get("/api/applicant/showhomestatus", controllers.ShowHomeStatus)
-	app.Get("/api/applicant/showapplicantaddresstype", controllers.ShowApplicantAddressType)
-	app.Get("/api/applicant/showeducation", controllers.ShowEducation)
-	app.Get("/api/applicant/showjobposition", controllers.ShowJobPosition)
-	app.Get("/api/applicant/showbusinesssector", controllers.ShowBusinessSector)
-	app.Get("/api/applicant/showkodeinstansi", controllers.ShowKodeInstansi)
-	app.Get("/api/applicant/shownegara", controllers.ShowNegara)
+	app.Get("/api/applicant/show-homestatus", controllers.ShowHomeStatus)
+	app.Get("/api/applicant/show-applicant-addresstype", controllers.ShowApplicantAddressType)
+	app.Get("/api/applicant/show-education", controllers.ShowEducation)
+	app.Get("/api/applicant/show-job-position", controllers.ShowJobPosition)
+	app.Get("/api/applicant/show-business-sector", controllers.ShowBusinessSector)
+	app.Get("/api/applicant/show-kode-instansi", controllers.ShowKodeInstansi)
+	app.Get("/api/applicant/show-negara", controllers.ShowNegara)
+	app.Get("/api/applicant/show-sektor-ekonomi", controllers.ShowSektorEkonomi)
+	app.Get("/api/applicant/show-hubungan-nasabah", controllers.ShowHubunganNasabah)
+	app.Get("/api/applicant/show-hubungan-keluarga", controllers.ShowHubunganKeluarga)
+	app.Get("/api/applicant/show-lokasi-pabrik", controllers.ShowLokasiPabrik)
+	app.Get("/api/applicant/marital-status", controllers.ShowMaritalStatus)
 
 	//zipcode
 	app.Get("/api/provinces", controllers.GetProvinces)
@@ -52,8 +57,10 @@ func Setup(app *fiber.App) {
 	app.Get("/api/zip-codes", controllers.GetZipCodesBySubdistrict)
 
 	//approve
-	app.Put("/api/business/approve/:id", controllers.Authorize("approve"), controllers.BusinessApproveUpdate)
-	app.Put("/api/applicant/approve/:id", controllers.Authorize("approve"), controllers.ApplicantApproveUpdate)
+	app.Post("/api/create-approval", controllers.CreateApprovalSetting)
+	app.Post("/api/approval/:id", controllers.UpdateApprovalStatus)
+	app.Put("/api/approval/:id/reject", controllers.RejectApproval)
+	app.Get("/api/approval/show", controllers.ShowAllData)
 
 	//role
 	app.Post("/api/create_role", controllers.Authorize("create_role"), controllers.CreateRole)

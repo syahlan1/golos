@@ -1,7 +1,13 @@
 package controllers
 
 import (
+	"encoding/json"
+	"log"
+	"math/rand"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/oklog/ulid"
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
 )
@@ -60,9 +66,59 @@ func BusinessCreate(c *fiber.Ctx) error {
 		return err
 	}
 
+	createdBy, err := TakeUsername(c)
+	if err != nil {
+		return err
+	}
+
+	//generate id
+	t := time.Now().UTC()
+	entropy := rand.New(rand.NewSource(t.UnixNano()))
+	id := ulid.MustNew(ulid.Timestamp(t), entropy)
+
+	approval := models.Approval{
+		Id:                id.String(),
+		DisplayData:       data["display_data"].(string),
+		Data:              BusinessToJson(business),
+		ApprovalSettingID: 1,
+		CurrentProcess:    1,
+		ApprovalStatus:    "draft",
+		CreatedDate:       time.Now(),
+		CreatedBy:         createdBy,
+	}
+
+	// Buat data approval ke database
+	if err := connection.DB.Create(&approval).Error; err != nil {
+		return err
+	}
+
+	historyId := ulid.MustNew(ulid.Timestamp(t), entropy)
+
+	history := models.ApprovalHistory{
+		Id:             historyId.String(),
+		ApprovalID:     approval.Id,
+		Date:           approval.CreatedDate,
+		UserID:         approval.CreatedBy,
+		Status:         approval.ApprovalStatus,
+		CurrentProcess: approval.CurrentProcess,
+		Data:           BusinessToJson(business),
+	}
+	if err := connection.DB.Create(&history).Error; err != nil {
+		return err
+	}
+
 	return c.JSON(fiber.Map{
 		"message": "insert sukses",
 	})
+}
+
+func BusinessToJson(business models.Business) string {
+	jsonData, err := json.Marshal(business)
+	if err != nil {
+		log.Println("Error converting business data to JSON:", err)
+		return "{}"
+	}
+	return string(jsonData)
 }
 
 func BusinessUpdate(c *fiber.Ctx) error {

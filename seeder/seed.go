@@ -88,6 +88,6 @@ func UserSeed() {
 
 	connection.DB.Save(&permission)
 	connection.DB.Save(&roles)
-	connection.DB.Save(&rolePermissions)
 	connection.DB.Save(&users)
+	connection.DB.Save(&rolePermissions)
 }
