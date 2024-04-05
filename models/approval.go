@@ -54,7 +54,7 @@ type ApprovalSetting struct {
 }
 
 type ApprovalWorkflow struct {
-	Id                     uint      `gorm:"primary_key" json:"id"`
+	Id                     int       `gorm:"primary_key" json:"id"`
 	ApprovalSettingID      int       `json:"approval_setting_id"`
 	Name                   string    `json:"name"`
 	Description            string    `json:"description"`
