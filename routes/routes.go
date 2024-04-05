@@ -61,6 +61,7 @@ func Setup(app *fiber.App) {
 	app.Post("/api/approval/:id", controllers.UpdateApprovalStatus)
 	app.Put("/api/approval/:id/reject", controllers.RejectApproval)
 	app.Get("/api/approval/show", controllers.ShowAllData)
+	app.Put("/api/approval/set-role/:id", controllers.UpdateApprovalWorkflowRoles)
 
 	//role
 	app.Post("/api/role/create", controllers.Authorize("create_role"), controllers.CreateRole)

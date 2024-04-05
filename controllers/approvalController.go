@@ -297,3 +297,50 @@ func ShowAllData(c *fiber.Ctx) error {
 
 	return c.JSON(approvals)
 }
+
+func UpdateApprovalWorkflowRoles(c *fiber.Ctx) error {
+	// Parse request body
+	var req struct {
+		RoleIDs []int `json:"role_id"`
+	}
+	if err := c.BodyParser(&req); err != nil {
+		return err
+	}
+
+	// Get approval_workflow_id from URL parameter
+	approvalWorkflowID := c.Params("id")
+
+	// Find existing approval workflow by ID
+	var existingWorkflow models.ApprovalWorkflow
+	if err := connection.DB.Where("id = ?", approvalWorkflowID).First(&existingWorkflow).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "Approval workflow not found"})
+	}
+
+	// Update approval workflow roles
+	if err := updateApprovalWorkflowRoles(existingWorkflow.Id, req.RoleIDs); err != nil {
+		return err
+	}
+
+	return c.JSON(fiber.Map{"message": "Approval workflow roles updated successfully"})
+}
+
+func updateApprovalWorkflowRoles(approvalWorkflowID int, roleIDs []int) error {
+	// Delete existing ApprovalWorkflowRoles entries for the approval_workflow_id
+	if err := connection.DB.Where("approval_workflow_id = ?", approvalWorkflowID).Delete(&models.ApprovalWorkflowRole{}).Error; err != nil {
+		return err
+	}
+
+	// Create new ApprovalWorkflowRoles entries for the approval_workflow_id and role_ids
+	var workflowRoles []models.ApprovalWorkflowRole
+	for _, roleID := range roleIDs {
+		workflowRoles = append(workflowRoles, models.ApprovalWorkflowRole{
+			ApprovalWorkflowID: approvalWorkflowID,
+			RoleID:             roleID,
+		})
+	}
+	if err := connection.DB.Create(&workflowRoles).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
