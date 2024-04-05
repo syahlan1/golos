@@ -75,17 +75,21 @@ func CreateApprovalSetting(c *fiber.Ctx) error {
 			return err
 		}
 
-		// Create ApprovalWorkflowRole
-		approvalWorkflowRole := models.ApprovalWorkflowRole{
-			ApprovalWorkflowID: int(approvalWorkflow.Id),
-			RoleID:             1,
-			Status:             "active",
-			CreatedDate:        currentTime,
-			CreatedBy:          createdBy,
-		}
+		// Get Role IDs from request
+		roleIds := wf["role_id"].([]interface{})
+		for _, roleId := range roleIds {
+			// Create ApprovalWorkflowRole for each Role ID
+			approvalWorkflowRole := models.ApprovalWorkflowRole{
+				ApprovalWorkflowID: int(approvalWorkflow.Id),
+				RoleID:             int(roleId.(float64)),
+				Status:             "active",
+				CreatedDate:        currentTime,
+				CreatedBy:          createdBy,
+			}
 
-		if err := connection.DB.Create(&approvalWorkflowRole).Error; err != nil {
-			return err
+			if err := connection.DB.Create(&approvalWorkflowRole).Error; err != nil {
+				return err
+			}
 		}
 	}
 
@@ -129,7 +133,7 @@ func UpdateApprovalStatus(c *fiber.Ctx) error {
 
 	// Get the ApprovalWorkflow based on the current process of the Approval
 	var currentWorkflow models.ApprovalWorkflow
-	if err := connection.DB.Where("approval_setting_id = ? AND \"order\" = ?", approval.ApprovalSettingID, approval.CurrentProcess).First(&currentWorkflow).Error; err != nil {
+	if err := connection.DB.Where("approval_setting_id = ? AND id = ?", approval.ApprovalSettingID, approval.CurrentProcess).First(&currentWorkflow).Error; err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"status": "No current approval workflow found",
 		})
@@ -145,7 +149,7 @@ func UpdateApprovalStatus(c *fiber.Ctx) error {
 
 	// Get the next ApprovalWorkflow
 	var nextWorkflow models.ApprovalWorkflow
-	if err := connection.DB.Where("approval_setting_id = ? AND \"order\" > ?", approval.ApprovalSettingID, approval.CurrentProcess).Order("\"order\" asc").First(&nextWorkflow).Error; err != nil {
+	if err := connection.DB.Where("approval_setting_id = ? AND \"order\" > ?", approval.ApprovalSettingID, currentWorkflow.Order).Order("\"order\" asc").First(&nextWorkflow).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 				"status": "No next approval workflow found",
@@ -154,8 +158,8 @@ func UpdateApprovalStatus(c *fiber.Ctx) error {
 		return err
 	}
 
-	// Update current_process on Approval with the order of the found ApprovalWorkflow
-	approval.CurrentProcess = nextWorkflow.Order
+	// Update current_process on Approval with the id of the found ApprovalWorkflow
+	approval.CurrentProcess = nextWorkflow.Id
 	approval.UpdatedDate = time.Now()
 	approval.UpdatedBy = createdBy
 
@@ -236,7 +240,7 @@ func RejectApproval(c *fiber.Ctx) error {
 	}
 
 	// Perbarui current_process pada Approval dengan urutan ApprovalWorkflow pertama yang ditemukan
-	approval.CurrentProcess = firstWorkflow.Order
+	approval.CurrentProcess = firstWorkflow.Id
 	approval.CurrentNotes = updatedApproval.CurrentNotes
 
 	// Set approval_status menjadi "rejected"
