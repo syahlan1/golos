@@ -62,9 +62,11 @@ func Setup(app *fiber.App) {
 	app.Put("/api/approval/:id/reject", controllers.RejectApproval)
 	app.Get("/api/approval/show", controllers.ShowAllData)
 	app.Put("/api/approval/set-role/:id", controllers.UpdateApprovalWorkflowRoles)
+	app.Get("/api/approval/data/:id", controllers.ApprovalDataDetail)
 
 	//role
 	app.Post("/api/role/create", controllers.Authorize("create_role"), controllers.CreateRole)
 	app.Put("/api/role/update/:id", controllers.UpdateRole)
-
+	app.Get("/api/role/show", controllers.ShowRole)
+	app.Get("/api/role/:id/permissions", controllers.ShowPermissions)
 }

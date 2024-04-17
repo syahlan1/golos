@@ -80,7 +80,7 @@ func BusinessCreate(c *fiber.Ctx) error {
 		Id:                id.String(),
 		DisplayData:       data["display_data"].(string),
 		Data:              BusinessToJson(business),
-		ApprovalSettingID: 3,
+		ApprovalSettingID: 1,
 		CurrentProcess:    7,
 		ApprovalStatus:    "draft",
 		CreatedDate:       time.Now(),

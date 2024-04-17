@@ -280,6 +280,7 @@ func RejectApproval(c *fiber.Ctx) error {
 
 func ShowAllData(c *fiber.Ctx) error {
 	var approvals []struct {
+		Id             string `json:"id"`
 		DisplayData    string `json:"display_data"`
 		ApprovalStatus string `json:"approval_status"`
 		CreatedBy      string `json:"created_by"`
@@ -287,7 +288,7 @@ func ShowAllData(c *fiber.Ctx) error {
 	}
 
 	// Query menggunakan raw SQL untuk melakukan join antara tabel Approval dan ApprovalWorkflow
-	query := `SELECT a.display_data, a.approval_status, a.created_by, aw.description
+	query := `SELECT a.id, a.display_data, a.approval_status, a.created_by, aw.description
               FROM approvals a
               JOIN approval_workflows aw ON a.current_process = aw.id`
 
@@ -296,6 +297,17 @@ func ShowAllData(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(approvals)
+}
+
+func ApprovalDataDetail(c *fiber.Ctx) error {
+	approvalID := c.Params("id")
+
+	var data string
+	if err := connection.DB.Raw("SELECT data FROM approvals WHERE id = ?", approvalID).Scan(&data).Error; err != nil {
+		return err
+	}
+
+	return c.SendString(data)
 }
 
 func UpdateApprovalWorkflowRoles(c *fiber.Ctx) error {

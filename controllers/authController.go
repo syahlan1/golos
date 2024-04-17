@@ -151,6 +151,26 @@ func User(c *fiber.Ctx) error {
 	return c.JSON(user)
 }
 
+func ShowRole(c *fiber.Ctx) error {
+	var roles []models.Roles
+	if err := connection.DB.Find(&roles).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(roles)
+}
+
+func ShowPermissions(c *fiber.Ctx) error {
+	roleID := c.Params("id")
+
+	var role models.Roles
+	if err := connection.DB.Preload("Permissions").First(&role, roleID).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(role.Permissions)
+}
+
 // logout
 func Logout(c *fiber.Ctx) error {
 	userId := getUserIdFromToken(c)
