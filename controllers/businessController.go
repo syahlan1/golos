@@ -20,6 +20,16 @@ func BusinessShow(c *fiber.Ctx) error {
 	return c.JSON(businesses)
 }
 
+func BusinessShowDetail(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	var business models.Business
+
+	connection.DB.Where("id = ?", id).Find(&business)
+
+	return c.JSON(business)
+}
+
 func BusinessCreate(c *fiber.Ctx) error {
 	var data map[string]interface{}
 

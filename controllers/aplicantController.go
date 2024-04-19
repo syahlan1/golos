@@ -14,6 +14,14 @@ func ApplicantShow(c *fiber.Ctx) error {
 	return c.JSON(applicant)
 }
 
+func ApplicantShowDetail(c *fiber.Ctx) error {
+	var applicant models.Applicant
+
+	connection.DB.Find(&applicant, c.Params("id"))
+
+	return c.JSON(applicant)
+}
+
 func ApplicantCreate(c *fiber.Ctx) error {
 	var data map[string]interface{}
 

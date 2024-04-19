@@ -9,7 +9,7 @@ import (
 func Setup(app *fiber.App) {
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     "http://localhost:5173",
-		AllowHeaders:     "Origin, Content-Type, Accept",
+		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
 		AllowMethods:     "GET, POST, PUT, DELETE",
 		AllowCredentials: true,
 	}))
@@ -24,6 +24,7 @@ func Setup(app *fiber.App) {
 	app.Get("/api/business/show", controllers.BusinessShow)
 	app.Put("/api/business/update/:id", controllers.Authorize("update"), controllers.BusinessUpdate)
 	app.Delete("/api/business/delete/:id", controllers.Authorize("delete"), controllers.BusinessDelete)
+	app.Get("/api/business/show/:id", controllers.BusinessShowDetail)
 	app.Get("/api/business/showcompanyfirstname", controllers.ShowCompanyFirstName)
 	app.Get("/api/business/showcompanytype", controllers.ShowCompanyType)
 	app.Get("/api/business/showbusinessaddresstype", controllers.ShowBusinessAddressType)
@@ -34,6 +35,7 @@ func Setup(app *fiber.App) {
 	//applicant
 	app.Post("/api/applicant/create", controllers.Authorize("create"), controllers.ApplicantCreate)
 	app.Get("/api/applicant/show", controllers.ApplicantShow)
+	app.Get("/api/applicant/show/:id", controllers.ApplicantShowDetail)
 	app.Put("/api/applicant/update/:id", controllers.Authorize("update"), controllers.ApplicantUpdate)
 	app.Delete("/api/applicant/delete/:id", controllers.Authorize("delete"), controllers.ApplicantDelete)
 	app.Get("/api/applicant/show-homestatus", controllers.ShowHomeStatus)
@@ -58,7 +60,7 @@ func Setup(app *fiber.App) {
 
 	//approve
 	app.Post("/api/approval/create", controllers.CreateApprovalSetting)
-	app.Post("/api/approval/:id", controllers.UpdateApprovalStatus)
+	app.Put("/api/approval/:id", controllers.UpdateApprovalStatus)
 	app.Put("/api/approval/:id/reject", controllers.RejectApproval)
 	app.Get("/api/approval/show", controllers.ShowAllData)
 	app.Put("/api/approval/set-role/:id", controllers.UpdateApprovalWorkflowRoles)
