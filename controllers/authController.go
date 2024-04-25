@@ -83,12 +83,6 @@ func Login(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := connection.DB.Model(&user).Update("is_login", 1).Error; err != nil {
-		c.Status(fiber.StatusInternalServerError)
-		return c.JSON(fiber.Map{
-			"message": "Failed to update user status"})
-	}
-
 	tokenTTL, _ := strconv.Atoi(os.Getenv("TOKEN_TTL"))
 
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
@@ -115,8 +109,15 @@ func Login(c *fiber.Ctx) error {
 
 	c.Cookie(&cookie)
 
+	if err := connection.DB.Model(&user).Update("is_login", 1).Error; err != nil {
+		c.Status(fiber.StatusInternalServerError)
+		return c.JSON(fiber.Map{
+			"message": "Failed to update user status"})
+	}
+
 	return c.JSON(fiber.Map{
 		"message": "Login Succcessfully",
+		"token":   token,
 	})
 }
 
@@ -164,11 +165,24 @@ func ShowPermissions(c *fiber.Ctx) error {
 	roleID := c.Params("id")
 
 	var role models.Roles
-	if err := connection.DB.Preload("Permissions").First(&role, roleID).Error; err != nil {
+	if err := connection.DB.First(&role, roleID).Error; err != nil {
 		return err
 	}
 
-	return c.JSON(role.Permissions)
+	var permissions []models.Permission
+	if err := connection.DB.Model(&role).Association("Permissions").Find(&permissions); err != nil {
+		return err
+	}
+
+	responseData := struct {
+		Role        models.Roles
+		Permissions []models.Permission
+	}{
+		Role:        role,
+		Permissions: permissions,
+	}
+
+	return c.JSON(responseData)
 }
 
 // logout

@@ -14,7 +14,7 @@ type Users struct {
 }
 
 type Roles struct {
-	Id          uint         `gorm:"primaryKey"`
+	Id          uint         `gorm:"primaryKey" json:"id"`
 	Name        string       `gorm:"unique"`
 	Permissions []Permission `gorm:"many2many:role_permissions;"`
 	Users       []Users      `gorm:"foreignKey:RoleId"`
@@ -22,7 +22,7 @@ type Roles struct {
 }
 
 type Permission struct {
-	Id   uint   `gorm:"primaryKey"`
+	Id   uint   `gorm:"primaryKey" json:"id"`
 	Name string `gorm:"unique"`
 	gorm.Model
 }

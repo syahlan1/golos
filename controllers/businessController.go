@@ -88,7 +88,7 @@ func BusinessCreate(c *fiber.Ctx) error {
 
 	approval := models.Approval{
 		Id:                id.String(),
-		DisplayData:       data["display_data"].(string),
+		DisplayData:       "Data badan usaha " + business.CompanyName,
 		Data:              BusinessToJson(business),
 		ApprovalSettingID: 1,
 		CurrentProcess:    7,
@@ -216,17 +216,6 @@ func BusinessApproveUpdate(c *fiber.Ctx) error {
 			"status": "Id Not Found",
 		})
 	}
-
-	// Periksa nilai ApproveStatus dan sesuaikan sesuai kondisi yang diinginkan
-	// if business.ApproveStatus == 1 {
-	// 	business.ApproveStatus = 2
-	// } else if business.ApproveStatus == 2 {
-	// 	business.ApproveStatus = 3
-	// } else {
-	// 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-	// 		"status": "Invalid ApproveStatus value",
-	// 	})
-	// }
 
 	if err := connection.DB.Save(&business).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
