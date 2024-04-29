@@ -115,6 +115,10 @@ func Login(c *fiber.Ctx) error {
 			"message": "Failed to update user status"})
 	}
 
+	time.AfterFunc(time.Second*time.Duration(tokenTTL), func() {
+		connection.DB.Model(&user).Update("is_login", 0)
+	})
+
 	return c.JSON(fiber.Map{
 		"message": "Login Succcessfully",
 		"token":   token,
@@ -163,26 +167,12 @@ func ShowRole(c *fiber.Ctx) error {
 
 func ShowPermissions(c *fiber.Ctx) error {
 	roleID := c.Params("id")
-
 	var role models.Roles
-	if err := connection.DB.First(&role, roleID).Error; err != nil {
+	if err := connection.DB.Preload("Permissions").Where("id = ?", roleID).First(&role).Error; err != nil {
 		return err
 	}
 
-	var permissions []models.Permission
-	if err := connection.DB.Model(&role).Association("Permissions").Find(&permissions); err != nil {
-		return err
-	}
-
-	responseData := struct {
-		Role        models.Roles
-		Permissions []models.Permission
-	}{
-		Role:        role,
-		Permissions: permissions,
-	}
-
-	return c.JSON(responseData)
+	return c.JSON(role)
 }
 
 // logout
