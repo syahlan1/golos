@@ -28,33 +28,28 @@ func UserSeed() {
 
 	var roles = []models.Roles{
 		{
-			Name: "superadmin",
+			Name:        "Superadmin",
+			Description: "High Tier Admin",
 		},
 	}
 
 	var permission = []models.Permission{
 		{
-			Id:   1,
 			Name: "create",
 		},
 		{
-			Id:   2,
 			Name: "update",
 		},
 		{
-			Id:   3,
 			Name: "delete",
 		},
 		{
-			Id:   4,
 			Name: "approve",
 		},
 		{
-			Id:   5,
 			Name: "create_role",
 		},
 		{
-			Id:   6,
 			Name: "delete_role",
 		},
 	}

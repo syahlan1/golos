@@ -16,6 +16,9 @@ type Users struct {
 type Roles struct {
 	Id          uint         `gorm:"primaryKey" json:"id"`
 	Name        string       `gorm:"unique"`
+	Description string       `json:"description"`
+	CreatedBy   string       `json:"created_by"`
+	UpdatedBy   string       `json:"updated_by"`
 	Permissions []Permission `gorm:"many2many:role_permissions;"`
 	Users       []Users      `gorm:"foreignKey:RoleId"`
 	gorm.Model

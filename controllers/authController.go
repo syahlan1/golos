@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"log"
 	"os"
 	"strconv"
 	"time"
@@ -165,6 +166,14 @@ func ShowRole(c *fiber.Ctx) error {
 	return c.JSON(roles)
 }
 
+func ShowAllPermissions(c *fiber.Ctx) error {
+	var permissions []models.Permission
+	if err := connection.DB.Find(&permissions).Error; err != nil {
+		return err
+	}
+	return c.JSON(permissions)
+}
+
 func ShowPermissions(c *fiber.Ctx) error {
 	roleID := c.Params("id")
 	var role models.Roles
@@ -222,9 +231,37 @@ func CreateRole(c *fiber.Ctx) error {
 	// Parse request body
 	var req struct {
 		Name        string   `json:"name"`
+		Description string   `json:"description"`
 		Permissions []string `json:"permissions"`
 	}
 	if err := c.BodyParser(&req); err != nil {
+		return err
+	}
+
+	//Created by
+	createdBy, err := TakeUsername(c)
+	if err != nil {
+		log.Println("Error taking username:", err)
+		return err
+	}
+
+	// Get user role ID
+	cookie := c.Cookies("jwt")
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+	if err != nil {
+		log.Println("Error parsing JWT:", err)
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "status unauthorized",
+		})
+	}
+	claims := token.Claims.(*jwt.StandardClaims)
+
+	var user models.Users
+	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
+		log.Println("Error retrieving user:", err)
 		return err
 	}
 
@@ -236,7 +273,7 @@ func CreateRole(c *fiber.Ctx) error {
 	}
 
 	// Buat role baru
-	newRole := models.Roles{Name: req.Name}
+	newRole := models.Roles{Name: req.Name, Description: req.Description, CreatedBy: createdBy}
 
 	// Simpan role baru ke dalam database
 	if err := connection.DB.Create(&newRole).Error; err != nil {
@@ -265,13 +302,74 @@ func CreateRole(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"message": "Role created successfully"})
 }
 
+func DeleteRole(c *fiber.Ctx) error {
+	roleID := c.Params("id")
+
+	// Mulai transaksi
+	tx := connection.DB.Begin()
+
+	// Hapus role permission yang terkait dengan role yang akan dihapus
+	if err := tx.Where("roles_id = ?", roleID).Delete(&models.RolePermission{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Update role_id user menjadi 0 untuk user yang memiliki role yang akan dihapus
+	if err := tx.Model(&models.Users{}).Where("role_id = ?", roleID).Update("role_id", 0).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Hapus role
+	if err := tx.Where("id = ?", roleID).Delete(&models.Roles{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Commit transaksi
+	if err := tx.Commit().Error; err != nil {
+		return err
+	}
+
+	// Jika sukses, kirim respons sukses
+	return c.JSON(fiber.Map{"message": "Role deleted successfully"})
+}
+
 func UpdateRole(c *fiber.Ctx) error {
 	// Parse request body
 	var req struct {
 		Name        string   `json:"name"`
+		Description string   `json:"description"`
 		Permissions []string `json:"permissions"`
 	}
 	if err := c.BodyParser(&req); err != nil {
+		return err
+	}
+
+	// Updated by
+	createdBy, err := TakeUsername(c)
+	if err != nil {
+		log.Println("Error taking username:", err)
+		return err
+	}
+
+	// Get user role ID
+	cookie := c.Cookies("jwt")
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+	if err != nil {
+		log.Println("Error parsing JWT:", err)
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "status unauthorized",
+		})
+	}
+	claims := token.Claims.(*jwt.StandardClaims)
+
+	var user models.Users
+	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
+		log.Println("Error retrieving user:", err)
 		return err
 	}
 
@@ -286,6 +384,8 @@ func UpdateRole(c *fiber.Ctx) error {
 
 	// Update role name
 	existingRole.Name = req.Name
+	existingRole.Description = req.Description
+	existingRole.UpdatedBy = createdBy
 
 	// Save the updated role to database
 	if err := connection.DB.Save(&existingRole).Error; err != nil {
