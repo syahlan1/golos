@@ -64,4 +64,9 @@ func Connect() {
 	connection.AutoMigrate(&models.ApprovalHistory{})
 	connection.AutoMigrate(&models.ApprovalWorkflowRole{})
 
+	connection.AutoMigrate(&models.Validation{})
+
+	connection.AutoMigrate(&models.MasterCode{})
+	connection.AutoMigrate(&models.MasterCodeGroup{})
+
 }

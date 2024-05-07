@@ -73,4 +73,23 @@ func Setup(app *fiber.App) {
 	app.Get("/api/role/:id/permissions", controllers.ShowPermissions)
 	app.Get("/api/role/permissions", controllers.ShowAllPermissions)
 	app.Delete("/api/role/delete/:id", controllers.DeleteRole)
+
+	//Validation
+	app.Get("/api/validation/show", controllers.ShowAllValidation)
+	app.Delete("/api/validation/delete/:id", controllers.DeleteValidation)
+	app.Put("/api/validation/update/:id", controllers.UpdateValidation)
+	app.Post("api/validation/create", controllers.CreateValidation)
+
+	//Master Code
+	app.Get("/api/master-codes/show", controllers.ShowMasterCode)
+	app.Get("/api/master-codes/show/by-name/:code_group", controllers.ShowDetailMasterCode)
+	app.Get("/api/master-codes/show/by-id/:code_group_id", controllers.ShowDetailMasterCode)
+	app.Post("/api/master-codes/create", controllers.CreateMasterCode)
+	app.Put("/api/master-codes/edit/:id", controllers.UpdateMasterCode)
+	app.Put("/api/master-codes/delete/:id", controllers.DeleteMasterCode)
+	app.Get("/api/master-code-group/show", controllers.ShowMasterCodeGroup)
+	app.Post("/api/master-code-group/create", controllers.CreateMasterCodeGroup)
+	app.Put("/api/master-code-group/edit/:id", controllers.UpdateMasterCodeGroup)
+	app.Put("/api/master-code-group/delete/:id", controllers.DeleteMasterCodeGroup)
+
 }
