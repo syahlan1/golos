@@ -32,6 +32,8 @@ func Setup(app *fiber.App) {
 	app.Get("/api/business/showkodebursa", controllers.ShowKodeBursa)
 	app.Get("/api/business/showbusinesstype", controllers.ShowBusinessType)
 
+	app.Get("/api/show-business-applicant", controllers.ShowBusinessApplicant)
+
 	//applicant
 	app.Post("/api/applicant/create", controllers.Authorize("create"), controllers.ApplicantCreate)
 	app.Get("/api/applicant/show", controllers.ApplicantShow)
@@ -75,8 +77,9 @@ func Setup(app *fiber.App) {
 	app.Delete("/api/role/delete/:id", controllers.DeleteRole)
 
 	//Validation
-	app.Get("/api/validation/show", controllers.ShowAllValidation)
-	app.Delete("/api/validation/delete/:id", controllers.DeleteValidation)
+	app.Get("/api/validation/show", controllers.ShowAllValidations)
+	app.Get("/api/validation/show/:group_id", controllers.ShowDetailValidation)
+	app.Put("/api/validation/delete/:id", controllers.DeleteValidation)
 	app.Put("/api/validation/update/:id", controllers.UpdateValidation)
 	app.Post("api/validation/create", controllers.CreateValidation)
 

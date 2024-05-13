@@ -12,6 +12,18 @@ import (
 	"github.com/syahlan1/golos/models"
 )
 
+func ShowBusinessApplicant(c *fiber.Ctx) error {
+	var business []models.Business
+	var applicant []models.Applicant
+	connection.DB.Find(&business)
+	connection.DB.Find(&applicant)
+
+	return c.JSON(fiber.Map{
+		"business":  business,
+		"applicant": applicant,
+	})
+}
+
 func BusinessShow(c *fiber.Ctx) error {
 	var businesses []models.Business
 
