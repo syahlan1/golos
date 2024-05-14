@@ -23,7 +23,7 @@ func Setup(app *fiber.App) {
 	app.Post("/api/business/create", controllers.Authorize("create"), controllers.BusinessCreate)
 	app.Get("/api/business/show", controllers.BusinessShow)
 	app.Put("/api/business/update/:id", controllers.Authorize("update"), controllers.BusinessUpdate)
-	app.Delete("/api/business/delete/:id", controllers.Authorize("delete"), controllers.BusinessDelete)
+	app.Put("/api/business/delete/:id", controllers.Authorize("delete"), controllers.BusinessDelete)
 	app.Get("/api/business/show/:id", controllers.BusinessShowDetail)
 	app.Get("/api/business/showcompanyfirstname", controllers.ShowCompanyFirstName)
 	app.Get("/api/business/showcompanytype", controllers.ShowCompanyType)
@@ -39,7 +39,7 @@ func Setup(app *fiber.App) {
 	app.Get("/api/applicant/show", controllers.ApplicantShow)
 	app.Get("/api/applicant/show/:id", controllers.ApplicantShowDetail)
 	app.Put("/api/applicant/update/:id", controllers.Authorize("update"), controllers.ApplicantUpdate)
-	app.Delete("/api/applicant/delete/:id", controllers.Authorize("delete"), controllers.ApplicantDelete)
+	app.Put("/api/applicant/delete/:id", controllers.Authorize("delete"), controllers.ApplicantDelete)
 	app.Get("/api/applicant/show-homestatus", controllers.ShowHomeStatus)
 	app.Get("/api/applicant/show-applicant-addresstype", controllers.ShowApplicantAddressType)
 	app.Get("/api/applicant/show-education", controllers.ShowEducation)
@@ -95,4 +95,21 @@ func Setup(app *fiber.App) {
 	app.Put("/api/master-code-group/edit/:id", controllers.UpdateMasterCodeGroup)
 	app.Put("/api/master-code-group/delete/:id", controllers.DeleteMasterCodeGroup)
 
+	//Master Table
+	app.Get("/api/master-table/show", controllers.ShowMasterTable)
+	app.Get("/api/master-table/show/:id", controllers.ShowMasterTableDetail)
+	app.Post("/api/master-table/create", controllers.CreateMasterTable)
+	app.Put("/api/master-table/delete/:id", controllers.DeleteMasterTable)
+	app.Put("/api/master-table/update/:id", controllers.UpdateMasterTable)
+
+	//Master Column
+	app.Get("/api/master-column/show", controllers.ShowMasterColumn)
+	app.Get("/api/master-column/show/:id", controllers.ShowMasterColumnDetail)
+	app.Get("/api/master-column/by-table/:id", controllers.ShowMasterColumnByTable)
+	app.Post("/api/master-column/create/:id", controllers.CreateMasterColumn)
+	app.Put("/api/master-column/delete/:id", controllers.DeleteMasterColumn)
+	app.Put("/api/master-column/:id", controllers.UpdateColumnTable)
+
+	//generate table
+	app.Post("/api/master-table/generate/:id", controllers.GenerateTable)
 }

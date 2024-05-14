@@ -15,7 +15,7 @@ import (
 func ApplicantShow(c *fiber.Ctx) error {
 	var applicant []models.Applicant
 
-	connection.DB.Find(&applicant)
+	connection.DB.Where("status = ?", "L").Find(&applicant)
 
 	return c.JSON(applicant)
 }
@@ -37,60 +37,74 @@ func ApplicantCreate(c *fiber.Ctx) error {
 
 	// Buat objek bisnis dengan nilai-nilai yang diberikan
 	applicant := models.Applicant{
-		TitleBeforeName:     data["title_before_name"].(string),
-		CustomerName:        data["customer_name"].(string),
-		TitleAfterName:      data["title_after_name"].(string),
-		NickName:            data["nickname"].(string),
-		HomeAddress:         data["home_address"].(string),
-		District:            data["district"].(string),
-		City:                data["city"].(string),
-		ZipCode:             data["zip_code"].(string),
-		HomeStatus:          data["home_status"].(string),
-		StaySince:           data["stay_since"].(string),
-		NoTelp:              data["no_telp"].(string),
-		NoFax:               data["no_fax"].(string),
-		BirthPlace:          data["birth_place"].(string),
-		BirthDate:           data["birth_date"].(string),
-		MaritalStatus:       data["marital_status"].(string),
-		Gender:              data["gender"].(string),
-		Nationality:         data["nationality"].(string),
-		NumberOfChildren:    int(data["number_of_children"].(float64)),
-		NoKartuKeluarga:     data["no_kartu_keluarga"].(string),
-		SpouseName:          data["spouse_name"].(string),
-		SpouseIdCard:        data["spouse_id_card"].(string),
-		SpouseAddress:       data["spouse_address"].(string),
-		GroupNasabah:        data["group_nasabah"].(string),
-		SektorEkonomi1:      data["sektor_ekonomi_1"].(string),
-		SektorEkonomi2:      data["sektor_ekonomi_2"].(string),
-		SektorEkonomi3:      data["sektor_ekonomi_3"].(string),
-		SektorEkonomiOjk:    data["sektor_ekonomi_ojk"].(string),
-		NetIncome:           int(data["net_income"].(float64)),
-		LokasiPabrik:        data["lokasi_pabrik"].(string),
-		KeyPerson:           data["key_person"].(string),
-		LokasiDati2:         data["lokasi_dati_2"].(string),
-		HubunganNasabahBank: data["hubungan_nasabah_bank"].(string),
-		HubunganKeluarga:    data["hubungan_keluarga"].(string),
-		IdCardIssuedDate:    data["id_card_issued_date"].(string),
-		IdCard:              data["id_card"].(string),
-		IdCardExpireDate:    data["id_card_expire_date"].(string),
-		IdCardAddress:       data["id_card_address"].(string),
-		IdCardDistrict:      data["id_card_district"].(string),
-		IdCardCity:          data["id_card_city"].(string),
-		IdCardZipCode:       data["id_card_zip_code"].(string),
-		AddressType:         data["address_type"].(string),
-		Education:           data["education"].(string),
-		JobPosition:         data["job_position"].(string),
-		BusinessSector:      data["business_sector"].(string),
-		EstablishDate:       data["establish_date"].(string),
-		NPWP:                data["npwp"].(string),
-		GrossIncomePerMonth: int(data["gross_income_per_month"].(float64)),
-		NumberOfEmployees:   int(data["number_of_employees"].(float64)),
-		MotherName:          data["mother_name"].(string),
-		NamaPelaporan:       data["nama_pelaporan"].(string),
-		NegaraDomisili:      data["negara_domisili"].(string),
-		NamaInstansi:        data["nama_instansi"].(string),
-		KodeInstansi:        data["kode_instansi"].(string),
-		NoPegawai:           data["no_pegawai"].(string),
+		TitleBeforeName:       data["title_before_name"].(string),
+		CustomerName:          data["customer_name"].(string),
+		TitleAfterName:        data["title_after_name"].(string),
+		NickName:              data["nickname"].(string),
+		HomeAddress:           data["home_address"].(string),
+		District:              data["district"].(string),
+		City:                  data["city"].(string),
+		ZipCode:               data["zip_code"].(string),
+		HomeStatus:            data["home_status"].(string),
+		StaySince:             data["stay_since"].(string),
+		NoTelp:                data["no_telp"].(string),
+		NoFax:                 data["no_fax"].(string),
+		BirthPlace:            data["birth_place"].(string),
+		BirthDate:             data["birth_date"].(string),
+		MaritalStatus:         data["marital_status"].(string),
+		Gender:                data["gender"].(string),
+		Nationality:           data["nationality"].(string),
+		NumberOfChildren:      int(data["number_of_children"].(float64)),
+		NoKartuKeluarga:       data["no_kartu_keluarga"].(string),
+		SpouseName:            data["spouse_name"].(string),
+		SpouseIdCard:          data["spouse_id_card"].(string),
+		SpouseAddress:         data["spouse_address"].(string),
+		GroupNasabah:          data["group_nasabah"].(string),
+		SektorEkonomi1:        data["sektor_ekonomi_1"].(string),
+		SektorEkonomi2:        data["sektor_ekonomi_2"].(string),
+		SektorEkonomi3:        data["sektor_ekonomi_3"].(string),
+		SektorEkonomiOjk:      data["sektor_ekonomi_ojk"].(string),
+		NetIncome:             int(data["net_income"].(float64)),
+		LokasiPabrik:          data["lokasi_pabrik"].(string),
+		KeyPerson:             data["key_person"].(string),
+		LokasiDati2:           data["lokasi_dati_2"].(string),
+		HubunganNasabahBank:   data["hubungan_nasabah_bank"].(string),
+		HubunganKeluarga:      data["hubungan_keluarga"].(string),
+		IdCardIssuedDate:      data["id_card_issued_date"].(string),
+		IdCard:                data["id_card"].(string),
+		IdCardExpireDate:      data["id_card_expire_date"].(string),
+		IdCardAddress:         data["id_card_address"].(string),
+		IdCardDistrict:        data["id_card_district"].(string),
+		IdCardCity:            data["id_card_city"].(string),
+		IdCardZipCode:         data["id_card_zip_code"].(string),
+		AddressType:           data["address_type"].(string),
+		Education:             data["education"].(string),
+		JobPosition:           data["job_position"].(string),
+		BusinessSector:        data["business_sector"].(string),
+		EstablishDate:         data["establish_date"].(string),
+		NPWP:                  data["npwp"].(string),
+		GrossIncomePerMonth:   int(data["gross_income_per_month"].(float64)),
+		NumberOfEmployees:     int(data["number_of_employees"].(float64)),
+		MotherName:            data["mother_name"].(string),
+		NamaPelaporan:         data["nama_pelaporan"].(string),
+		NegaraDomisili:        data["negara_domisili"].(string),
+		NamaInstansi:          data["nama_instansi"].(string),
+		KodeInstansi:          data["kode_instansi"].(string),
+		NoPegawai:             data["no_pegawai"].(string),
+		BankName:              data["bank_name"].(string),
+		KCP:                   data["kcp"].(string),
+		SubProgram:            data["sub_program"].(string),
+		Analisis:              data["analisis"].(string),
+		CabangPencairan:       data["cabang_pencairan"].(string),
+		CabangAdmin:           data["cabang_admin"].(string),
+		TglAplikasi:           data["tgl_aplikasi"].(string),
+		TglPenerusan:          data["tgl_penelusuran"].(string),
+		Segmen:                data["segmen"].(string),
+		NoAplikasi:            int(data["no_aplikasi"].(float64)),
+		MarketInterestRate:    int(data["market_interest_rate"].(float64)),
+		RequestedInterestRate: int(data["requested_interest_rate"].(float64)),
+		DocumentFile:          data["document_file"].(string),
+		Status:                "L",
 	}
 
 	// Buat data bisnis ke database
@@ -223,6 +237,20 @@ func ApplicantUpdate(c *fiber.Ctx) error {
 	applicant.NamaInstansi = updatedApplicant.NamaInstansi
 	applicant.KodeInstansi = updatedApplicant.KodeInstansi
 	applicant.NoPegawai = updatedApplicant.NoPegawai
+	applicant.BankName = updatedApplicant.BankName
+	applicant.KCP = updatedApplicant.KCP
+	applicant.SubProgram = updatedApplicant.SubProgram
+	applicant.Analisis = updatedApplicant.Analisis
+	applicant.CabangPencairan = updatedApplicant.CabangPencairan
+	applicant.CabangAdmin = updatedApplicant.CabangAdmin
+	applicant.TglAplikasi = updatedApplicant.TglAplikasi
+	applicant.TglPenerusan = updatedApplicant.TglPenerusan
+	applicant.Segmen = updatedApplicant.Segmen
+	applicant.NoAplikasi = updatedApplicant.NoAplikasi
+	applicant.MarketInterestRate = updatedApplicant.MarketInterestRate
+	applicant.RequestedInterestRate = updatedApplicant.RequestedInterestRate
+	applicant.DocumentFile = updatedApplicant.DocumentFile
+	applicant.Status = updatedApplicant.Status
 
 	if err := connection.DB.Save(&applicant).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -240,15 +268,23 @@ func ApplicantDelete(c *fiber.Ctx) error {
 	applicantID := c.Params("id")
 
 	var applicant models.Applicant
-
-	if err := connection.DB.Delete(&applicant, applicantID).Error; err != nil {
+	if err := connection.DB.First(&applicant, applicantID).Error; err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "Data Not Found",
+			"status": "User Not Found",
+		})
+	}
+
+	applicant.Status = "D"
+
+	if err := connection.DB.Save(&applicant).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status": "Failed to delete",
 		})
 	}
 
 	return c.JSON(fiber.Map{
-		"message": "item deleted",
+		"data":   applicant,
+		"status": "Updated!",
 	})
 }
 

@@ -51,36 +51,49 @@ func BusinessCreate(c *fiber.Ctx) error {
 
 	// Buat objek bisnis dengan nilai-nilai yang diberikan
 	business := models.Business{
-		Cif:                  data["cif"].(string),
-		CompanyFirstName:     data["company_first_name"].(string),
-		CompanyName:          data["company_name"].(string),
-		CompanyType:          data["company_type"].(string),
-		EstablishDate:        data["establishment_date"].(string),
-		EstablishPlace:       data["establish_place"].(string),
-		CompanyAddress:       data["company_address"].(string),
-		District:             data["district"].(string),
-		City:                 data["city"].(string),
-		ZipCode:              data["zip_code"].(string),
-		AddressType:          data["address_type"].(string),
-		EternalRatingCompany: data["eternal_rating_company"].(string),
-		RatingClass:          data["rating_class"].(string),
-		RatingDate:           data["rating_date"].(string),
-		ListingBursaCode:     data["listing_bursa_code"].(string),
-		ListingBursaDate:     data["listing_bursa_date"].(string),
-		BusinessType:         data["business_type"].(string),
-		AktaPendirian:        data["akta_pendirian"].(string),
-		TglTerbit:            data["tgl_terbit"].(string),
-		AktaLastChange:       data["akta_last_change"].(string),
-		LastChangeDate:       data["last_change_date"].(string),
-		NotarisName:          data["notaris_name"].(string),
-		JumlahKaryawan:       int(data["jumlah_karyawan"].(float64)),
-		NoTelp:               data["no_telp"].(string),
-		NoFax:                data["no_fax"].(string),
-		NPWP:                 data["npwp"].(string),
-		TDP:                  data["tdp"].(string),
-		TglPenerbitan:        data["tgl_penerbitan"].(string),
-		TglJatuhTempo:        data["tgl_jatuh_tempo"].(string),
-		ContactPerson:        data["contact_person"].(string),
+		Cif:                   data["cif"].(string),
+		CompanyFirstName:      data["company_first_name"].(string),
+		CompanyName:           data["company_name"].(string),
+		CompanyType:           data["company_type"].(string),
+		EstablishDate:         data["establishment_date"].(string),
+		EstablishPlace:        data["establish_place"].(string),
+		CompanyAddress:        data["company_address"].(string),
+		District:              data["district"].(string),
+		City:                  data["city"].(string),
+		ZipCode:               data["zip_code"].(string),
+		AddressType:           data["address_type"].(string),
+		EternalRatingCompany:  data["eternal_rating_company"].(string),
+		RatingClass:           data["rating_class"].(string),
+		RatingDate:            data["rating_date"].(string),
+		ListingBursaCode:      data["listing_bursa_code"].(string),
+		ListingBursaDate:      data["listing_bursa_date"].(string),
+		BusinessType:          data["business_type"].(string),
+		AktaPendirian:         data["akta_pendirian"].(string),
+		TglTerbit:             data["tgl_terbit"].(string),
+		AktaLastChange:        data["akta_last_change"].(string),
+		LastChangeDate:        data["last_change_date"].(string),
+		NotarisName:           data["notaris_name"].(string),
+		JumlahKaryawan:        int(data["jumlah_karyawan"].(float64)),
+		NoTelp:                data["no_telp"].(string),
+		NoFax:                 data["no_fax"].(string),
+		NPWP:                  data["npwp"].(string),
+		TDP:                   data["tdp"].(string),
+		TglPenerbitan:         data["tgl_penerbitan"].(string),
+		TglJatuhTempo:         data["tgl_jatuh_tempo"].(string),
+		ContactPerson:         data["contact_person"].(string),
+		BankName:              data["bank_name"].(string),
+		KCP:                   data["kcp"].(string),
+		SubProgram:            data["sub_program"].(string),
+		Analisis:              data["analisis"].(string),
+		CabangPencairan:       data["cabang_pencairan"].(string),
+		CabangAdmin:           data["cabang_admin"].(string),
+		TglAplikasi:           data["tgl_aplikasi"].(string),
+		TglPenerusan:          data["tgl_penelusuran"].(string),
+		Segmen:                data["segmen"].(string),
+		NoAplikasi:            int(data["no_aplikasi"].(float64)),
+		MarketInterestRate:    int(data["market_interest_rate"].(float64)),
+		RequestedInterestRate: int(data["requested_interest_rate"].(float64)),
+		DocumentFile:          data["document_file"].(string),
 	}
 
 	// Buat data bisnis ke database
@@ -190,6 +203,19 @@ func BusinessUpdate(c *fiber.Ctx) error {
 	businesses.TglPenerbitan = updatedBusiness.TglPenerbitan
 	businesses.TglJatuhTempo = updatedBusiness.TglJatuhTempo
 	businesses.ContactPerson = updatedBusiness.ContactPerson
+	businesses.BankName = updatedBusiness.BankName
+	businesses.KCP = updatedBusiness.KCP
+	businesses.SubProgram = updatedBusiness.SubProgram
+	businesses.Analisis = updatedBusiness.Analisis
+	businesses.CabangPencairan = updatedBusiness.CabangPencairan
+	businesses.CabangAdmin = updatedBusiness.CabangAdmin
+	businesses.TglAplikasi = updatedBusiness.TglAplikasi
+	businesses.TglPenerusan = updatedBusiness.TglPenerusan
+	businesses.Segmen = updatedBusiness.Segmen
+	businesses.NoAplikasi = updatedBusiness.NoAplikasi
+	businesses.MarketInterestRate = updatedBusiness.MarketInterestRate
+	businesses.RequestedInterestRate = updatedBusiness.RequestedInterestRate
+	businesses.DocumentFile = updatedBusiness.DocumentFile
 
 	if err := connection.DB.Save(&businesses).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -207,15 +233,23 @@ func BusinessDelete(c *fiber.Ctx) error {
 	businessID := c.Params("id")
 
 	var businesses models.Business
-
-	if err := connection.DB.Delete(&businesses, businessID).Error; err != nil {
+	if err := connection.DB.First(&businesses, businessID).Error; err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "Data Not Found",
+			"status": "User Not Found",
+		})
+	}
+
+	businesses.Status = "D"
+
+	if err := connection.DB.Save(&businesses).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status": "Failed to delete",
 		})
 	}
 
 	return c.JSON(fiber.Map{
-		"message": "item deleted",
+		"data":   businesses,
+		"status": "Deleted!",
 	})
 }
 
