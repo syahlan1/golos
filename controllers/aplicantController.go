@@ -13,19 +13,120 @@ import (
 )
 
 func ApplicantShow(c *fiber.Ctx) error {
-	var applicant []models.Applicant
+	var applicants []models.Applicant
 
-	connection.DB.Where("status = ?", "L").Find(&applicant)
+	// Find all applicants with status "L"
+	if err := connection.DB.Where("status = ?", "L").Find(&applicants).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status": "Error fetching applicants",
+		})
+	}
 
-	return c.JSON(applicant)
+	// Struct to hold detailed applicant information
+	type ApplicantDetail struct {
+		models.Applicant
+		SpouseData         models.SpouseData         `json:"spouse"`
+		IdCard             models.IdCard             `json:"id_card"`
+		Document           models.Document           `json:"document"`
+		GeneralInformation models.GeneralInformation `json:"general_information"`
+	}
+
+	var detailedApplicants []ApplicantDetail
+
+	// Load related data for each applicant
+	for _, applicant := range applicants {
+		applicantDetail := ApplicantDetail{
+			Applicant: applicant,
+		}
+
+		// Load related IdCard
+		if applicant.IdCard != 0 {
+			connection.DB.First(&applicantDetail.IdCard, "id = ?", applicant.IdCard)
+		}
+
+		// Load related Document
+		if applicant.DocumentId != 0 {
+			connection.DB.First(&applicantDetail.Document, "id = ?", applicant.DocumentId)
+		}
+
+		// Load related Spouse
+		if applicant.SpouseId != 0 {
+			connection.DB.First(&applicantDetail.SpouseData, "id = ?", applicant.SpouseId)
+		}
+
+		// Load related GeneralInformation
+		if applicant.GeneralInformationId != 0 {
+			connection.DB.First(&applicantDetail.GeneralInformation, "id = ?", applicant.GeneralInformationId)
+		}
+
+		detailedApplicants = append(detailedApplicants, applicantDetail)
+	}
+
+	return c.JSON(detailedApplicants)
 }
 
 func ApplicantShowDetail(c *fiber.Ctx) error {
+	applicantID := c.Params("id")
+
+	// Buat struct untuk menampung data yang akan ditampilkan
+	type ApplicantDetail struct {
+		models.Applicant
+		SpouseData         models.SpouseData         `json:"spouse"`
+		IdCard             models.IdCard             `json:"id_card"`
+		Document           models.Document           `json:"document"`
+		GeneralInformation models.GeneralInformation `json:"general_information"`
+	}
+
 	var applicant models.Applicant
+	// Find the applicant
+	if err := connection.DB.First(&applicant, "id = ? AND status = ?", applicantID, "L").Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"status": "Applicant Not Found",
+		})
+	}
 
-	connection.DB.Find(&applicant, c.Params("id"))
+	// Initialize the detail struct with applicant data
+	applicantDetail := ApplicantDetail{
+		Applicant: applicant,
+	}
 
-	return c.JSON(applicant)
+	// Load related IdCard
+	if applicant.IdCard != 0 {
+		if err := connection.DB.First(&applicantDetail.IdCard, "id = ?", applicant.IdCard).Error; err != nil {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"status": "IdCard Not Found",
+			})
+		}
+	}
+
+	// Load related Document
+	if applicant.DocumentId != 0 {
+		if err := connection.DB.First(&applicantDetail.Document, "id = ?", applicant.DocumentId).Error; err != nil {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"status": "Document Not Found",
+			})
+		}
+	}
+
+	// Load related Spouse
+	if applicant.SpouseId != 0 {
+		if err := connection.DB.First(&applicantDetail.SpouseData, "id = ?", applicant.SpouseId).Error; err != nil {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"status": "Spouse Not Found",
+			})
+		}
+	}
+
+	// Load related GeneralInformation
+	if applicant.GeneralInformationId != 0 {
+		if err := connection.DB.First(&applicantDetail.GeneralInformation, "id = ?", applicant.GeneralInformationId).Error; err != nil {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"status": "General Information Not Found",
+			})
+		}
+	}
+
+	return c.JSON(applicantDetail)
 }
 
 func ApplicantCreate(c *fiber.Ctx) error {
@@ -36,61 +137,45 @@ func ApplicantCreate(c *fiber.Ctx) error {
 	}
 
 	// Buat objek bisnis dengan nilai-nilai yang diberikan
-	applicant := models.Applicant{
-		TitleBeforeName:       getStringValue(data, "title_before_name"),
-		CustomerName:          getStringValue(data, "customer_name"),
-		TitleAfterName:        getStringValue(data, "title_after_name"),
-		NickName:              getStringValue(data, "nickname"),
-		HomeAddress:           getStringValue(data, "home_address"),
-		District:              getStringValue(data, "district"),
-		City:                  getStringValue(data, "city"),
-		ZipCode:               getStringValue(data, "zip_code"),
-		HomeStatus:            getStringValue(data, "home_status"),
-		StaySince:             getStringValue(data, "stay_since"),
-		NoTelp:                getStringValue(data, "no_telp"),
-		NoFax:                 getStringValue(data, "no_fax"),
-		BirthPlace:            getStringValue(data, "birth_place"),
-		BirthDate:             getStringValue(data, "birth_date"),
-		MaritalStatus:         getStringValue(data, "marital_status"),
-		Gender:                getStringValue(data, "gender"),
-		Nationality:           getStringValue(data, "nationality"),
-		NumberOfChildren:      getIntValue(data, "number_of_children"),
-		NoKartuKeluarga:       getStringValue(data, "no_kartu_keluarga"),
-		SpouseName:            getStringValue(data, "spouse_name"),
-		SpouseIdCard:          getStringValue(data, "spouse_id_card"),
-		SpouseAddress:         getStringValue(data, "spouse_address"),
-		GroupNasabah:          getStringValue(data, "group_nasabah"),
-		SektorEkonomi1:        getStringValue(data, "sektor_ekonomi_1"),
-		SektorEkonomi2:        getStringValue(data, "sektor_ekonomi_2"),
-		SektorEkonomi3:        getStringValue(data, "sektor_ekonomi_3"),
-		SektorEkonomiOjk:      getStringValue(data, "sektor_ekonomi_ojk"),
-		NetIncome:             getIntValue(data, "net_income"),
-		LokasiPabrik:          getStringValue(data, "lokasi_pabrik"),
-		KeyPerson:             getStringValue(data, "key_person"),
-		LokasiDati2:           getStringValue(data, "lokasi_dati_2"),
-		HubunganNasabahBank:   getStringValue(data, "hubungan_nasabah_bank"),
-		HubunganKeluarga:      getStringValue(data, "hubungan_keluarga"),
-		IdCardIssuedDate:      getStringValue(data, "id_card_issued_date"),
-		IdCard:                getStringValue(data, "id_card"),
-		IdCardExpireDate:      getStringValue(data, "id_card_expire_date"),
-		IdCardAddress:         getStringValue(data, "id_card_address"),
-		IdCardDistrict:        getStringValue(data, "id_card_district"),
-		IdCardCity:            getStringValue(data, "id_card_city"),
-		IdCardZipCode:         getStringValue(data, "id_card_zip_code"),
-		AddressType:           getStringValue(data, "address_type"),
-		Education:             getStringValue(data, "education"),
-		JobPosition:           getStringValue(data, "job_position"),
-		BusinessSector:        getStringValue(data, "business_sector"),
-		EstablishDate:         getStringValue(data, "establish_date"),
-		NPWP:                  getStringValue(data, "npwp"),
-		GrossIncomePerMonth:   getIntValue(data, "gross_income_per_month"),
-		NumberOfEmployees:     getIntValue(data, "number_of_employees"),
-		MotherName:            getStringValue(data, "mother_name"),
-		NamaPelaporan:         getStringValue(data, "nama_pelaporan"),
-		NegaraDomisili:        getStringValue(data, "negara_domisili"),
-		NamaInstansi:          getStringValue(data, "nama_instansi"),
-		KodeInstansi:          getStringValue(data, "kode_instansi"),
-		NoPegawai:             getStringValue(data, "no_pegawai"),
+
+	spouse := models.SpouseData{
+		SpouseName:          getStringValue(data, "spouse_name"),
+		SpouseIdCard:        getStringValue(data, "spouse_id_card"),
+		SpouseAddress:       getStringValue(data, "spouse_address"),
+		GroupNasabah:        getStringValue(data, "group_nasabah"),
+		SektorEkonomi1:      getStringValue(data, "sektor_ekonomi_1"),
+		SektorEkonomi2:      getStringValue(data, "sektor_ekonomi_2"),
+		SektorEkonomi3:      getStringValue(data, "sektor_ekonomi_3"),
+		SektorEkonomiOjk:    getStringValue(data, "sektor_ekonomi_ojk"),
+		NetIncome:           getIntValue(data, "net_income"),
+		LokasiPabrik:        getStringValue(data, "lokasi_pabrik"),
+		KeyPerson:           getStringValue(data, "key_person"),
+		LokasiDati2:         getStringValue(data, "lokasi_dati_2"),
+		HubunganNasabahBank: getStringValue(data, "hubungan_nasabah_bank"),
+		HubunganKeluarga:    getStringValue(data, "hubungan_keluarga"),
+	}
+
+	idCard := models.IdCard{
+		IdCardIssuedDate: getStringValue(data, "id_card_issued_date"),
+		IdCard:           getStringValue(data, "id_card"),
+		IdCardExpireDate: getStringValue(data, "id_card_expire_date"),
+		IdCardAddress:    getStringValue(data, "id_card_address"),
+		IdCardDistrict:   getStringValue(data, "id_card_district"),
+		IdCardCity:       getStringValue(data, "id_card_city"),
+		IdCardZipCode:    getStringValue(data, "id_card_zip_code"),
+		AddressType:      getStringValue(data, "address_type"),
+	}
+
+	document := models.Document{
+		DocumentFile:      getStringValue(data, "document_file"),
+		DocumentPath:      getStringValue(data, "document_path"),
+		Status:            getStringValue(data, "status"),
+		NoCreditSalesForm: getStringValue(data, "no_credit_sales_form"),
+		DateOfLetter:      getStringValue(data, "date_of_letter"),
+		DateOfReceipt:     getStringValue(data, "date_of_receipt"),
+	}
+
+	generalIformation := models.GeneralInformation{
 		BankName:              getStringValue(data, "bank_name"),
 		KCP:                   getStringValue(data, "kcp"),
 		SubProgram:            getStringValue(data, "sub_program"),
@@ -98,16 +183,68 @@ func ApplicantCreate(c *fiber.Ctx) error {
 		CabangPencairan:       getStringValue(data, "cabang_pencairan"),
 		CabangAdmin:           getStringValue(data, "cabang_admin"),
 		TglAplikasi:           getStringValue(data, "tgl_aplikasi"),
-		TglPenerusan:          getStringValue(data, "tgl_penelusuran"),
+		TglPenerusan:          getStringValue(data, "tgl_penerusan"),
 		Segmen:                getStringValue(data, "segmen"),
 		NoAplikasi:            getIntValue(data, "no_aplikasi"),
-		MarketInterestRate:    getIntValue(data, "market_interest_rate"),
+		MarketInterestRate:    getIntValue(data, "masket_interest_rate"),
 		RequestedInterestRate: getIntValue(data, "requested_interest_rate"),
-		DocumentFile:          getStringValue(data, "document_file"),
 		Status:                "L",
 	}
 
-	// Buat data bisnis ke database
+	if err := connection.DB.Create(&spouse).Error; err != nil {
+		return err
+	}
+	if err := connection.DB.Create(&idCard).Error; err != nil {
+		return err
+	}
+	if err := connection.DB.Create(&generalIformation).Error; err != nil {
+		return err
+	}
+	if err := connection.DB.Create(&document).Error; err != nil {
+		return err
+	}
+
+	applicant := models.Applicant{
+		TitleBeforeName:      getStringValue(data, "title_before_name"),
+		CustomerName:         getStringValue(data, "customer_name"),
+		TitleAfterName:       getStringValue(data, "title_after_name"),
+		NickName:             getStringValue(data, "nickname"),
+		HomeAddress:          getStringValue(data, "home_address"),
+		District:             getStringValue(data, "district"),
+		City:                 getStringValue(data, "city"),
+		ZipCode:              getStringValue(data, "zip_code"),
+		HomeStatus:           getStringValue(data, "home_status"),
+		StaySince:            getStringValue(data, "stay_since"),
+		NoTelp:               getStringValue(data, "no_telp"),
+		NoFax:                getStringValue(data, "no_fax"),
+		BirthPlace:           getStringValue(data, "birth_place"),
+		BirthDate:            getStringValue(data, "birth_date"),
+		MaritalStatus:        getStringValue(data, "marital_status"),
+		Gender:               getStringValue(data, "gender"),
+		Nationality:          getStringValue(data, "nationality"),
+		NumberOfChildren:     getIntValue(data, "number_of_children"),
+		NoKartuKeluarga:      getStringValue(data, "no_kartu_keluarga"),
+		Education:            getStringValue(data, "education"),
+		JobPosition:          getStringValue(data, "job_position"),
+		BusinessSector:       getStringValue(data, "business_sector"),
+		EstablishDate:        getStringValue(data, "establish_date"),
+		NPWP:                 getStringValue(data, "npwp"),
+		GrossIncomePerMonth:  getIntValue(data, "gross_income_per_month"),
+		NumberOfEmployees:    getIntValue(data, "number_of_employees"),
+		MotherName:           getStringValue(data, "mother_name"),
+		NamaPelaporan:        getStringValue(data, "nama_pelaporan"),
+		NegaraDomisili:       getStringValue(data, "negara_domisili"),
+		NamaInstansi:         getStringValue(data, "nama_instansi"),
+		KodeInstansi:         getStringValue(data, "kode_instansi"),
+		NoPegawai:            getStringValue(data, "no_pegawai"),
+		IdCard:               idCard.Id,
+		DocumentId:           document.Id,
+		SpouseId:             spouse.Id,
+		GeneralInformationId: generalIformation.Id,
+		Status:               "L",
+	}
+
+	// Buat data appplicant ke database
 	if err := connection.DB.Create(&applicant).Error; err != nil {
 		return err
 	}
@@ -125,7 +262,7 @@ func ApplicantCreate(c *fiber.Ctx) error {
 	approval := models.Approval{
 		Id:                id.String(),
 		DisplayData:       "Data " + applicant.CustomerName,
-		Data:              ApplicantToJson(applicant),
+		Data:              ApplicantToJson(applicant, spouse, idCard, document, generalIformation),
 		ApprovalSettingID: 1,
 		CurrentProcess:    7,
 		ApprovalStatus:    "draft",
@@ -147,7 +284,7 @@ func ApplicantCreate(c *fiber.Ctx) error {
 		UserID:         approval.CreatedBy,
 		Status:         approval.ApprovalStatus,
 		CurrentProcess: approval.CurrentProcess,
-		Data:           ApplicantToJson(applicant),
+		Data:           ApplicantToJson(applicant, spouse, idCard, document, generalIformation),
 	}
 	if err := connection.DB.Create(&history).Error; err != nil {
 		return err
@@ -158,8 +295,16 @@ func ApplicantCreate(c *fiber.Ctx) error {
 	})
 }
 
-func ApplicantToJson(applicant models.Applicant) string {
-	jsonData, err := json.Marshal(applicant)
+func ApplicantToJson(applicant models.Applicant, spouse models.SpouseData, idCard models.IdCard, document models.Document, generalInformation models.GeneralInformation) string {
+	data := map[string]interface{}{
+		"applicant":          applicant,
+		"spouse":             spouse,
+		"idCard":             idCard,
+		"document":           document,
+		"generalInformation": generalInformation,
+	}
+
+	jsonData, err := json.Marshal(data)
 	if err != nil {
 		log.Println("Error converting business data to JSON:", err)
 		return "{}"
@@ -173,16 +318,81 @@ func ApplicantUpdate(c *fiber.Ctx) error {
 	var applicant models.Applicant
 	if err := connection.DB.First(&applicant, applicantID).Error; err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "User Not Found",
+			"status": "Applicant Not Found",
 		})
 	}
 
 	var updatedApplicant models.Applicant
 	if err := c.BodyParser(&updatedApplicant); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": "Invalid User Data",
+			"status": "Invalid applicant Data",
 		})
 	}
+
+	idCardId := applicant.IdCard
+
+	var idCard models.IdCard
+	if err := connection.DB.First(&idCard, idCardId).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"status": "ID Card Not Found",
+		})
+	}
+
+	var updatedIdCard models.IdCard
+	if err := c.BodyParser(&updatedIdCard); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status": "Invalid id card Data",
+		})
+	}
+
+	spouseId := applicant.SpouseId
+
+	var spouse models.SpouseData
+	if err := connection.DB.First(&spouse, spouseId).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"status": "Spouse Not Found",
+		})
+	}
+
+	var updatedSpouse models.SpouseData
+	if err := c.BodyParser(&updatedSpouse); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status": "Invalid Spouse Data",
+		})
+	}
+
+	documentId := applicant.DocumentId
+
+	var document models.Document
+	if err := connection.DB.First(&document, documentId).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"status": "Document Not Found",
+		})
+	}
+
+	var updatedDocument models.Document
+	if err := c.BodyParser(&updatedDocument); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status": "Invalid Spouse Data",
+		})
+	}
+
+	generalInformationId := applicant.GeneralInformationId
+
+	var generalInformation models.GeneralInformation
+	if err := connection.DB.First(&generalInformation, generalInformationId).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"status": "General Information Not Found",
+		})
+	}
+
+	var updatedGeneralInformation models.GeneralInformation
+	if err := c.BodyParser(&updatedGeneralInformation); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status": "Invalid General Information",
+		})
+	}
+
 	applicant.TitleBeforeName = updatedApplicant.TitleBeforeName
 	applicant.CustomerName = updatedApplicant.CustomerName
 	applicant.TitleAfterName = updatedApplicant.TitleAfterName
@@ -202,28 +412,6 @@ func ApplicantUpdate(c *fiber.Ctx) error {
 	applicant.Nationality = updatedApplicant.Nationality
 	applicant.NumberOfChildren = updatedApplicant.NumberOfChildren
 	applicant.NoKartuKeluarga = updatedApplicant.NoKartuKeluarga
-	applicant.SpouseName = updatedApplicant.SpouseName
-	applicant.SpouseIdCard = updatedApplicant.SpouseIdCard
-	applicant.SpouseAddress = updatedApplicant.SpouseAddress
-	applicant.GroupNasabah = updatedApplicant.GroupNasabah
-	applicant.SektorEkonomi1 = updatedApplicant.SektorEkonomi1
-	applicant.SektorEkonomi2 = updatedApplicant.SektorEkonomi2
-	applicant.SektorEkonomi3 = updatedApplicant.SektorEkonomi3
-	applicant.SektorEkonomiOjk = updatedApplicant.SektorEkonomiOjk
-	applicant.NetIncome = updatedApplicant.NetIncome
-	applicant.LokasiPabrik = updatedApplicant.LokasiPabrik
-	applicant.KeyPerson = updatedApplicant.KeyPerson
-	applicant.LokasiDati2 = updatedApplicant.LokasiDati2
-	applicant.HubunganNasabahBank = updatedApplicant.HubunganNasabahBank
-	applicant.HubunganKeluarga = updatedApplicant.HubunganKeluarga
-	applicant.IdCardIssuedDate = updatedApplicant.IdCardIssuedDate
-	applicant.IdCard = updatedApplicant.IdCard
-	applicant.IdCardExpireDate = updatedApplicant.IdCardExpireDate
-	applicant.IdCardAddress = updatedApplicant.IdCardAddress
-	applicant.IdCardDistrict = updatedApplicant.IdCardDistrict
-	applicant.IdCardCity = updatedApplicant.IdCardCity
-	applicant.IdCardZipCode = updatedApplicant.IdCardZipCode
-	applicant.AddressType = updatedApplicant.AddressType
 	applicant.Education = updatedApplicant.Education
 	applicant.JobPosition = updatedApplicant.JobPosition
 	applicant.BusinessSector = updatedApplicant.BusinessSector
@@ -237,24 +425,78 @@ func ApplicantUpdate(c *fiber.Ctx) error {
 	applicant.NamaInstansi = updatedApplicant.NamaInstansi
 	applicant.KodeInstansi = updatedApplicant.KodeInstansi
 	applicant.NoPegawai = updatedApplicant.NoPegawai
-	applicant.BankName = updatedApplicant.BankName
-	applicant.KCP = updatedApplicant.KCP
-	applicant.SubProgram = updatedApplicant.SubProgram
-	applicant.Analisis = updatedApplicant.Analisis
-	applicant.CabangPencairan = updatedApplicant.CabangPencairan
-	applicant.CabangAdmin = updatedApplicant.CabangAdmin
-	applicant.TglAplikasi = updatedApplicant.TglAplikasi
-	applicant.TglPenerusan = updatedApplicant.TglPenerusan
-	applicant.Segmen = updatedApplicant.Segmen
-	applicant.NoAplikasi = updatedApplicant.NoAplikasi
-	applicant.MarketInterestRate = updatedApplicant.MarketInterestRate
-	applicant.RequestedInterestRate = updatedApplicant.RequestedInterestRate
-	applicant.DocumentFile = updatedApplicant.DocumentFile
-	applicant.Status = updatedApplicant.Status
+
+	spouse.SpouseName = updatedSpouse.SpouseName
+	spouse.SpouseIdCard = updatedSpouse.SpouseIdCard
+	spouse.SpouseAddress = updatedSpouse.SpouseAddress
+	spouse.GroupNasabah = updatedSpouse.GroupNasabah
+	spouse.SektorEkonomi1 = updatedSpouse.SektorEkonomi1
+	spouse.SektorEkonomi2 = updatedSpouse.SektorEkonomi2
+	spouse.SektorEkonomi3 = updatedSpouse.SektorEkonomi3
+	spouse.SektorEkonomiOjk = updatedSpouse.SektorEkonomiOjk
+	spouse.NetIncome = updatedSpouse.NetIncome
+	spouse.LokasiPabrik = updatedSpouse.LokasiPabrik
+	spouse.KeyPerson = updatedSpouse.KeyPerson
+	spouse.LokasiDati2 = updatedSpouse.LokasiDati2
+	spouse.HubunganNasabahBank = updatedSpouse.HubunganNasabahBank
+	spouse.HubunganKeluarga = updatedSpouse.HubunganKeluarga
+
+	idCard.IdCardIssuedDate = updatedIdCard.IdCardIssuedDate
+	idCard.IdCard = updatedIdCard.IdCard
+	idCard.IdCardExpireDate = updatedIdCard.IdCardExpireDate
+	idCard.IdCardAddress = updatedIdCard.IdCardAddress
+	idCard.IdCardDistrict = updatedIdCard.IdCardDistrict
+	idCard.IdCardCity = updatedIdCard.IdCardCity
+	idCard.IdCardZipCode = updatedIdCard.IdCardZipCode
+	idCard.AddressType = updatedIdCard.AddressType
+
+	document.DocumentFile = updatedDocument.DocumentFile
+	document.DocumentPath = updatedDocument.DocumentPath
+	document.Status = updatedDocument.Status
+	document.NoCreditSalesForm = updatedDocument.NoCreditSalesForm
+	document.DateOfLetter = updatedDocument.DateOfLetter
+	document.DateOfReceipt = updatedDocument.DateOfReceipt
+
+	generalInformation.BankName = updatedGeneralInformation.BankName
+	generalInformation.KCP = updatedGeneralInformation.KCP
+	generalInformation.SubProgram = updatedGeneralInformation.SubProgram
+	generalInformation.Analisis = updatedGeneralInformation.Analisis
+	generalInformation.CabangPencairan = updatedGeneralInformation.CabangPencairan
+	generalInformation.CabangAdmin = updatedGeneralInformation.CabangAdmin
+	generalInformation.TglAplikasi = updatedGeneralInformation.TglAplikasi
+	generalInformation.TglPenerusan = updatedGeneralInformation.TglPenerusan
+	generalInformation.Segmen = updatedGeneralInformation.Segmen
+	generalInformation.NoAplikasi = updatedGeneralInformation.NoAplikasi
+	generalInformation.MarketInterestRate = updatedGeneralInformation.MarketInterestRate
+	generalInformation.RequestedInterestRate = updatedGeneralInformation.RequestedInterestRate
 
 	if err := connection.DB.Save(&applicant).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Failed to update the user data",
+			"status": "Failed to update the applicant data",
+		})
+	}
+
+	if err := connection.DB.Save(&spouse).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status": "Failed to update the applicant data",
+		})
+	}
+
+	if err := connection.DB.Save(&document).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status": "Failed to update the applicant data",
+		})
+	}
+
+	if err := connection.DB.Save(&generalInformation).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status": "Failed to update the applicant data",
+		})
+	}
+
+	if err := connection.DB.Save(&idCard).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status": "Failed to update the applicant data",
 		})
 	}
 
