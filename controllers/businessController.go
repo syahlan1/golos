@@ -81,7 +81,7 @@ func BusinessCreate(c *fiber.Ctx) error {
 	}
 
 	companyFirstName := getStringValue(data, "company_first_name")
-	companyName := getStringValue(data, "company_type")
+	companyName := getStringValue(data, "company_name")
 
 	// Buat objek bisnis dengan nilai-nilai yang diberikan
 	business := models.Business{
