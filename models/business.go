@@ -6,6 +6,7 @@ type Business struct {
 	CompanyFirstName      string `json:"company_first_name"`
 	CompanyName           string `json:"company_name"`
 	CompanyType           string `json:"company_type"`
+	CustomerName          string `json:"customer_name"`
 	EstablishDate         string `json:"establishment_date"`
 	EstablishPlace        string `json:"establish_place"`
 	CompanyAddress        string `json:"company_address"`
@@ -47,6 +48,8 @@ type Business struct {
 	RequestedInterestRate int    `json:"requested_interest_rate"`
 	DocumentFile          string `json:"document_file"`
 	Status                string `json:"status"`
+	DocumentId            int    `json:"document_id"`
+	GeneralInformationId  int    `json:"general_information_id"`
 }
 
 type CompanyFirstName struct {

@@ -48,6 +48,40 @@ func BusinessCreate(c *fiber.Ctx) error {
 	if err := c.BodyParser(&data); err != nil {
 		return err
 	}
+	document := models.Document{
+		DocumentFile:      getStringValue(data, "document_file"),
+		DocumentPath:      getStringValue(data, "document_path"),
+		Status:            getStringValue(data, "status"),
+		NoCreditSalesForm: getStringValue(data, "no_credit_sales_form"),
+		DateOfLetter:      getStringValue(data, "date_of_letter"),
+		DateOfReceipt:     getStringValue(data, "date_of_receipt"),
+	}
+
+	generalIformation := models.GeneralInformation{
+		BankName:              getStringValue(data, "bank_name"),
+		KCP:                   getStringValue(data, "kcp"),
+		SubProgram:            getStringValue(data, "sub_program"),
+		Analisis:              getStringValue(data, "analisis"),
+		CabangPencairan:       getStringValue(data, "cabang_pencairan"),
+		CabangAdmin:           getStringValue(data, "cabang_admin"),
+		TglAplikasi:           getStringValue(data, "tgl_aplikasi"),
+		TglPenerusan:          getStringValue(data, "tgl_penerusan"),
+		Segmen:                getStringValue(data, "segmen"),
+		NoAplikasi:            getIntValue(data, "no_aplikasi"),
+		MarketInterestRate:    getIntValue(data, "masket_interest_rate"),
+		RequestedInterestRate: getIntValue(data, "requested_interest_rate"),
+		Status:                "L",
+	}
+
+	if err := connection.DB.Create(&generalIformation).Error; err != nil {
+		return err
+	}
+	if err := connection.DB.Create(&document).Error; err != nil {
+		return err
+	}
+
+	companyFirstName := getStringValue(data, "company_first_name")
+	companyName := getStringValue(data, "company_type")
 
 	// Buat objek bisnis dengan nilai-nilai yang diberikan
 	business := models.Business{
@@ -55,6 +89,7 @@ func BusinessCreate(c *fiber.Ctx) error {
 		CompanyFirstName:      getStringValue(data, "company_first_name"),
 		CompanyName:           getStringValue(data, "company_name"),
 		CompanyType:           getStringValue(data, "company_type"),
+		CustomerName:          companyFirstName + ". " + companyName,
 		EstablishDate:         getStringValue(data, "establishment_date"),
 		EstablishPlace:        getStringValue(data, "establish_place"),
 		CompanyAddress:        getStringValue(data, "company_address"),
@@ -95,6 +130,8 @@ func BusinessCreate(c *fiber.Ctx) error {
 		RequestedInterestRate: getIntValue(data, "requested_interest_rate"),
 		DocumentFile:          getStringValue(data, "document_file"),
 		Status:                "L",
+		DocumentId:            document.Id,
+		GeneralInformationId:  generalIformation.Id,
 	}
 
 	// Buat data bisnis ke database
@@ -115,7 +152,7 @@ func BusinessCreate(c *fiber.Ctx) error {
 	approval := models.Approval{
 		Id:                id.String(),
 		DisplayData:       "Data badan usaha " + business.CompanyName,
-		Data:              BusinessToJson(business),
+		Data:              BusinessToJson(business, document, generalIformation),
 		ApprovalSettingID: 1,
 		CurrentProcess:    7,
 		ApprovalStatus:    "draft",
@@ -137,7 +174,7 @@ func BusinessCreate(c *fiber.Ctx) error {
 		UserID:         approval.CreatedBy,
 		Status:         approval.ApprovalStatus,
 		CurrentProcess: approval.CurrentProcess,
-		Data:           BusinessToJson(business),
+		Data:           BusinessToJson(business, document, generalIformation),
 	}
 	if err := connection.DB.Create(&history).Error; err != nil {
 		return err
@@ -148,8 +185,14 @@ func BusinessCreate(c *fiber.Ctx) error {
 	})
 }
 
-func BusinessToJson(business models.Business) string {
-	jsonData, err := json.Marshal(business)
+func BusinessToJson(business models.Business, document models.Document, generalInformation models.GeneralInformation) string {
+	data := map[string]interface{}{
+		"business":           business,
+		"document":           document,
+		"generalInformation": generalInformation,
+	}
+
+	jsonData, err := json.Marshal(data)
 	if err != nil {
 		log.Println("Error converting business data to JSON:", err)
 		return "{}"

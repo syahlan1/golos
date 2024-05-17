@@ -34,6 +34,10 @@ func Connect() {
 	connection.AutoMigrate(&models.Users{})
 	connection.AutoMigrate(&models.Business{})
 	connection.AutoMigrate(&models.Applicant{})
+	connection.AutoMigrate(&models.IdCard{})
+	connection.AutoMigrate(&models.SpouseData{})
+	connection.AutoMigrate(&models.Document{})
+	connection.AutoMigrate(&models.GeneralInformation{})
 
 	connection.AutoMigrate(&models.CompanyFirstName{})
 	connection.AutoMigrate(&models.CompanyType{})
@@ -64,9 +68,14 @@ func Connect() {
 	connection.AutoMigrate(&models.ApprovalHistory{})
 	connection.AutoMigrate(&models.ApprovalWorkflowRole{})
 
-	connection.AutoMigrate(&models.Validation{})
+	connection.AutoMigrate(&models.MasterValidation{})
 
 	connection.AutoMigrate(&models.MasterCode{})
 	connection.AutoMigrate(&models.MasterCodeGroup{})
 
+	connection.AutoMigrate(&models.MasterTable{})
+	connection.AutoMigrate(&models.MasterColumn{})
+	connection.AutoMigrate(&models.MasterSourceColumn{})
+	connection.AutoMigrate(&models.MasterMapperColumn{})
+	connection.AutoMigrate(&models.MasterMapperTable{})
 }
