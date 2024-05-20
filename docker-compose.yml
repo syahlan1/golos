@@ -1,0 +1,16 @@
+version: '3.2'
+
+services:
+  container_golos:
+    build:
+      context: . 
+      dockerfile: Dockerfile
+    restart: on-failure
+    ports:
+      - 8000:8000
+    networks:
+      - postgres_docker_postgres
+
+networks:
+  postgres_docker_postgres:
+    external: true
