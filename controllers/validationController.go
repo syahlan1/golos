@@ -1,56 +1,222 @@
 package controllers
 
 import (
+	"log"
+	"strconv"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
 )
 
-func ShowAllValidation(c *fiber.Ctx) error {
-	db := connection.DB
-	var validations []models.Validation
-	db.Find(&validations)
+func ShowAllValidations(c *fiber.Ctx) error {
+	var validations []models.MasterValidation
+	if err := connection.DB.Where("status = ? AND is_active = ?", "L", 1).Find(&validations).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch validations"})
+	}
+	return c.JSON(validations)
+}
+
+func ShowDetailValidation(c *fiber.Ctx) error {
+	var validations models.MasterValidation
+	validationId := c.Params("id")
+
+	if err := connection.DB.Where("id = ?", validationId).Find(&validations).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch validations"})
+	}
+	return c.JSON(validations)
+}
+
+func ShowValidationByColumn(c *fiber.Ctx) error {
+	var validations []models.MasterValidation
+	columnId := c.Params("id")
+
+	if err := connection.DB.Where("status = ? AND is_active = ? AND column_id = ?", "L", 1, columnId).Find(&validations).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch validations"})
+	}
 	return c.JSON(validations)
 }
 
 func CreateValidation(c *fiber.Ctx) error {
-	db := connection.DB
+	columnIdStr := c.Params("id")
+	columnId, err := strconv.Atoi(columnIdStr)
 
-	data := new(models.Validation)
-	if err := c.BodyParser(data); err != nil {
+	if err != nil {
 		return err
 	}
 
-	if err := db.Where("name = ?", data.Name).First(&data).Error; err == nil {
-		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"message": "Validation Name already exists"})
+	var data map[string]interface{}
+
+	timeNow := time.Now()
+
+	if err := c.BodyParser(&data); err != nil {
+		return err
 	}
 
-	db.Create(&data)
-	return c.JSON("create validation success!")
+	createdBy, err := TakeUsername(c)
+	if err != nil {
+		log.Println("Error taking username:", err)
+		return err
+	}
+
+	// Get user role ID
+	cookie := c.Cookies("jwt")
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+	if err != nil {
+		log.Println("Error parsing JWT:", err)
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "status unauthorized",
+		})
+	}
+	claims := token.Claims.(*jwt.StandardClaims)
+
+	var user models.Users
+	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
+		log.Println("Error retrieving user:", err)
+		return err
+	}
+
+	newMasterValidation := models.MasterValidation{
+		CreatedBy:          createdBy,
+		CreatedDate:        timeNow,
+		Status:             "L",
+		Description:        data["description"].(string),
+		EnglishDescription: data["english_description"].(string),
+		MessageType:        data["message_type"].(string),
+		ValidationFunction: data["validation_function"].(string),
+		IsActive:           int(data["is_active"].(float64)),
+		MasterCodeId:       int(data["master_code_id"].(float64)),
+		ColumnId:           columnId,
+	}
+
+	if err := connection.DB.Create(&newMasterValidation).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create Master Validation"})
+	}
+
+	// Return success response
+	return c.JSON(fiber.Map{"message": "Master Validation Created!"})
 }
 
 func UpdateValidation(c *fiber.Ctx) error {
-	db := connection.DB
-	id := c.Params("id")
-	data := new(models.Validation)
-	if err := c.BodyParser(data); err != nil {
+	masterValidationId := c.Params("id")
+
+	updatedBy, err := TakeUsername(c)
+	if err != nil {
+		log.Println("Error taking username:", err)
 		return err
 	}
-	var validation models.Validation
-	if err := db.First(&validation, id).Error; err != nil {
+
+	// Get user role ID
+	cookie := c.Cookies("jwt")
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+	if err != nil {
+		log.Println("Error parsing JWT:", err)
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "status unauthorized",
+		})
+	}
+	claims := token.Claims.(*jwt.StandardClaims)
+
+	var user models.Users
+	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
+		log.Println("Error retrieving user:", err)
 		return err
 	}
-	db.Model(&validation).Updates(data)
-	return c.JSON(validation)
+
+	//
+
+	var masterValidation models.MasterValidation
+	if err := connection.DB.First(&masterValidation, masterValidationId).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"status": "Data Not Found",
+		})
+	}
+
+	var updatedMasterValidation models.MasterValidation
+	if err := c.BodyParser(&updatedMasterValidation); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status": "Invalid Master Validation Data",
+		})
+	}
+
+	masterValidation.UpdatedBy = updatedBy
+	masterValidation.UpdatedDate = time.Now()
+	masterValidation.Description = updatedMasterValidation.Description
+	masterValidation.EnglishDescription = updatedMasterValidation.EnglishDescription
+	masterValidation.MessageType = updatedMasterValidation.MessageType
+	masterValidation.ValidationFunction = updatedMasterValidation.ValidationFunction
+	masterValidation.IsActive = updatedMasterValidation.IsActive
+
+	if err := connection.DB.Save(&masterValidation).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status": "Failed to update Master Validation",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"status": "Updated!",
+		"data":   masterValidation,
+	})
 }
 
 func DeleteValidation(c *fiber.Ctx) error {
-	db := connection.DB
-	id := c.Params("id")
-	var validation models.Validation
-	if err := db.First(&validation, id).Error; err != nil {
+	masterValidateId := c.Params("id")
+
+	deletedBy, err := TakeUsername(c)
+	if err != nil {
+		log.Println("Error taking username:", err)
 		return err
 	}
-	db.Delete(&validation)
-	return c.JSON("Deleted!")
+
+	// Get user role ID
+	cookie := c.Cookies("jwt")
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+	if err != nil {
+		log.Println("Error parsing JWT:", err)
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "status unauthorized",
+		})
+	}
+	claims := token.Claims.(*jwt.StandardClaims)
+
+	var user models.Users
+	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
+		log.Println("Error retrieving user:", err)
+		return err
+	}
+
+	//
+
+	var masterValidate models.MasterCode
+	if err := connection.DB.First(&masterValidate, masterValidateId).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"status": "Data Not Found",
+		})
+	}
+
+	masterValidate.UpdatedBy = deletedBy
+	masterValidate.UpdatedDate = time.Now()
+	masterValidate.Status = "D"
+
+	if err := connection.DB.Save(&masterValidate).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status": "Failed to delete Master Validation",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"status": "Deleted!",
+		"data":   masterValidate,
+	})
 }
