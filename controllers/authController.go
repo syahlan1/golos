@@ -84,7 +84,16 @@ func Login(c *fiber.Ctx) error {
 		})
 	}
 
-	tokenTTL, _ := strconv.Atoi(os.Getenv("TOKEN_TTL"))
+	var param models.MasterParameter
+	connection.DB.Where("param_key = ?", "TOKEN_TTL").First(&param)
+
+	tokenTTL, err := strconv.Atoi(param.ParamValue)
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Invalid token TTL value",
+		})
+	}
 
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		Issuer:    strconv.Itoa(int(user.Id)),
