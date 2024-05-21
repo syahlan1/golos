@@ -6,6 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
+	"github.com/syahlan1/golos/utils"
 )
 
 func CreateOwnershipData(c *fiber.Ctx) error {
@@ -16,27 +17,27 @@ func CreateOwnershipData(c *fiber.Ctx) error {
 	}
 
 	ownership := models.OwnershipData{
-		Name:              getStringValue(data, "name"),
-		NoIdentity:        getStringValue(data, "no_identity"),
-		IdCardAddress:     getStringValue(data, "id_card_identity"),
-		City:              getStringValue(data, "city"),
-		ZipCode:           getStringValue(data, "zip_code"),
-		HomeOwnership:     getStringValue(data, "home_ownership"),
-		Remark:            getStringValue(data, "remark"),
-		CifManager:        getStringValue(data, "cif_manager"),
-		BirthDate:         getStringValue(data, "birth_date"),
-		LastEducation:     getStringValue(data, "last_education"),
-		NPWP:              getStringValue(data, "npwp"),
-		JobTitle:          getStringValue(data, "job_title"),
-		Experince:         getStringValue(data, "experience"),
-		OwnershipMarket:   getIntValue(data, "ownership_market"),
-		CitizenshipStatus: getStringValue(data, "citizenship_status"),
-		Gender:            getStringValue(data, "gender"),
-		MaritalStatus:     getStringValue(data, "marital_status"),
-		NumberOfChildren:  getIntValue(data, "number_of_children"),
-		StartDate:         getStringValue(data, "start_date"),
-		KeyPerson:         getStringValue(data, "key_person"),
-		Removed:           getStringValue(data, "removed"),
+		Name:              utils.GetStringValue(data, "name"),
+		NoIdentity:        utils.GetStringValue(data, "no_identity"),
+		IdCardAddress:     utils.GetStringValue(data, "id_card_identity"),
+		City:              utils.GetStringValue(data, "city"),
+		ZipCode:           utils.GetStringValue(data, "zip_code"),
+		HomeOwnership:     utils.GetStringValue(data, "home_ownership"),
+		Remark:            utils.GetStringValue(data, "remark"),
+		CifManager:        utils.GetStringValue(data, "cif_manager"),
+		BirthDate:         utils.GetStringValue(data, "birth_date"),
+		LastEducation:     utils.GetStringValue(data, "last_education"),
+		NPWP:              utils.GetStringValue(data, "npwp"),
+		JobTitle:          utils.GetStringValue(data, "job_title"),
+		Experince:         utils.GetStringValue(data, "experience"),
+		OwnershipMarket:   utils.GetIntValue(data, "ownership_market"),
+		CitizenshipStatus: utils.GetStringValue(data, "citizenship_status"),
+		Gender:            utils.GetStringValue(data, "gender"),
+		MaritalStatus:     utils.GetStringValue(data, "marital_status"),
+		NumberOfChildren:  utils.GetIntValue(data, "number_of_children"),
+		StartDate:         utils.GetStringValue(data, "start_date"),
+		KeyPerson:         utils.GetStringValue(data, "key_person"),
+		Removed:           utils.GetStringValue(data, "removed"),
 		Status:            "L",
 	}
 
@@ -149,21 +150,21 @@ func CreateRelationWithBank(c *fiber.Ctx) error {
 	}
 
 	relation := models.RelationWithBank{
-		Giro:            getStringValue(data, "giro"),
-		Tabungan:        getStringValue(data, "tabungan"),
-		NoRekening:      getIntValue(data, "no_rekening"),
-		Debitur:         getStringValue(data, "debitur"),
+		Giro:            utils.GetStringValue(data, "giro"),
+		Tabungan:        utils.GetStringValue(data, "tabungan"),
+		NoRekening:      utils.GetIntValue(data, "no_rekening"),
+		Debitur:         utils.GetStringValue(data, "debitur"),
 		Status:          "L",
 		OwnershipDataId: ownershipIdInt,
 	}
 
 	debitur := models.DataRekeningDebitur{
-		Name:            getStringValue(data, "name"),
-		NoIdCard:        getStringValue(data, "no_id_card"),
-		NPWP:            getIntValue(data, "npwp"),
-		KeyPerson:       getStringValue(data, "key_person"),
-		NoRekening:      getIntValue(data, "no_rekening"),
-		Remark:          getStringValue(data, "remark"),
+		Name:            utils.GetStringValue(data, "name"),
+		NoIdCard:        utils.GetStringValue(data, "no_id_card"),
+		NPWP:            utils.GetIntValue(data, "npwp"),
+		KeyPerson:       utils.GetStringValue(data, "key_person"),
+		NoRekening:      utils.GetIntValue(data, "no_rekening"),
+		Remark:          utils.GetStringValue(data, "remark"),
 		Status:          "L",
 		OwnershipDataId: ownershipIdInt,
 	}
