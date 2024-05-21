@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"errors"
 	"log"
 	"os"
 	"strconv"
@@ -22,7 +21,7 @@ func ExtractJWT(c *fiber.Ctx) (string, error) {
 	if err != nil {
 		log.Println("Error parsing JWT:", err)
 		c.Status(fiber.StatusUnauthorized)
-		return "", errors.New("status unauthorized")
+		return "", err
 
 	}
 	claims := token.Claims.(*jwt.StandardClaims)
