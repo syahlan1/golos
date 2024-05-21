@@ -18,8 +18,9 @@ func ApplicantShow(c *fiber.Ctx) error {
 
 	// Find all applicants with status "L"
 	if err := connection.DB.Where("status = ?", "L").Find(&applicants).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Error fetching applicants",
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
 		})
 	}
 
@@ -63,7 +64,12 @@ func ApplicantShow(c *fiber.Ctx) error {
 		detailedApplicants = append(detailedApplicants, applicantDetail)
 	}
 
-	return c.JSON(detailedApplicants)
+	// return c.JSON(detailedApplicants)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    detailedApplicants,
+	})
 }
 
 func ApplicantShowDetail(c *fiber.Ctx) error {
@@ -81,8 +87,9 @@ func ApplicantShowDetail(c *fiber.Ctx) error {
 	var applicant models.Applicant
 	// Find the applicant
 	if err := connection.DB.First(&applicant, "id = ? AND status = ?", applicantID, "L").Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "Applicant Not Found",
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: "Applicant Not Found",
 		})
 	}
 
@@ -94,8 +101,9 @@ func ApplicantShowDetail(c *fiber.Ctx) error {
 	// Load related IdCard
 	if applicant.IdCard != 0 {
 		if err := connection.DB.First(&applicantDetail.IdCard, "id = ?", applicant.IdCard).Error; err != nil {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-				"status": "IdCard Not Found",
+			return c.Status(fiber.StatusNotFound).JSON(models.Response{
+				Code:    fiber.StatusNotFound,
+				Message: "Id Card Not Found",
 			})
 		}
 	}
@@ -103,8 +111,9 @@ func ApplicantShowDetail(c *fiber.Ctx) error {
 	// Load related Document
 	if applicant.DocumentId != 0 {
 		if err := connection.DB.First(&applicantDetail.Document, "id = ?", applicant.DocumentId).Error; err != nil {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-				"status": "Document Not Found",
+			return c.Status(fiber.StatusNotFound).JSON(models.Response{
+				Code:    fiber.StatusNotFound,
+				Message: "Document Not Found",
 			})
 		}
 	}
@@ -112,8 +121,9 @@ func ApplicantShowDetail(c *fiber.Ctx) error {
 	// Load related Spouse
 	if applicant.SpouseId != 0 {
 		if err := connection.DB.First(&applicantDetail.SpouseData, "id = ?", applicant.SpouseId).Error; err != nil {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-				"status": "Spouse Not Found",
+			return c.Status(fiber.StatusNotFound).JSON(models.Response{
+				Code:    fiber.StatusNotFound,
+				Message: "Spouse Not Found",
 			})
 		}
 	}
@@ -121,20 +131,28 @@ func ApplicantShowDetail(c *fiber.Ctx) error {
 	// Load related GeneralInformation
 	if applicant.GeneralInformationId != 0 {
 		if err := connection.DB.First(&applicantDetail.GeneralInformation, "id = ?", applicant.GeneralInformationId).Error; err != nil {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-				"status": "General Information Not Found",
+			return c.Status(fiber.StatusNotFound).JSON(models.Response{
+				Code:    fiber.StatusNotFound,
+				Message: "General Information Not Found",
 			})
 		}
 	}
 
-	return c.JSON(applicantDetail)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    applicantDetail,
+	})
 }
 
 func ApplicantCreate(c *fiber.Ctx) error {
 	var data map[string]interface{}
 
 	if err := c.BodyParser(&data); err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
 	// Buat objek bisnis dengan nilai-nilai yang diberikan
@@ -193,16 +211,28 @@ func ApplicantCreate(c *fiber.Ctx) error {
 	}
 
 	if err := connection.DB.Create(&spouse).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 	if err := connection.DB.Create(&idCard).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 	if err := connection.DB.Create(&generalIformation).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 	if err := connection.DB.Create(&document).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
 	applicant := models.Applicant{
@@ -247,12 +277,18 @@ func ApplicantCreate(c *fiber.Ctx) error {
 
 	// Buat data appplicant ke database
 	if err := connection.DB.Create(&applicant).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
 	createdBy, err := TakeUsername(c)
 	if err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
 	//generate id
@@ -273,7 +309,10 @@ func ApplicantCreate(c *fiber.Ctx) error {
 
 	// Buat data approval ke database
 	if err := connection.DB.Create(&approval).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
 	historyId := ulid.MustNew(ulid.Timestamp(t), entropy)
@@ -288,11 +327,15 @@ func ApplicantCreate(c *fiber.Ctx) error {
 		Data:           ApplicantToJson(applicant, spouse, idCard, document, generalIformation),
 	}
 	if err := connection.DB.Create(&history).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
-	return c.JSON(fiber.Map{
-		"message": "insert sukses",
+	return c.JSON(models.Response{
+		Code:    fiber.StatusCreated,
+		Message: "Applicant created successfully",
 	})
 }
 
@@ -318,15 +361,17 @@ func ApplicantUpdate(c *fiber.Ctx) error {
 
 	var applicant models.Applicant
 	if err := connection.DB.First(&applicant, applicantID).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "Applicant Not Found",
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: "Applicant not found",
 		})
 	}
 
 	var updatedApplicant models.Applicant
 	if err := c.BodyParser(&updatedApplicant); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": "Invalid applicant Data",
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: "Invalid applicant data",
 		})
 	}
 
@@ -334,15 +379,17 @@ func ApplicantUpdate(c *fiber.Ctx) error {
 
 	var idCard models.IdCard
 	if err := connection.DB.First(&idCard, idCardId).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "ID Card Not Found",
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: "Id card not found",
 		})
 	}
 
 	var updatedIdCard models.IdCard
 	if err := c.BodyParser(&updatedIdCard); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": "Invalid id card Data",
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: "Invalid id card data",
 		})
 	}
 
@@ -350,15 +397,17 @@ func ApplicantUpdate(c *fiber.Ctx) error {
 
 	var spouse models.SpouseData
 	if err := connection.DB.First(&spouse, spouseId).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "Spouse Not Found",
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: "Spouse not found",
 		})
 	}
 
 	var updatedSpouse models.SpouseData
 	if err := c.BodyParser(&updatedSpouse); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": "Invalid Spouse Data",
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: "Invalid spouse data",
 		})
 	}
 
@@ -366,15 +415,17 @@ func ApplicantUpdate(c *fiber.Ctx) error {
 
 	var document models.Document
 	if err := connection.DB.First(&document, documentId).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "Document Not Found",
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: "Document not found",
 		})
 	}
 
 	var updatedDocument models.Document
 	if err := c.BodyParser(&updatedDocument); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": "Invalid Spouse Data",
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: "Invalid document data",
 		})
 	}
 
@@ -382,15 +433,17 @@ func ApplicantUpdate(c *fiber.Ctx) error {
 
 	var generalInformation models.GeneralInformation
 	if err := connection.DB.First(&generalInformation, generalInformationId).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "General Information Not Found",
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: "General Information not found",
 		})
 	}
 
 	var updatedGeneralInformation models.GeneralInformation
 	if err := c.BodyParser(&updatedGeneralInformation); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": "Invalid General Information",
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: "Invalid general information data",
 		})
 	}
 
@@ -472,38 +525,44 @@ func ApplicantUpdate(c *fiber.Ctx) error {
 	generalInformation.RequestedInterestRate = updatedGeneralInformation.RequestedInterestRate
 
 	if err := connection.DB.Save(&applicant).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Failed to update the applicant data",
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to update the applicant data",
 		})
 	}
 
 	if err := connection.DB.Save(&spouse).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Failed to update the applicant data",
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to update the spouse data",
 		})
 	}
 
 	if err := connection.DB.Save(&document).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Failed to update the applicant data",
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to update the document data",
 		})
 	}
 
 	if err := connection.DB.Save(&generalInformation).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Failed to update the applicant data",
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to update the general information data",
 		})
 	}
 
 	if err := connection.DB.Save(&idCard).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Failed to update the applicant data",
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to update the id card data",
 		})
 	}
 
-	return c.JSON(fiber.Map{
-		"data":   applicant,
-		"status": "Updated!",
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Updated!",
+		Data:    applicant,
 	})
 }
 
@@ -512,22 +571,24 @@ func ApplicantDelete(c *fiber.Ctx) error {
 
 	var applicant models.Applicant
 	if err := connection.DB.First(&applicant, applicantID).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "User Not Found",
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: "Applicant not found",
 		})
 	}
 
 	applicant.Status = "D"
 
 	if err := connection.DB.Save(&applicant).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Failed to delete",
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to delete the applicant data",
 		})
 	}
 
-	return c.JSON(fiber.Map{
-		"data":   applicant,
-		"status": "Updated!",
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Deleted!",
 	})
 }
 
@@ -535,118 +596,202 @@ func ShowHomeStatus(c *fiber.Ctx) error {
 	var HomeStatus []string
 
 	if err := connection.DB.Model(&models.HomeStatus{}).Pluck("name", &HomeStatus).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to get Home Status",
+		})
 	}
 
-	return c.JSON(HomeStatus)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    HomeStatus,
+	})
 }
 
 func ShowApplicantAddressType(c *fiber.Ctx) error {
 	var applicantAddressType []string
 
 	if err := connection.DB.Model(&models.ApplicantAddressType{}).Pluck("name", &applicantAddressType).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to get Applicant Address Type",
+		})
 	}
 
-	return c.JSON(applicantAddressType)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    applicantAddressType,
+	})
 }
 
 func ShowEducation(c *fiber.Ctx) error {
 	var education []string
 
 	if err := connection.DB.Model(&models.Education{}).Pluck("name", &education).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to get Education Data",
+		})
 	}
 
-	return c.JSON(education)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    education,
+	})
 }
 
 func ShowJobPosition(c *fiber.Ctx) error {
 	var jobPosition []string
 
 	if err := connection.DB.Model(&models.JobPosition{}).Pluck("name", &jobPosition).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to get Job Position Data",
+		})
 	}
 
-	return c.JSON(jobPosition)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    jobPosition,
+	})
 }
 
 func ShowBusinessSector(c *fiber.Ctx) error {
 	var businessSector []string
 
 	if err := connection.DB.Model(&models.BusinessSector{}).Pluck("name", &businessSector).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to get Business Sector Data",
+		})
 	}
 
-	return c.JSON(businessSector)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    businessSector,
+	})
 }
 
 func ShowKodeInstansi(c *fiber.Ctx) error {
 	var kodeInstansi []string
 
 	if err := connection.DB.Model(&models.KodeInstansi{}).Pluck("name", &kodeInstansi).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to get Kode Instansi Data",
+		})
 	}
 
-	return c.JSON(kodeInstansi)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    kodeInstansi,
+	})
 }
 
 func ShowNegara(c *fiber.Ctx) error {
 	var negara []string
 
 	if err := connection.DB.Model(&models.Negara{}).Pluck("name", &negara).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to get Negara Data",
+		})
 	}
 
-	return c.JSON(negara)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    negara,
+	})
 }
 
 func ShowSektorEkonomi(c *fiber.Ctx) error {
 	var sektorEkonomi []string
 
 	if err := connection.DB.Model(&models.SektorEkonomi{}).Pluck("name", &sektorEkonomi).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to get Sektor Ekonomi Data",
+		})
 	}
 
-	return c.JSON(sektorEkonomi)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    sektorEkonomi,
+	})
 }
 
 func ShowHubunganNasabah(c *fiber.Ctx) error {
 	var hubunganNasabah []string
 
 	if err := connection.DB.Model(&models.HubunganNasabah{}).Pluck("name", &hubunganNasabah).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to get Hubungan Nasabah Data",
+		})
 	}
 
-	return c.JSON(hubunganNasabah)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    hubunganNasabah,
+	})
 }
 
 func ShowHubunganKeluarga(c *fiber.Ctx) error {
 	var hubunganKeluarga []string
 
 	if err := connection.DB.Model(&models.HubunganKeluarga{}).Pluck("name", &hubunganKeluarga).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to get Hubungan Keluarga Data",
+		})
 	}
 
-	return c.JSON(hubunganKeluarga)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    hubunganKeluarga,
+	})
 }
 
 func ShowLokasiPabrik(c *fiber.Ctx) error {
 	var lokasiPabrik []string
 
 	if err := connection.DB.Model(&models.LokasiPabrik{}).Pluck("name", &lokasiPabrik).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to get Lokasi Pabrik Data",
+		})
 	}
 
-	return c.JSON(lokasiPabrik)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    lokasiPabrik,
+	})
 }
 
 func ShowMaritalStatus(c *fiber.Ctx) error {
 	var maritalStatus []string
 
 	if err := connection.DB.Model(&models.MaritalStatus{}).Pluck("name", &maritalStatus).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to get Marital Status Data",
+		})
 	}
 
-	return c.JSON(maritalStatus)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    maritalStatus,
+	})
 }

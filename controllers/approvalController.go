@@ -34,12 +34,18 @@ func CreateApprovalSetting(c *fiber.Ctx) error {
 	currentTime := time.Now()
 
 	if err := c.BodyParser(&data); err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
 	createdBy, err := TakeUsername(c)
 	if err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
 	approvalSetting := models.ApprovalSetting{
@@ -52,7 +58,10 @@ func CreateApprovalSetting(c *fiber.Ctx) error {
 	}
 
 	if err := connection.DB.Create(&approvalSetting).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
 	approvalWorkflowsData := data["approval_workflows"].([]interface{})
@@ -68,7 +77,10 @@ func CreateApprovalSetting(c *fiber.Ctx) error {
 		}
 
 		if err := connection.DB.Create(&approvalWorkflow).Error; err != nil {
-			return err
+			return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+				Code:    fiber.StatusInternalServerError,
+				Message: err.Error(),
+			})
 		}
 
 		// Get Role IDs from request
@@ -84,13 +96,17 @@ func CreateApprovalSetting(c *fiber.Ctx) error {
 			}
 
 			if err := connection.DB.Create(&approvalWorkflowRole).Error; err != nil {
-				return err
+				return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+					Code:    fiber.StatusInternalServerError,
+					Message: err.Error(),
+				})
 			}
 		}
 	}
 
-	return c.JSON(fiber.Map{
-		"message": "insert sukses",
+	return c.JSON(models.Response{
+		Code:    fiber.StatusCreated,
+		Message: "Approval Setting Created!",
 	})
 }
 
@@ -99,7 +115,10 @@ func UpdateApprovalStatus(c *fiber.Ctx) error {
 	createdBy, err := TakeUsername(c)
 	if err != nil {
 		log.Println("Error taking username:", err)
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
 	// Get user role ID
@@ -112,15 +131,19 @@ func UpdateApprovalStatus(c *fiber.Ctx) error {
 	var user models.Users
 	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
 	// Get the Approval to be updated
 	var approval models.Approval
 	if err := connection.DB.Where("id = ?", approvalID).First(&approval).Error; err != nil {
 		log.Println("Error retrieving approval:", err)
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "Data Not Found",
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: "Data Not Found",
 		})
 	}
 
@@ -128,8 +151,9 @@ func UpdateApprovalStatus(c *fiber.Ctx) error {
 	var currentWorkflow models.ApprovalWorkflow
 	if err := connection.DB.Where("approval_setting_id = ? AND id = ?", approval.ApprovalSettingID, approval.CurrentProcess).First(&currentWorkflow).Error; err != nil {
 		log.Println("Error retrieving current workflow:", err)
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "No current approval workflow found",
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: "No current approval workflow found",
 		})
 	}
 
@@ -137,8 +161,9 @@ func UpdateApprovalStatus(c *fiber.Ctx) error {
 	var workflowRole models.ApprovalWorkflowRole
 	if err := connection.DB.Where("approval_workflow_id = ? AND role_id = ? AND status = ?", currentWorkflow.Id, user.RoleId, "active").First(&workflowRole).Error; err != nil {
 		log.Println("User does not have permission:", err)
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"message": "User does not have permission to access the current ApprovalWorkflow",
+		return c.Status(fiber.StatusUnauthorized).JSON(models.Response{
+			Code:    fiber.StatusUnauthorized,
+			Message: "User does not have permission to access the current ApprovalWorkflow",
 		})
 	}
 
@@ -147,12 +172,16 @@ func UpdateApprovalStatus(c *fiber.Ctx) error {
 	if err := connection.DB.Where("approval_setting_id = ? AND \"order\" > ?", approval.ApprovalSettingID, currentWorkflow.Order).Order("\"order\" asc").First(&nextWorkflow).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			log.Println("No next approval workflow found:", err)
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-				"status": "No next approval workflow found",
+			return c.Status(fiber.StatusNotFound).JSON(models.Response{
+				Code:    fiber.StatusNotFound,
+				Message: "No next approval workflow found",
 			})
 		}
 		log.Println("Error retrieving next workflow:", err)
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
 	// Update current_process on Approval with the id of the found ApprovalWorkflow
@@ -175,8 +204,9 @@ func UpdateApprovalStatus(c *fiber.Ctx) error {
 
 	if err := connection.DB.Save(&approval).Error; err != nil {
 		log.Println("Error saving approval:", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Failed to update the approval data",
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to update approval data",
 		})
 	}
 
@@ -198,13 +228,17 @@ func UpdateApprovalStatus(c *fiber.Ctx) error {
 
 	if err := connection.DB.Create(&history).Error; err != nil {
 		log.Println("Error creating approval history:", err)
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
 	log.Println("Approval updated successfully")
-	return c.JSON(fiber.Map{
-		"data":   approval,
-		"status": "Updated!",
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Approval updated successfully",
+		Data:    approval,
 	})
 }
 
@@ -213,15 +247,17 @@ func RejectApproval(c *fiber.Ctx) error {
 
 	var approval models.Approval
 	if err := connection.DB.Where("id = ?", approvalId).First(&approval).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "Data Not Found",
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: "Data not found",
 		})
 	}
 
 	var updatedApproval models.Approval
 	if err := c.BodyParser(&updatedApproval); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": "Invalid Data",
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
 		})
 	}
 
@@ -232,8 +268,9 @@ func RejectApproval(c *fiber.Ctx) error {
 	var firstWorkflow models.ApprovalWorkflow
 	if err := connection.DB.Where("approval_setting_id = ?", approvalSettingID).Order("\"order\" asc").First(&firstWorkflow).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-				"status": "No first approval workflow found",
+			return c.Status(fiber.StatusNotFound).JSON(models.Response{
+				Code:    fiber.StatusNotFound,
+				Message: "No first approval workflow found",
 			})
 		}
 		return err
@@ -247,8 +284,9 @@ func RejectApproval(c *fiber.Ctx) error {
 	approval.ApprovalStatus = "rejected"
 
 	if err := connection.DB.Save(&approval).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Failed to reject the approval",
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to reject approval data",
 		})
 	}
 
@@ -269,12 +307,16 @@ func RejectApproval(c *fiber.Ctx) error {
 	}
 
 	if err := connection.DB.Create(&history).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
-	return c.JSON(fiber.Map{
-		"data":   approval,
-		"status": "Approval rejected!",
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Approval rejected successfully",
+		Data:    approval,
 	})
 }
 
@@ -297,10 +339,17 @@ func ShowAllData(c *fiber.Ctx) error {
 			  JOIN approval_settings ast ON a.approval_setting_id = ast.id`
 
 	if err := connection.DB.Raw(query).Scan(&approvals).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
-	return c.JSON(approvals)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    approvals,
+	})
 }
 
 func ApprovalDataDetail(c *fiber.Ctx) error {
@@ -308,10 +357,17 @@ func ApprovalDataDetail(c *fiber.Ctx) error {
 
 	var data string
 	if err := connection.DB.Raw("SELECT data FROM approvals WHERE id = ?", approvalID).Scan(&data).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
-	return c.SendString(data)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    data,
+	})
 }
 
 func UpdateApprovalWorkflowRoles(c *fiber.Ctx) error {
@@ -320,7 +376,10 @@ func UpdateApprovalWorkflowRoles(c *fiber.Ctx) error {
 		RoleIDs []int `json:"role_id"`
 	}
 	if err := c.BodyParser(&req); err != nil {
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
 	}
 
 	// Get approval_workflow_id from URL parameter
@@ -329,15 +388,24 @@ func UpdateApprovalWorkflowRoles(c *fiber.Ctx) error {
 	// Find existing approval workflow by ID
 	var existingWorkflow models.ApprovalWorkflow
 	if err := connection.DB.Where("id = ?", approvalWorkflowID).First(&existingWorkflow).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "Approval workflow not found"})
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: "Approval workflow not found",
+		})
 	}
 
 	// Update approval workflow roles
 	if err := updateApprovalWorkflowRoles(existingWorkflow.Id, req.RoleIDs); err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
-	return c.JSON(fiber.Map{"message": "Approval workflow roles updated successfully"})
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Approval workflow roles updated successfully",
+	})
 }
 
 func updateApprovalWorkflowRoles(approvalWorkflowID int, roleIDs []int) error {
