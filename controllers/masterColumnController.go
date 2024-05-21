@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
+	"github.com/syahlan1/golos/utils"
 )
 
 func CreateMasterColumn(c *fiber.Ctx) error {
@@ -26,34 +26,21 @@ func CreateMasterColumn(c *fiber.Ctx) error {
 		return err
 	}
 
-	createdBy, err := TakeUsername(c)
-	if err != nil {
-		log.Println("Error taking username:", err)
-		return err
-	}
-
 	// Get user role ID
-	cookie := c.Cookies("jwt")
-	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(SecretKey), nil
-	})
+	claims, err := utils.ExtractJWT(c)
 	if err != nil {
-		log.Println("Error parsing JWT:", err)
 		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{
-			"message": "status unauthorized",
-		})
+		return c.JSON(fiber.Map{"message": "Unauthorized"})
 	}
-	claims := token.Claims.(*jwt.StandardClaims)
 
 	var user models.Users
-	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
+	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
 		return err
 	}
 
 	newMasterCode := models.MasterColumn{
-		CreatedBy:          createdBy,
+		CreatedBy:          user.Username,
 		CreatedDate:        timeNow,
 		FieldName:          getStringValue(data, "field_name"),
 		Status:             "L",
@@ -118,28 +105,15 @@ func ShowMasterColumnByTable(c *fiber.Ctx) error {
 func UpdateColumnTable(c *fiber.Ctx) error {
 	masterTableId := c.Params("id")
 
-	updatedBy, err := TakeUsername(c)
-	if err != nil {
-		log.Println("Error taking username:", err)
-		return err
-	}
-
 	// Get user role ID
-	cookie := c.Cookies("jwt")
-	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(SecretKey), nil
-	})
+	claims, err := utils.ExtractJWT(c)
 	if err != nil {
-		log.Println("Error parsing JWT:", err)
 		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{
-			"message": "status unauthorized",
-		})
+		return c.JSON(fiber.Map{"message": "Unauthorized"})
 	}
-	claims := token.Claims.(*jwt.StandardClaims)
 
 	var user models.Users
-	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
+	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
 		return err
 	}
@@ -160,7 +134,7 @@ func UpdateColumnTable(c *fiber.Ctx) error {
 		})
 	}
 
-	masterTable.UpdatedBy = updatedBy
+	masterTable.UpdatedBy = user.Username
 	masterTable.UpdatedDate = time.Now()
 	masterTable.ModuleName = updatedMasterTable.ModuleName
 	masterTable.Description = updatedMasterTable.Description
@@ -182,29 +156,15 @@ func UpdateColumnTable(c *fiber.Ctx) error {
 
 func DeleteMasterColumn(c *fiber.Ctx) error {
 	masterTableId := c.Params("id")
-
-	deletedBy, err := TakeUsername(c)
-	if err != nil {
-		log.Println("Error taking username:", err)
-		return err
-	}
-
 	// Get user role ID
-	cookie := c.Cookies("jwt")
-	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(SecretKey), nil
-	})
+	claims, err := utils.ExtractJWT(c)
 	if err != nil {
-		log.Println("Error parsing JWT:", err)
 		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{
-			"message": "status unauthorized",
-		})
+		return c.JSON(fiber.Map{"message": "Unauthorized"})
 	}
-	claims := token.Claims.(*jwt.StandardClaims)
 
 	var user models.Users
-	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
+	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
 		return err
 	}
@@ -218,7 +178,7 @@ func DeleteMasterColumn(c *fiber.Ctx) error {
 		})
 	}
 
-	masterTable.UpdatedBy = deletedBy
+	masterTable.UpdatedBy = user.Username
 	masterTable.UpdatedDate = time.Now()
 	masterTable.Status = "D"
 
