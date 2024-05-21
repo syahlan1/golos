@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
-	"github.com/syahlan1/golos/utils"
 )
 
 func ShowDetailMasterCode(c *fiber.Ctx) error {
@@ -63,23 +63,36 @@ func CreateMasterCode(c *fiber.Ctx) error {
 		return err
 	}
 
-	// Get user role ID
-	claims, err := utils.ExtractJWT(c)
+	createdBy, err := TakeUsername(c)
 	if err != nil {
-		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{"message": "Unauthorized"})
+		log.Println("Error taking username:", err)
+		return err
 	}
 
+	// Get user role ID
+	cookie := c.Cookies("jwt")
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+	if err != nil {
+		log.Println("Error parsing JWT:", err)
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "status unauthorized",
+		})
+	}
+	claims := token.Claims.(*jwt.StandardClaims)
+
 	var user models.Users
-	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
+	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
 		return err
 	}
 
 	newMasterCode := models.MasterCode{
-		Authoriser:         user.Username,
+		Authoriser:         createdBy,
 		AuthorizeDate:      timeNow,
-		CreatedBy:          user.Username,
+		CreatedBy:          createdBy,
 		CreatedDate:        timeNow,
 		Code:               data["code"].(string),
 		CodeGroupId:        int(data["code_group_id"].(float64)),
@@ -106,15 +119,28 @@ func CreateMasterCodeGroup(c *fiber.Ctx) error {
 		return err
 	}
 
-	// Get user role ID
-	claims, err := utils.ExtractJWT(c)
+	createdBy, err := TakeUsername(c)
 	if err != nil {
-		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{"message": "Unauthorized"})
+		log.Println("Error taking username:", err)
+		return err
 	}
 
+	// Get user role ID
+	cookie := c.Cookies("jwt")
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+	if err != nil {
+		log.Println("Error parsing JWT:", err)
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "status unauthorized",
+		})
+	}
+	claims := token.Claims.(*jwt.StandardClaims)
+
 	var user models.Users
-	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
+	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
 		return err
 	}
@@ -128,9 +154,9 @@ func CreateMasterCodeGroup(c *fiber.Ctx) error {
 	}
 
 	newMasterCodeGroup := models.MasterCodeGroup{
-		Authoriser:         user.Username,
+		Authoriser:         createdBy,
 		AuthorizeDate:      timeNow,
-		CreatedBy:          user.Username,
+		CreatedBy:          createdBy,
 		CreatedDate:        timeNow,
 		Status:             "L",
 		CodeGroup:          data["code_group"],
@@ -149,15 +175,28 @@ func CreateMasterCodeGroup(c *fiber.Ctx) error {
 func UpdateMasterCode(c *fiber.Ctx) error {
 	masterCodeId := c.Params("id")
 
-	// Get user role ID
-	claims, err := utils.ExtractJWT(c)
+	updatedBy, err := TakeUsername(c)
 	if err != nil {
-		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{"message": "Unauthorized"})
+		log.Println("Error taking username:", err)
+		return err
 	}
 
+	// Get user role ID
+	cookie := c.Cookies("jwt")
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+	if err != nil {
+		log.Println("Error parsing JWT:", err)
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "status unauthorized",
+		})
+	}
+	claims := token.Claims.(*jwt.StandardClaims)
+
 	var user models.Users
-	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
+	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
 		return err
 	}
@@ -178,7 +217,7 @@ func UpdateMasterCode(c *fiber.Ctx) error {
 		})
 	}
 
-	masterCode.UpdatedBy = user.Username
+	masterCode.UpdatedBy = updatedBy
 	masterCode.UpdatedDate = time.Now()
 	masterCode.Code = updatedMasterCode.Code
 	masterCode.CodeGroupId = updatedMasterCode.CodeGroupId
@@ -202,15 +241,28 @@ func UpdateMasterCode(c *fiber.Ctx) error {
 func UpdateMasterCodeGroup(c *fiber.Ctx) error {
 	masterCodeGroupId := c.Params("id")
 
-	// Get user role ID
-	claims, err := utils.ExtractJWT(c)
+	updatedBy, err := TakeUsername(c)
 	if err != nil {
-		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{"message": "Unauthorized"})
+		log.Println("Error taking username:", err)
+		return err
 	}
 
+	// Get user role ID
+	cookie := c.Cookies("jwt")
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+	if err != nil {
+		log.Println("Error parsing JWT:", err)
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "status unauthorized",
+		})
+	}
+	claims := token.Claims.(*jwt.StandardClaims)
+
 	var user models.Users
-	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
+	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
 		return err
 	}
@@ -231,7 +283,7 @@ func UpdateMasterCodeGroup(c *fiber.Ctx) error {
 		})
 	}
 
-	masterCodeGroup.UpdatedBy = user.Username
+	masterCodeGroup.UpdatedBy = updatedBy
 	masterCodeGroup.UpdatedDate = time.Now()
 	masterCodeGroup.CodeGroup = updatedMasterCodeGroup.CodeGroup
 	masterCodeGroup.Description = updatedMasterCodeGroup.Description
@@ -252,15 +304,28 @@ func UpdateMasterCodeGroup(c *fiber.Ctx) error {
 func DeleteMasterCode(c *fiber.Ctx) error {
 	masterCodeId := c.Params("id")
 
-	// Get user role ID
-	claims, err := utils.ExtractJWT(c)
+	deletedBy, err := TakeUsername(c)
 	if err != nil {
-		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{"message": "Unauthorized"})
+		log.Println("Error taking username:", err)
+		return err
 	}
 
+	// Get user role ID
+	cookie := c.Cookies("jwt")
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+	if err != nil {
+		log.Println("Error parsing JWT:", err)
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "status unauthorized",
+		})
+	}
+	claims := token.Claims.(*jwt.StandardClaims)
+
 	var user models.Users
-	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
+	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
 		return err
 	}
@@ -274,7 +339,7 @@ func DeleteMasterCode(c *fiber.Ctx) error {
 		})
 	}
 
-	masterCode.UpdatedBy = user.Username
+	masterCode.UpdatedBy = deletedBy
 	masterCode.UpdatedDate = time.Now()
 	masterCode.Status = "D"
 
@@ -293,15 +358,28 @@ func DeleteMasterCode(c *fiber.Ctx) error {
 func DeleteMasterCodeGroup(c *fiber.Ctx) error {
 	masterCodeGroupId := c.Params("id")
 
-	// Get user role ID
-	claims, err := utils.ExtractJWT(c)
+	deletedBy, err := TakeUsername(c)
 	if err != nil {
-		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{"message": "Unauthorized"})
+		log.Println("Error taking username:", err)
+		return err
 	}
 
+	// Get user role ID
+	cookie := c.Cookies("jwt")
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+	if err != nil {
+		log.Println("Error parsing JWT:", err)
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "status unauthorized",
+		})
+	}
+	claims := token.Claims.(*jwt.StandardClaims)
+
 	var user models.Users
-	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
+	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
 		return err
 	}
@@ -315,7 +393,7 @@ func DeleteMasterCodeGroup(c *fiber.Ctx) error {
 		})
 	}
 
-	masterCodeGroup.UpdatedBy = user.Username
+	masterCodeGroup.UpdatedBy = deletedBy
 	masterCodeGroup.UpdatedDate = time.Now()
 	masterCodeGroup.Status = "D"
 

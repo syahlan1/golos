@@ -4,7 +4,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/syahlan1/golos/controllers"
-	"github.com/syahlan1/golos/middleware"
 )
 
 func Setup(app *fiber.App) {
@@ -23,10 +22,10 @@ func Setup(app *fiber.App) {
 	api.Post("/logout", controllers.Logout)
 
 	//business
-	api.Post("/business/create", middleware.Authorize("create"), controllers.BusinessCreate)
+	api.Post("/business/create", controllers.Authorize("create"), controllers.BusinessCreate)
 	api.Get("/business/show", controllers.BusinessShow)
-	api.Put("/business/update/:id", middleware.Authorize("update"), controllers.BusinessUpdate)
-	api.Put("/business/delete/:id", middleware.Authorize("delete"), controllers.BusinessDelete)
+	api.Put("/business/update/:id", controllers.Authorize("update"), controllers.BusinessUpdate)
+	api.Put("/business/delete/:id", controllers.Authorize("delete"), controllers.BusinessDelete)
 	api.Get("/business/show/:id", controllers.BusinessShowDetail)
 	api.Get("/business/showcompanyfirstname", controllers.ShowCompanyFirstName)
 	api.Get("/business/showcompanytype", controllers.ShowCompanyType)
@@ -38,11 +37,11 @@ func Setup(app *fiber.App) {
 	api.Get("/show-business-applicant", controllers.ShowBusinessApplicant)
 
 	//applicant
-	api.Post("/applicant/create", middleware.Authorize("create"), controllers.ApplicantCreate)
+	api.Post("/applicant/create", controllers.Authorize("create"), controllers.ApplicantCreate)
 	api.Get("/applicant/show", controllers.ApplicantShow)
 	api.Get("/applicant/show/:id", controllers.ApplicantShowDetail)
-	api.Put("/applicant/update/:id", middleware.Authorize("update"), controllers.ApplicantUpdate)
-	api.Put("/applicant/delete/:id", middleware.Authorize("delete"), controllers.ApplicantDelete)
+	api.Put("/applicant/update/:id", controllers.Authorize("update"), controllers.ApplicantUpdate)
+	api.Put("/applicant/delete/:id", controllers.Authorize("delete"), controllers.ApplicantDelete)
 	api.Get("/applicant/show-homestatus", controllers.ShowHomeStatus)
 	api.Get("/applicant/show-applicant-addresstype", controllers.ShowApplicantAddressType)
 	api.Get("/applicant/show-education", controllers.ShowEducation)
@@ -72,7 +71,7 @@ func Setup(app *fiber.App) {
 	api.Get("/approval/data/:id", controllers.ApprovalDataDetail)
 
 	//role
-	api.Post("/role/create", middleware.Authorize("create_role"), controllers.CreateRole)
+	api.Post("/role/create", controllers.Authorize("create_role"), controllers.CreateRole)
 	api.Put("/role/update/:id", controllers.UpdateRole)
 	api.Get("/role/show", controllers.ShowRole)
 	api.Get("/role/:id/permissions", controllers.ShowPermissions)
@@ -80,7 +79,7 @@ func Setup(app *fiber.App) {
 	api.Delete("/role/delete/:id", controllers.DeleteRole)
 
 	//Validation
-	api.Get("/validation/show", controllers.ShowAllValidations)
+	api.Get("/validation/show", controllers.ShowAllValidation)
 	// api.Get("/validation/show/:group_id", controllers.ShowDetailValidation)
 	api.Put("/validation/delete/:id", controllers.DeleteValidation)
 	api.Put("/validation/update/:id", controllers.UpdateValidation)
@@ -99,20 +98,20 @@ func Setup(app *fiber.App) {
 	api.Put("/master-code-group/delete/:id", controllers.DeleteMasterCodeGroup)
 
 	//Master Table
-	api.Get("/master-table/show", controllers.ShowMasterTable)
-	api.Get("/master-table/show/:id", controllers.ShowMasterTableDetail)
-	api.Post("/master-table/create", controllers.CreateMasterTable)
-	api.Put("/master-table/delete/:id", controllers.DeleteMasterTable)
-	api.Put("/master-table/update/:id", controllers.UpdateMasterTable)
+	// api.Get("/master-table/show", controllers.ShowMasterTable)
+	// api.Get("/master-table/show/:id", controllers.ShowMasterTableDetail)
+	// api.Post("/master-table/create", controllers.CreateMasterTable)
+	// api.Put("/master-table/delete/:id", controllers.DeleteMasterTable)
+	// api.Put("/master-table/update/:id", controllers.UpdateMasterTable)
 
 	// //Master Column
-	api.Get("/master-column/show", controllers.ShowMasterColumn)
-	api.Get("/master-column/show/:id", controllers.ShowMasterColumnDetail)
-	api.Get("/master-column/by-table/:id", controllers.ShowMasterColumnByTable)
-	api.Post("/master-column/create/:id", controllers.CreateMasterColumn)
-	api.Put("/master-column/delete/:id", controllers.DeleteMasterColumn)
-	api.Put("/master-column/:id", controllers.UpdateColumnTable)
+	// api.Get("/master-column/show", controllers.ShowMasterColumn)
+	// api.Get("/master-column/show/:id", controllers.ShowMasterColumnDetail)
+	// api.Get("/master-column/by-table/:id", controllers.ShowMasterColumnByTable)
+	// api.Post("/master-column/create/:id", controllers.CreateMasterColumn)
+	// api.Put("/master-column/delete/:id", controllers.DeleteMasterColumn)
+	// api.Put("/master-column/:id", controllers.UpdateColumnTable)
 
 	// //generate table
-	api.Post("/master-table/generate/:id", controllers.GenerateTable)
+	// api.Post("/master-table/generate/:id", controllers.GenerateTable)
 }

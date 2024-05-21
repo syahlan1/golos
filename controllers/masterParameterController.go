@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
-	"github.com/syahlan1/golos/utils"
 )
 
 func CreateParameter(c *fiber.Ctx) error {
@@ -19,21 +19,34 @@ func CreateParameter(c *fiber.Ctx) error {
 		return err
 	}
 
-	// Get user role ID
-	claims, err := utils.ExtractJWT(c)
+	createdBy, err := TakeUsername(c)
 	if err != nil {
-		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{"message": "Unauthorized"})
+		log.Println("Error taking username:", err)
+		return err
 	}
 
+	// Get user role ID
+	cookie := c.Cookies("jwt")
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+	if err != nil {
+		log.Println("Error parsing JWT:", err)
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "status unauthorized",
+		})
+	}
+	claims := token.Claims.(*jwt.StandardClaims)
+
 	var user models.Users
-	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
+	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
 		return err
 	}
 
 	masterParameter := models.MasterParameter{
-		CreatedBy:          user.Username,
+		CreatedBy:          createdBy,
 		CreatedDate:        timeNow,
 		Status:             "L",
 		Description:        data["description"].(string),
@@ -74,15 +87,28 @@ func ShowParameterDetail(c *fiber.Ctx) error {
 func UpdateMasterParameter(c *fiber.Ctx) error {
 	parameterId := c.Params("id")
 
-	// Get user role ID
-	claims, err := utils.ExtractJWT(c)
+	updatedBy, err := TakeUsername(c)
 	if err != nil {
-		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{"message": "Unauthorized"})
+		log.Println("Error taking username:", err)
+		return err
 	}
 
+	// Get user role ID
+	cookie := c.Cookies("jwt")
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+	if err != nil {
+		log.Println("Error parsing JWT:", err)
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "status unauthorized",
+		})
+	}
+	claims := token.Claims.(*jwt.StandardClaims)
+
 	var user models.Users
-	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
+	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
 		return err
 	}
@@ -103,7 +129,7 @@ func UpdateMasterParameter(c *fiber.Ctx) error {
 		})
 	}
 
-	masterParameter.UpdatedBy = user.Username
+	masterParameter.UpdatedBy = updatedBy
 	masterParameter.UpdatedDate = time.Now()
 	masterParameter.Description = updatedMasterParameter.Description
 	masterParameter.EnglishDescription = updatedMasterParameter.EnglishDescription
@@ -125,15 +151,28 @@ func UpdateMasterParameter(c *fiber.Ctx) error {
 func DeleteMasterParameter(c *fiber.Ctx) error {
 	parameterId := c.Params("id")
 
-	// Get user role ID
-	claims, err := utils.ExtractJWT(c)
+	updatedBy, err := TakeUsername(c)
 	if err != nil {
-		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{"message": "Unauthorized"})
+		log.Println("Error taking username:", err)
+		return err
 	}
 
+	// Get user role ID
+	cookie := c.Cookies("jwt")
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+	if err != nil {
+		log.Println("Error parsing JWT:", err)
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "status unauthorized",
+		})
+	}
+	claims := token.Claims.(*jwt.StandardClaims)
+
 	var user models.Users
-	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
+	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
 		return err
 	}
@@ -154,7 +193,7 @@ func DeleteMasterParameter(c *fiber.Ctx) error {
 		})
 	}
 
-	masterParameter.UpdatedBy = user.Username
+	masterParameter.UpdatedBy = updatedBy
 	masterParameter.UpdatedDate = time.Now()
 	masterParameter.Status = "D"
 

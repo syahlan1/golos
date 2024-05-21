@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
-	"github.com/syahlan1/golos/utils"
 )
 
 func ShowAllValidations(c *fiber.Ctx) error {
@@ -55,21 +55,34 @@ func CreateValidation(c *fiber.Ctx) error {
 		return err
 	}
 
-	// Get user role ID
-	claims, err := utils.ExtractJWT(c)
+	createdBy, err := TakeUsername(c)
 	if err != nil {
-		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{"message": "Unauthorized"})
+		log.Println("Error taking username:", err)
+		return err
 	}
 
+	// Get user role ID
+	cookie := c.Cookies("jwt")
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+	if err != nil {
+		log.Println("Error parsing JWT:", err)
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "status unauthorized",
+		})
+	}
+	claims := token.Claims.(*jwt.StandardClaims)
+
 	var user models.Users
-	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
+	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
 		return err
 	}
 
 	newMasterValidation := models.MasterValidation{
-		CreatedBy:          user.Username,
+		CreatedBy:          createdBy,
 		CreatedDate:        timeNow,
 		Status:             "L",
 		Description:        data["description"].(string),
@@ -92,15 +105,28 @@ func CreateValidation(c *fiber.Ctx) error {
 func UpdateValidation(c *fiber.Ctx) error {
 	masterValidationId := c.Params("id")
 
-	// Get user role ID
-	claims, err := utils.ExtractJWT(c)
+	updatedBy, err := TakeUsername(c)
 	if err != nil {
-		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{"message": "Unauthorized"})
+		log.Println("Error taking username:", err)
+		return err
 	}
 
+	// Get user role ID
+	cookie := c.Cookies("jwt")
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+	if err != nil {
+		log.Println("Error parsing JWT:", err)
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "status unauthorized",
+		})
+	}
+	claims := token.Claims.(*jwt.StandardClaims)
+
 	var user models.Users
-	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
+	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
 		return err
 	}
@@ -121,7 +147,7 @@ func UpdateValidation(c *fiber.Ctx) error {
 		})
 	}
 
-	masterValidation.UpdatedBy = user.Username
+	masterValidation.UpdatedBy = updatedBy
 	masterValidation.UpdatedDate = time.Now()
 	masterValidation.Description = updatedMasterValidation.Description
 	masterValidation.EnglishDescription = updatedMasterValidation.EnglishDescription
@@ -144,15 +170,28 @@ func UpdateValidation(c *fiber.Ctx) error {
 func DeleteValidation(c *fiber.Ctx) error {
 	masterValidateId := c.Params("id")
 
-	// Get user role ID
-	claims, err := utils.ExtractJWT(c)
+	deletedBy, err := TakeUsername(c)
 	if err != nil {
-		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{"message": "Unauthorized"})
+		log.Println("Error taking username:", err)
+		return err
 	}
 
+	// Get user role ID
+	cookie := c.Cookies("jwt")
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+	if err != nil {
+		log.Println("Error parsing JWT:", err)
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "status unauthorized",
+		})
+	}
+	claims := token.Claims.(*jwt.StandardClaims)
+
 	var user models.Users
-	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
+	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
 		return err
 	}
@@ -166,7 +205,7 @@ func DeleteValidation(c *fiber.Ctx) error {
 		})
 	}
 
-	masterValidate.UpdatedBy = user.Username
+	masterValidate.UpdatedBy = deletedBy
 	masterValidate.UpdatedDate = time.Now()
 	masterValidate.Status = "D"
 
