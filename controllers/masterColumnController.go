@@ -42,17 +42,17 @@ func CreateMasterColumn(c *fiber.Ctx) error {
 	newMasterCode := models.MasterColumn{
 		CreatedBy:          user.Username,
 		CreatedDate:        timeNow,
-		FieldName:          getStringValue(data, "field_name"),
+		FieldName:          utils.GetStringValue(data, "field_name"),
 		Status:             "L",
-		Description:        getStringValue(data, "description"),
-		EnglishDescription: getStringValue(data, "english_description"),
-		FieldType:          getStringValue(data, "field_type"),
-		FieldLength:        getIntValue(data, "field_length"),
-		Sequence:           getIntValue(data, "sequence"),
-		IsMandatory:        getBoolValue(data, "is_mandatory"),
-		IsExport:           getBoolValue(data, "is_export"),
-		OnblurScript:       getStringValue(data, "onblur_script"),
-		SqlFunction:        getStringValue(data, "sql_function"),
+		Description:        utils.GetStringValue(data, "description"),
+		EnglishDescription: utils.GetStringValue(data, "english_description"),
+		FieldType:          utils.GetStringValue(data, "field_type"),
+		FieldLength:        utils.GetIntValue(data, "field_length"),
+		Sequence:           utils.GetIntValue(data, "sequence"),
+		IsMandatory:        utils.GetBoolValue(data, "is_mandatory"),
+		IsExport:           utils.GetBoolValue(data, "is_export"),
+		OnblurScript:       utils.GetStringValue(data, "onblur_script"),
+		SqlFunction:        utils.GetStringValue(data, "sql_function"),
 		TableId:            tableId,
 	}
 
@@ -64,11 +64,7 @@ func CreateMasterColumn(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"message": "Master Column Created!"})
 }
 
-// Helper function to get bool value from map
-func getBoolValue(data map[string]interface{}, key string) bool {
-	value, ok := data[key].(bool)
-	return ok && value
-}
+
 
 func ShowMasterColumn(c *fiber.Ctx) error {
 	var masterCode []models.MasterTable
