@@ -1,19 +1,19 @@
 package controllers
 
 import (
+	"errors"
 	"log"
-	"os"
 	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
+	"github.com/syahlan1/golos/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
-var SecretKey = []byte(os.Getenv("JWT_PRIVATE_KEY"))
+// var SecretKey = []byte(os.Getenv("JWT_PRIVATE_KEY"))
 
 func Register(c *fiber.Ctx) error {
 	var data map[string]string
@@ -95,12 +95,7 @@ func Login(c *fiber.Ctx) error {
 		})
 	}
 
-	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
-		Issuer:    strconv.Itoa(int(user.Id)),
-		ExpiresAt: time.Now().Add(time.Second * time.Duration(tokenTTL)).Unix(),
-	})
-
-	token, err := claims.SignedString([]byte(SecretKey))
+	token, err := utils.GenerateJWT(user.Id, tokenTTL)
 
 	if err != nil {
 		c.Status(fiber.StatusInternalServerError)
@@ -137,24 +132,15 @@ func Login(c *fiber.Ctx) error {
 
 // show username
 func User(c *fiber.Ctx) error {
-	cookie := c.Cookies("jwt")
-
-	// Memverifikasi token dan mendapatkan klaim
-	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(SecretKey), nil
-	})
+	claims, err := utils.ExtractJWT(c)
 	if err != nil {
 		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{
-			"message": "status unauthorized",
-		})
+		return errors.New("status unauthorized")
 	}
-
-	claims := token.Claims.(*jwt.StandardClaims)
 
 	// Mendapatkan data pengguna (user) dari database
 	var user models.Users
-	if err := connection.DB.Where("id = ?", claims.Issuer).Preload("Role").First(&user).Error; err != nil {
+	if err := connection.DB.Where("id = ?", claims).Preload("Role").First(&user).Error; err != nil {
 		return err
 	}
 
@@ -217,21 +203,14 @@ func Logout(c *fiber.Ctx) error {
 
 // Fungsi untuk mendapatkan ID pengguna dari token JWT
 func getUserIdFromToken(c *fiber.Ctx) uint {
-	cookie := c.Cookies("jwt")
-
-	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(SecretKey), nil
-	})
-
+	claims, err := utils.ExtractJWT(c)
 	if err != nil {
-		// Jika terjadi kesalahan saat parsing token, kembalikan ID 0
+		c.Status(fiber.StatusUnauthorized)
 		return 0
 	}
 
-	claims := token.Claims.(*jwt.StandardClaims)
-
 	// Mengonversi issuer token menjadi tipe data uint
-	userId, _ := strconv.ParseUint(claims.Issuer, 10, 64)
+	userId, _ := strconv.ParseUint(claims, 10, 64)
 
 	return uint(userId)
 }
@@ -247,29 +226,15 @@ func CreateRole(c *fiber.Ctx) error {
 		return err
 	}
 
-	//Created by
-	createdBy, err := TakeUsername(c)
-	if err != nil {
-		log.Println("Error taking username:", err)
-		return err
-	}
-
 	// Get user role ID
-	cookie := c.Cookies("jwt")
-	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(SecretKey), nil
-	})
+	claims, err := utils.ExtractJWT(c)
 	if err != nil {
-		log.Println("Error parsing JWT:", err)
 		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{
-			"message": "status unauthorized",
-		})
+		return errors.New("status unauthorized")
 	}
-	claims := token.Claims.(*jwt.StandardClaims)
 
 	var user models.Users
-	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
+	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
 		return err
 	}
@@ -282,7 +247,7 @@ func CreateRole(c *fiber.Ctx) error {
 	}
 
 	// Buat role baru
-	newRole := models.Roles{Name: req.Name, Description: req.Description, CreatedBy: createdBy}
+	newRole := models.Roles{Name: req.Name, Description: req.Description, CreatedBy: user.Username}
 
 	// Simpan role baru ke dalam database
 	if err := connection.DB.Create(&newRole).Error; err != nil {
@@ -355,29 +320,14 @@ func UpdateRole(c *fiber.Ctx) error {
 		return err
 	}
 
-	// Updated by
-	createdBy, err := TakeUsername(c)
-	if err != nil {
-		log.Println("Error taking username:", err)
-		return err
-	}
-
 	// Get user role ID
-	cookie := c.Cookies("jwt")
-	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(SecretKey), nil
-	})
+	claims, err := utils.ExtractJWT(c)
 	if err != nil {
-		log.Println("Error parsing JWT:", err)
 		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{
-			"message": "status unauthorized",
-		})
+		return errors.New("status unauthorized")
 	}
-	claims := token.Claims.(*jwt.StandardClaims)
-
 	var user models.Users
-	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
+	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
 		return err
 	}
@@ -394,7 +344,7 @@ func UpdateRole(c *fiber.Ctx) error {
 	// Update role name
 	existingRole.Name = req.Name
 	existingRole.Description = req.Description
-	existingRole.UpdatedBy = createdBy
+	existingRole.UpdatedBy = user.Username
 
 	// Save the updated role to database
 	if err := connection.DB.Save(&existingRole).Error; err != nil {
