@@ -78,4 +78,5 @@ func Connect() {
 	connection.AutoMigrate(&models.MasterSourceColumn{})
 	connection.AutoMigrate(&models.MasterMapperColumn{})
 	connection.AutoMigrate(&models.MasterMapperTable{})
+	connection.AutoMigrate(&models.MasterParameter{})
 }
