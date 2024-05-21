@@ -1,34 +1,29 @@
 package controllers
 
 import (
+	"errors"
 	"log"
 	"math/rand"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/oklog/ulid"
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
+	"github.com/syahlan1/golos/utils"
 	"gorm.io/gorm"
 )
 
 func TakeUsername(c *fiber.Ctx) (string, error) {
-	cookie := c.Cookies("jwt")
-
-	// Memverifikasi token dan mendapatkan klaim
-	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(SecretKey), nil
-	})
+	claims, err := utils.ExtractJWT(c)
 	if err != nil {
-		return "", err
+		c.Status(fiber.StatusUnauthorized)
+		return "", errors.New("status unauthorized")
 	}
-
-	claims := token.Claims.(*jwt.StandardClaims)
 
 	// Mendapatkan data pengguna (user) dari database
 	var user models.Users
-	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
+	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		return "", err
 	}
 	return user.Username, nil
@@ -108,21 +103,14 @@ func UpdateApprovalStatus(c *fiber.Ctx) error {
 	}
 
 	// Get user role ID
-	cookie := c.Cookies("jwt")
-	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(SecretKey), nil
-	})
+	claims, err := utils.ExtractJWT(c)
 	if err != nil {
-		log.Println("Error parsing JWT:", err)
 		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{
-			"message": "status unauthorized",
-		})
+		return c.JSON(fiber.Map{"message": "Unauthorized"})
 	}
-	claims := token.Claims.(*jwt.StandardClaims)
 
 	var user models.Users
-	if err := connection.DB.Where("id = ?", claims.Issuer).First(&user).Error; err != nil {
+	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
 		return err
 	}
