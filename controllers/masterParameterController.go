@@ -16,7 +16,10 @@ func CreateParameter(c *fiber.Ctx) error {
 	timeNow := time.Now()
 
 	if err := c.BodyParser(&data); err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to parse request",
+		})
 	}
 
 	// Get user role ID
@@ -29,7 +32,10 @@ func CreateParameter(c *fiber.Ctx) error {
 	var user models.Users
 	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
 	masterParameter := models.MasterParameter{
@@ -43,21 +49,34 @@ func CreateParameter(c *fiber.Ctx) error {
 	}
 
 	if err := connection.DB.Create(&masterParameter).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create Parameter"})
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to create Parameter",
+		})
 	}
 
 	// Return success response
-	return c.JSON(fiber.Map{"message": "Master Parameter Created!"})
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Master Parameter Created!",
+	})
 }
 
 func ShowAllParameter(c *fiber.Ctx) error {
 	var masterParameters []models.MasterParameter
 
 	if err := connection.DB.Where("status = ?", "L").Find(&masterParameters).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
-	return c.JSON(masterParameters)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,	
+		Message: "Success",
+		Data:    masterParameters,
+	})
 }
 
 func ShowParameterDetail(c *fiber.Ctx) error {
@@ -65,7 +84,10 @@ func ShowParameterDetail(c *fiber.Ctx) error {
 	var masterParameter models.MasterParameter
 
 	if err := connection.DB.Where("id = ?", parameterId).First(&masterParameter).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
 	return c.JSON(masterParameter)
@@ -84,22 +106,27 @@ func UpdateMasterParameter(c *fiber.Ctx) error {
 	var user models.Users
 	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
 	//
 
 	var masterParameter models.MasterParameter
 	if err := connection.DB.First(&masterParameter, parameterId).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "Data Not Found",
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: "Data Not Found",
 		})
 	}
 
 	var updatedMasterParameter models.MasterParameter
 	if err := c.BodyParser(&updatedMasterParameter); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": "Invalid Data Parameter",
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: "Invalid Data Parameter",
 		})
 	}
 
@@ -111,14 +138,16 @@ func UpdateMasterParameter(c *fiber.Ctx) error {
 	masterParameter.ParamValue = updatedMasterParameter.ParamValue
 
 	if err := connection.DB.Save(&masterParameter).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Failed to update Master Parameter",
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to update Master Parameter",
 		})
 	}
 
-	return c.JSON(fiber.Map{
-		"status": "Updated!",
-		"data":   masterParameter,
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Updated!",
+		Data:   masterParameter,
 	})
 }
 
@@ -135,22 +164,27 @@ func DeleteMasterParameter(c *fiber.Ctx) error {
 	var user models.Users
 	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
 	//
 
 	var masterParameter models.MasterParameter
 	if err := connection.DB.First(&masterParameter, parameterId).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "Data Not Found",
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: "Data Not Found",
 		})
 	}
 
 	var updatedMasterParameter models.MasterParameter
 	if err := c.BodyParser(&updatedMasterParameter); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": "Invalid Data Parameter",
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: "Invalid Data Parameter",
 		})
 	}
 
@@ -159,13 +193,15 @@ func DeleteMasterParameter(c *fiber.Ctx) error {
 	masterParameter.Status = "D"
 
 	if err := connection.DB.Save(&masterParameter).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Failed to Delete Master Parameter",
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to Delete Master Parameter",
 		})
 	}
 
-	return c.JSON(fiber.Map{
-		"status": "Deleted!",
-		"data":   masterParameter,
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Deleted!",
+		Data:   masterParameter,
 	})
 }

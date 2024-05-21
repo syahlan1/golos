@@ -15,7 +15,10 @@ func CreateMasterColumn(c *fiber.Ctx) error {
 	tableIdStr := c.Params("id")
 	tableId, err := strconv.Atoi(tableIdStr)
 	if err != nil {
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
 	}
 
 	var data map[string]interface{}
@@ -23,7 +26,10 @@ func CreateMasterColumn(c *fiber.Ctx) error {
 	timeNow := time.Now()
 
 	if err := c.BodyParser(&data); err != nil {
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
 	}
 
 	// Get user role ID
@@ -36,7 +42,10 @@ func CreateMasterColumn(c *fiber.Ctx) error {
 	var user models.Users
 	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
 	}
 
 	newMasterCode := models.MasterColumn{
@@ -57,21 +66,29 @@ func CreateMasterColumn(c *fiber.Ctx) error {
 	}
 
 	if err := connection.DB.Create(&newMasterCode).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create Master Column"})
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to create Master Column",
+		})
 	}
 
 	// Return success response
-	return c.JSON(fiber.Map{"message": "Master Column Created!"})
+	return c.JSON(models.Response{
+		Code:    fiber.StatusCreated,
+		Message: "Master Column Created!",
+	})
 }
-
-
 
 func ShowMasterColumn(c *fiber.Ctx) error {
 	var masterCode []models.MasterTable
 
 	connection.DB.Where("status = ?", "L").Find(&masterCode)
 
-	return c.JSON(masterCode)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    masterCode,
+	})
 }
 
 func ShowMasterColumnDetail(c *fiber.Ctx) error {
@@ -80,10 +97,17 @@ func ShowMasterColumnDetail(c *fiber.Ctx) error {
 
 	// Mencari detail MasterTable berdasarkan id
 	if err := connection.DB.Where("id = ?", masterColumnId).First(&masterColumn).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "MasterTable not found"})
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: "MasterTable not found",
+		})
 	}
 
-	return c.JSON(masterColumn)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    masterColumn,
+	})
 }
 
 func ShowMasterColumnByTable(c *fiber.Ctx) error {
@@ -92,10 +116,17 @@ func ShowMasterColumnByTable(c *fiber.Ctx) error {
 
 	// Mencari detail MasterTable berdasarkan id
 	if err := connection.DB.Where("table_id = ?", masterTableId).First(&masterColumn).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "MasterTable not found"})
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: "MasterTable not found",
+		})
 	}
 
-	return c.JSON(masterColumn)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    masterColumn,
+	})
 }
 
 func UpdateColumnTable(c *fiber.Ctx) error {
@@ -111,22 +142,27 @@ func UpdateColumnTable(c *fiber.Ctx) error {
 	var user models.Users
 	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
 	}
 
 	//
 
 	var masterTable models.MasterTable
 	if err := connection.DB.First(&masterTable, masterTableId).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "Data Not Found",
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message : "Data Not Found",
 		})
 	}
 
 	var updatedMasterTable models.MasterTable
 	if err := c.BodyParser(&updatedMasterTable); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": "Invalid Master Table Data",
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message : "Invalid Master Table Data",
 		})
 	}
 
@@ -139,14 +175,16 @@ func UpdateColumnTable(c *fiber.Ctx) error {
 	masterTable.FormType = updatedMasterTable.FormType
 
 	if err := connection.DB.Save(&masterTable).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Failed to update Master Table",
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message : "Failed to update Master Table",
 		})
 	}
 
-	return c.JSON(fiber.Map{
-		"status": "Updated!",
-		"data":   masterTable,
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message : "Updated!",
+		Data:   masterTable,
 	})
 }
 
@@ -162,15 +200,19 @@ func DeleteMasterColumn(c *fiber.Ctx) error {
 	var user models.Users
 	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
 	}
 
 	//
 
 	var masterTable models.MasterTable
 	if err := connection.DB.First(&masterTable, masterTableId).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "Data Not Found",
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message : "Data Not Found",
 		})
 	}
 
@@ -179,13 +221,15 @@ func DeleteMasterColumn(c *fiber.Ctx) error {
 	masterTable.Status = "D"
 
 	if err := connection.DB.Save(&masterTable).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Failed to delete Master Table",
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message : "Failed to delete Master Table",
 		})
 	}
 
-	return c.JSON(fiber.Map{
-		"status": "Deleted!",
-		"data":   masterTable,
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message : "Deleted!",
+		Data:   masterTable,
 	})
 }
