@@ -23,7 +23,10 @@ func ShowDetailMasterCode(c *fiber.Ctx) error {
 		// Konversi groupId ke tipe data integer
 		groupIdInt, err := strconv.Atoi(groupId)
 		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid code_group_id"})
+			return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+				Code:    fiber.StatusBadRequest,
+				Message: "Invalid group ID",
+			})
 		}
 
 		// Gunakan groupIdInt dalam kondisi Where
@@ -32,10 +35,17 @@ func ShowDetailMasterCode(c *fiber.Ctx) error {
 		// Jika groupId kosong, gunakan groupName
 		connection.DB.Where("status = ? AND code_group = ?", status, groupName).Find(&masterCode)
 	} else {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Missing parameter"})
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: "Missing parameter",
+		})
 	}
 
-	return c.JSON(masterCode)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    masterCode,
+	})
 }
 
 func ShowMasterCode(c *fiber.Ctx) error {
@@ -43,7 +53,11 @@ func ShowMasterCode(c *fiber.Ctx) error {
 
 	connection.DB.Where("status = ?", "L").Find(&masterCode)
 
-	return c.JSON(masterCode)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    masterCode,
+	})
 }
 
 func ShowMasterCodeGroup(c *fiber.Ctx) error {
@@ -51,7 +65,11 @@ func ShowMasterCodeGroup(c *fiber.Ctx) error {
 
 	connection.DB.Where("status = ?", "L").Find(&masterCodeGroup)
 
-	return c.JSON(masterCodeGroup)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    masterCodeGroup,
+	})
 }
 
 func CreateMasterCode(c *fiber.Ctx) error {
@@ -60,7 +78,10 @@ func CreateMasterCode(c *fiber.Ctx) error {
 	timeNow := time.Now()
 
 	if err := c.BodyParser(&data); err != nil {
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
 	}
 
 	// Get user role ID
@@ -73,7 +94,10 @@ func CreateMasterCode(c *fiber.Ctx) error {
 	var user models.Users
 	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
-		return err
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: "User not found",
+		})
 	}
 
 	newMasterCode := models.MasterCode{
@@ -91,11 +115,17 @@ func CreateMasterCode(c *fiber.Ctx) error {
 	}
 
 	if err := connection.DB.Create(&newMasterCode).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create Master Code"})
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to create Master Code",
+		})
 	}
 
 	// Return success response
-	return c.JSON(fiber.Map{"message": "Master Code Created!"})
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Master Code Created!",
+	})
 }
 
 func CreateMasterCodeGroup(c *fiber.Ctx) error {
@@ -103,7 +133,10 @@ func CreateMasterCodeGroup(c *fiber.Ctx) error {
 	timeNow := time.Now()
 
 	if err := c.BodyParser(&data); err != nil {
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
 	}
 
 	// Get user role ID
@@ -116,14 +149,18 @@ func CreateMasterCodeGroup(c *fiber.Ctx) error {
 	var user models.Users
 	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
-		return err
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: err.Error(),
+		})
 	}
 
 	//check existing name code group
 	var existingCodeGroup models.MasterCodeGroup
 	if err := connection.DB.Where("code_group = ?", data["code_group"]).First(&existingCodeGroup).Error; err == nil {
-		return c.Status(fiber.StatusConflict).JSON(fiber.Map{
-			"message": "Code Group Name Already Exists",
+		return c.Status(fiber.StatusConflict).JSON(models.Response{
+			Code:    fiber.StatusConflict,
+			Message: "Code Group Name Already Exists",
 		})
 	}
 
@@ -139,11 +176,17 @@ func CreateMasterCodeGroup(c *fiber.Ctx) error {
 	}
 
 	if err := connection.DB.Create(&newMasterCodeGroup).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to Master Code Group"})
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to Master Code Group",
+		})
 	}
 
 	// Return success response
-	return c.JSON(fiber.Map{"message": "Master Code Group Created!"})
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Master Code Group Created!",
+	})
 }
 
 func UpdateMasterCode(c *fiber.Ctx) error {
@@ -159,22 +202,27 @@ func UpdateMasterCode(c *fiber.Ctx) error {
 	var user models.Users
 	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
-		return err
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: err.Error(),
+		})
 	}
 
 	//
 
 	var masterCode models.MasterCode
 	if err := connection.DB.First(&masterCode, masterCodeId).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "Data Not Found",
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: "Data Not Found",
 		})
 	}
 
 	var updatedMasterCode models.MasterCode
 	if err := c.BodyParser(&updatedMasterCode); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": "Invalid Master Code Data",
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: "Invalid Master Code Data",
 		})
 	}
 
@@ -188,14 +236,16 @@ func UpdateMasterCode(c *fiber.Ctx) error {
 	masterCode.CodeGroup = updatedMasterCode.CodeGroup
 
 	if err := connection.DB.Save(&masterCode).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Failed to update Master Code",
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to update Master Code",
 		})
 	}
 
-	return c.JSON(fiber.Map{
-		"status": "Updated!",
-		"data":   masterCode,
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Updated!",
+		Data:    masterCode,
 	})
 }
 
@@ -212,22 +262,27 @@ func UpdateMasterCodeGroup(c *fiber.Ctx) error {
 	var user models.Users
 	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
-		return err
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: err.Error(),
+		})
 	}
 
 	//
 
 	var masterCodeGroup models.MasterCodeGroup
 	if err := connection.DB.First(&masterCodeGroup, masterCodeGroupId).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "Data Not Found",
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: "Data Not Found",
 		})
 	}
 
 	var updatedMasterCodeGroup models.MasterCodeGroup
 	if err := c.BodyParser(&updatedMasterCodeGroup); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": "Invalid Master Code Data",
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: "Invalid Master Code Data",
 		})
 	}
 
@@ -238,14 +293,15 @@ func UpdateMasterCodeGroup(c *fiber.Ctx) error {
 	masterCodeGroup.EnglishDescription = updatedMasterCodeGroup.EnglishDescription
 
 	if err := connection.DB.Save(&masterCodeGroup).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Failed to update Master Code Group",
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to update Master Code Group",
 		})
 	}
 
-	return c.JSON(fiber.Map{
-		"status": "Updated!",
-		"data":   masterCodeGroup,
+	return c.JSON(models.Response{
+		Message: "Updated!",
+		Data:    masterCodeGroup,
 	})
 }
 
@@ -262,15 +318,19 @@ func DeleteMasterCode(c *fiber.Ctx) error {
 	var user models.Users
 	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
 	//
 
 	var masterCode models.MasterCode
 	if err := connection.DB.First(&masterCode, masterCodeId).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "Data Not Found",
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: "Data Not Found",
 		})
 	}
 
@@ -279,14 +339,16 @@ func DeleteMasterCode(c *fiber.Ctx) error {
 	masterCode.Status = "D"
 
 	if err := connection.DB.Save(&masterCode).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Failed to delete Master Code",
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to delete Master Code",
 		})
 	}
 
-	return c.JSON(fiber.Map{
-		"status": "Deleted!",
-		"data":   masterCode,
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Deleted!",
+		Data:   masterCode,
 	})
 }
 
@@ -303,15 +365,19 @@ func DeleteMasterCodeGroup(c *fiber.Ctx) error {
 	var user models.Users
 	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
-		return err
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Message: err.Error(),
+			Code:    fiber.StatusNotFound,
+		})
 	}
 
 	//
 
 	var masterCodeGroup models.MasterCodeGroup
 	if err := connection.DB.First(&masterCodeGroup, masterCodeGroupId).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "Data Not Found",
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: "Data Not Found",
 		})
 	}
 
@@ -320,13 +386,15 @@ func DeleteMasterCodeGroup(c *fiber.Ctx) error {
 	masterCodeGroup.Status = "D"
 
 	if err := connection.DB.Save(&masterCodeGroup).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Failed to delete Master Code Group",
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to delete Master Code Group",
 		})
 	}
 
-	return c.JSON(fiber.Map{
-		"status": "Deleted!",
-		"data":   masterCodeGroup,
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Deleted!",
+		Data:   masterCodeGroup,
 	})
 }

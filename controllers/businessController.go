@@ -19,9 +19,12 @@ func ShowBusinessApplicant(c *fiber.Ctx) error {
 	connection.DB.Find(&business)
 	connection.DB.Find(&applicant)
 
-	return c.JSON(fiber.Map{
-		"business":  business,
-		"applicant": applicant,
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data: fiber.Map{
+			"business":   business,
+			"applicants": applicant},
 	})
 }
 
@@ -30,7 +33,11 @@ func BusinessShow(c *fiber.Ctx) error {
 
 	connection.DB.Find(&businesses)
 
-	return c.JSON(businesses)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    businesses,
+	})
 }
 
 func BusinessShowDetail(c *fiber.Ctx) error {
@@ -40,14 +47,21 @@ func BusinessShowDetail(c *fiber.Ctx) error {
 
 	connection.DB.Where("id = ?", id).Find(&business)
 
-	return c.JSON(business)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    business,
+	})
 }
 
 func BusinessCreate(c *fiber.Ctx) error {
 	var data map[string]interface{}
 
 	if err := c.BodyParser(&data); err != nil {
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
 	}
 	document := models.Document{
 		DocumentFile:      utils.GetStringValue(data, "document_file"),
@@ -75,10 +89,16 @@ func BusinessCreate(c *fiber.Ctx) error {
 	}
 
 	if err := connection.DB.Create(&generalIformation).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		}) 
 	}
 	if err := connection.DB.Create(&document).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
 	}
 
 	companyFirstName := utils.GetStringValue(data, "company_first_name")
@@ -137,12 +157,18 @@ func BusinessCreate(c *fiber.Ctx) error {
 
 	// Buat data bisnis ke database
 	if err := connection.DB.Create(&business).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
 	}
 
 	createdBy, err := TakeUsername(c)
 	if err != nil {
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
 	}
 
 	//generate id
@@ -163,7 +189,10 @@ func BusinessCreate(c *fiber.Ctx) error {
 
 	// Buat data approval ke database
 	if err := connection.DB.Create(&approval).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
 	}
 
 	historyId := ulid.MustNew(ulid.Timestamp(t), entropy)
@@ -178,11 +207,15 @@ func BusinessCreate(c *fiber.Ctx) error {
 		Data:           BusinessToJson(business, document, generalIformation),
 	}
 	if err := connection.DB.Create(&history).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
 	}
 
-	return c.JSON(fiber.Map{
-		"message": "insert sukses",
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
 	})
 }
 
@@ -206,15 +239,17 @@ func BusinessUpdate(c *fiber.Ctx) error {
 
 	var businesses models.Business
 	if err := connection.DB.First(&businesses, businessID).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "User Not Found",
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: "Business not found",
 		})
 	}
 
 	var updatedBusiness models.Business
 	if err := c.BodyParser(&updatedBusiness); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": "Invalid User Data",
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: "Invalid request payload",
 		})
 	}
 
@@ -263,14 +298,16 @@ func BusinessUpdate(c *fiber.Ctx) error {
 	businesses.DocumentFile = updatedBusiness.DocumentFile
 
 	if err := connection.DB.Save(&businesses).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Failed to update the user data",
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to update the business data",
 		})
 	}
 
-	return c.JSON(fiber.Map{
-		"data":   businesses,
-		"status": "Updated!",
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    businesses,
 	})
 }
 
@@ -279,22 +316,25 @@ func BusinessDelete(c *fiber.Ctx) error {
 
 	var businesses models.Business
 	if err := connection.DB.First(&businesses, businessID).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "User Not Found",
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: "Business not found",
 		})
 	}
 
 	businesses.Status = "D"
 
 	if err := connection.DB.Save(&businesses).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Failed to delete",
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to delete the business data",
 		})
 	}
 
-	return c.JSON(fiber.Map{
-		"data":   businesses,
-		"status": "Deleted!",
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    businesses,
 	})
 }
 
@@ -303,20 +343,23 @@ func BusinessApproveUpdate(c *fiber.Ctx) error {
 
 	var business models.Business
 	if err := connection.DB.First(&business, businessID).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "Id Not Found",
+		return c.Status(fiber.StatusNotFound).JSON(models.Response{
+			Code:    fiber.StatusNotFound,
+			Message: "Business not found",
 		})
 	}
 
 	if err := connection.DB.Save(&business).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Failed to update the data",
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Failed to update the business data",
 		})
 	}
 
-	return c.JSON(fiber.Map{
-		"data":   business,
-		"status": "ApproveStatus berhasil diperbarui!",
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    business,
 	})
 }
 
@@ -324,113 +367,197 @@ func ShowCompanyFirstName(c *fiber.Ctx) error {
 	var companyFirstNames []string
 
 	if err := connection.DB.Model(&models.CompanyFirstName{}).Pluck("name", &companyFirstNames).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
-	return c.JSON(companyFirstNames)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    companyFirstNames,
+	})
 }
 
 func ShowCompanyType(c *fiber.Ctx) error {
 	var companyType []string
 
 	if err := connection.DB.Model(&models.CompanyType{}).Pluck("name", &companyType).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
-	return c.JSON(companyType)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    companyType,
+	})
 }
 
 func ShowBusinessAddressType(c *fiber.Ctx) error {
 	var businessAddressType []string
 
 	if err := connection.DB.Model(&models.BusinessAddressType{}).Pluck("name", &businessAddressType).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
-	return c.JSON(businessAddressType)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    businessAddressType,
+	})
 }
 
 func ShowEternalRatingCompany(c *fiber.Ctx) error {
 	var eternalRatingCompany []string
 
 	if err := connection.DB.Model(&models.EternalRatingCompany{}).Pluck("name", &eternalRatingCompany).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
-	return c.JSON(eternalRatingCompany)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    eternalRatingCompany,
+	})
 }
 
 func ShowRatingClass(c *fiber.Ctx) error {
 	var ratingClass []string
 
 	if err := connection.DB.Model(&models.RatingClass{}).Pluck("name", &ratingClass).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
-	return c.JSON(ratingClass)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    ratingClass,
+	})
 }
 
 func ShowKodeBursa(c *fiber.Ctx) error {
 	var kodeBursa []string
 
 	if err := connection.DB.Model(&models.KodeBursa{}).Pluck("name", &kodeBursa).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
-	return c.JSON(kodeBursa)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    kodeBursa,
+	})
 }
 
 func ShowBusinessType(c *fiber.Ctx) error {
 	var businessType []string
 
 	if err := connection.DB.Model(&models.BusinessType{}).Pluck("name", &businessType).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
 
-	return c.JSON(businessType)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    businessType,
+	})
 }
 
 // zipcode
 func GetProvinces(c *fiber.Ctx) error {
 	var provinces []string
 	if err := connection.DB.Model(&models.ZipCode{}).Distinct("province").Pluck("province", &provinces).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
-	return c.JSON(provinces)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    provinces,
+	})
 }
 
 func GetCitiesByProvince(c *fiber.Ctx) error {
 	province := c.Query("province")
 	var cities []string
 	if err := connection.DB.Model(&models.ZipCode{}).Distinct("city").Where("province = ?", province).Pluck("city", &cities).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
-	return c.JSON(cities)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    cities,
+	})
 }
 
 func GetDistrictByCity(c *fiber.Ctx) error {
 	city := c.Query("city")
 	var district []string
 	if err := connection.DB.Model(&models.ZipCode{}).Distinct("district").Where("city = ?", city).Pluck("district", &district).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
-	return c.JSON(district)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    district,
+	})
 }
 
 func GetSubdistrictByDistrict(c *fiber.Ctx) error {
 	district := c.Query("district")
 	var subdistrict []string
 	if err := connection.DB.Model(&models.ZipCode{}).Distinct("subdistrict").Where("district = ?", district).Pluck("subdistrict", &subdistrict).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
-	return c.JSON(subdistrict)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    subdistrict,
+	})
 }
 
 func GetZipCodesBySubdistrict(c *fiber.Ctx) error {
 	subdistrict := c.Query("subdistrict")
 	var zipCodes []string
 	if err := connection.DB.Model(&models.ZipCode{}).Where("subdistrict = ?", subdistrict).Pluck("zip_code", &zipCodes).First(&zipCodes).Error; err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
 	}
-	return c.JSON(zipCodes)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    zipCodes,
+	})
 }
