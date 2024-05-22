@@ -42,6 +42,24 @@ type Applicant struct {
 	SpouseId             int    `json:"spouse_id"`
 }
 
+
+type CreateApplicant struct {
+	Applicant          Applicant          `json:"applicant"`
+	Spouse             SpouseData         `json:"spouse"`
+	IdCard             IdCard             `json:"id_card"`
+	Document           Document           `json:"document"`
+	GeneralInformation GeneralInformation `json:"general_information"`
+}
+
+
+type ApplicantDetail struct {
+	Applicant
+	SpouseData         SpouseData         `json:"spouse"`
+	IdCard             IdCard             `json:"id_card"`
+	Document           Document           `json:"document"`
+	GeneralInformation GeneralInformation `json:"general_information"`
+}
+
 type HomeStatus struct {
 	Id   int    `json: "id" gorm:"primaryKey"`
 	Name string `json: "name"`

@@ -3,16 +3,17 @@ package routes
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 
 	"github.com/syahlan1/golos/controllers/aplicantController"
-	 "github.com/syahlan1/golos/controllers/approvalController"
-	 "github.com/syahlan1/golos/controllers/authController"
-	 "github.com/syahlan1/golos/controllers/businessController"
-	 "github.com/syahlan1/golos/controllers/masterCodeController"
-	 "github.com/syahlan1/golos/controllers/masterColumnController"
+	"github.com/syahlan1/golos/controllers/approvalController"
+	"github.com/syahlan1/golos/controllers/authController"
+	"github.com/syahlan1/golos/controllers/businessController"
+	"github.com/syahlan1/golos/controllers/masterCodeController"
+	"github.com/syahlan1/golos/controllers/masterColumnController"
 	"github.com/syahlan1/golos/controllers/masterTableController"
-	 "github.com/syahlan1/golos/controllers/ownershipDataController"
-	 "github.com/syahlan1/golos/controllers/validationController"
+	"github.com/syahlan1/golos/controllers/ownershipDataController"
+	"github.com/syahlan1/golos/controllers/validationController"
 	"github.com/syahlan1/golos/middleware"
 )
 
@@ -23,6 +24,8 @@ func Setup(app *fiber.App) {
 		AllowMethods:     "GET, POST, PUT, DELETE",
 		AllowCredentials: true,
 	}))
+
+	app.Use(logger.New())
 
 	api := app.Group("/api")
 
@@ -68,7 +71,7 @@ func Setup(app *fiber.App) {
 	api.Get("/applicant/show", aplicantController.ApplicantShow)
 	api.Get("/applicant/show/:id", aplicantController.ApplicantShowDetail)
 	api.Put("/applicant/update/:id", middleware.Authorize("update"), aplicantController.ApplicantUpdate)
-	api.Put("/applicant/delete/:id", middleware.Authorize("delete"), aplicantController.ApplicantDelete)
+	api.Delete("/applicant/delete/:id", middleware.Authorize("delete"), aplicantController.ApplicantDelete)
 	api.Get("/applicant/show-homestatus", aplicantController.ShowHomeStatus)
 	api.Get("/applicant/show-applicant-addresstype", aplicantController.ShowApplicantAddressType)
 	api.Get("/applicant/show-education", aplicantController.ShowEducation)
