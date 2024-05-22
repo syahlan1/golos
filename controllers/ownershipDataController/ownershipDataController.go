@@ -1,4 +1,4 @@
-package controllers
+package ownershipDataController
 
 import (
 	"strconv"

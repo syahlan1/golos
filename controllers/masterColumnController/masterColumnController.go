@@ -1,4 +1,4 @@
-package controllers
+package masterColumnController
 
 import (
 	"log"

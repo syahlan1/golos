@@ -1,4 +1,4 @@
-package controllers
+package aplicantController
 
 import (
 	"encoding/json"
@@ -283,7 +283,7 @@ func ApplicantCreate(c *fiber.Ctx) error {
 		})
 	}
 
-	createdBy, err := TakeUsername(c)
+	createdBy, err := utils.TakeUsername(c)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
 			Code:    fiber.StatusInternalServerError,

@@ -1,7 +1,6 @@
-package controllers
+package approvalController
 
 import (
-	"errors"
 	"log"
 	"math/rand"
 	"time"
@@ -14,21 +13,6 @@ import (
 	"gorm.io/gorm"
 )
 
-func TakeUsername(c *fiber.Ctx) (string, error) {
-	claims, err := utils.ExtractJWT(c)
-	if err != nil {
-		c.Status(fiber.StatusUnauthorized)
-		return "", errors.New("status unauthorized")
-	}
-
-	// Mendapatkan data pengguna (user) dari database
-	var user models.Users
-	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
-		return "", err
-	}
-	return user.Username, nil
-}
-
 func CreateApprovalSetting(c *fiber.Ctx) error {
 	var data map[string]interface{}
 	currentTime := time.Now()
@@ -40,7 +24,7 @@ func CreateApprovalSetting(c *fiber.Ctx) error {
 		})
 	}
 
-	createdBy, err := TakeUsername(c)
+	createdBy, err := utils.TakeUsername(c)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
 			Code:    fiber.StatusInternalServerError,
@@ -112,7 +96,7 @@ func CreateApprovalSetting(c *fiber.Ctx) error {
 
 func UpdateApprovalStatus(c *fiber.Ctx) error {
 	approvalID := c.Params("id")
-	createdBy, err := TakeUsername(c)
+	createdBy, err := utils.TakeUsername(c)
 	if err != nil {
 		log.Println("Error taking username:", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{

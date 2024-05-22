@@ -1,4 +1,4 @@
-package controllers
+package businessController
 
 import (
 	"encoding/json"
@@ -163,7 +163,7 @@ func BusinessCreate(c *fiber.Ctx) error {
 		})
 	}
 
-	createdBy, err := TakeUsername(c)
+	createdBy, err := utils.TakeUsername(c)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
