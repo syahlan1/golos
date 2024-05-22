@@ -35,6 +35,23 @@ func Setup(app *fiber.App) {
 	api.Get("/business/showkodebursa", controllers.ShowKodeBursa)
 	api.Get("/business/showbusinesstype", controllers.ShowBusinessType)
 
+	//ownership
+	api.Get("/ownership/show", controllers.ShowOwnershipData)
+	api.Post("/ownership/create", controllers.CreateOwnershipData)
+	api.Put("/ownership/update/:id", controllers.EditOwnershipData)
+	api.Put("/ownership/delete/:id", controllers.DeleteOwnershipData)
+
+	//relation with bank
+	api.Post("/relation-with-bank/create/:id", controllers.CreateRelationWithBank)
+	api.Get("/relation-with-bank/show", controllers.ShowRelationWithBank)
+	api.Put("/relation-with-bank/update/:id", controllers.UpdateRelationWithBank)
+	api.Put("/relation-with-bank/delete/:id", controllers.DeleteRelationWithBank)
+
+	//Rekening Debitur
+	api.Get("/rekening-debitur/show", controllers.ShowRekeningDebitur)
+	api.Put("/rekening-debitur/update/:id", controllers.UpdateRekeningDebitur)
+	api.Put("/rekening-debitur/delete/:id", controllers.DeleteRekeningDebitur)
+
 	api.Get("/show-business-applicant", controllers.ShowBusinessApplicant)
 
 	//applicant

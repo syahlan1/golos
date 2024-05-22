@@ -79,4 +79,8 @@ func Connect() {
 	connection.AutoMigrate(&models.MasterMapperColumn{})
 	connection.AutoMigrate(&models.MasterMapperTable{})
 	connection.AutoMigrate(&models.MasterParameter{})
+
+	connection.AutoMigrate(&models.OwnershipData{})
+	connection.AutoMigrate(&models.RelationWithBank{})
+	connection.AutoMigrate(&models.DataRekeningDebitur{})
 }
