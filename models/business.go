@@ -52,6 +52,17 @@ type Business struct {
 	GeneralInformationId  int    `json:"general_information_id"`
 }
 
+type BusinessApplicant struct {
+	Business  []Business  `json:"business"`
+	Applicant []Applicant `json:"applicant"`
+}
+
+type CreateBusiness struct {
+	Document           Document           `json:"document"`
+	GeneralInformation GeneralInformation `json:"general_information"`
+	Business           Business           `json:"business"`
+}
+
 type CompanyFirstName struct {
 	Id   int    `json: "id" gorm:"primaryKey"`
 	Name string `json: "name"`
