@@ -13,6 +13,12 @@ type Users struct {
 	gorm.Model
 }
 
+type Register struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 type Roles struct {
 	Id          uint         `gorm:"primaryKey" json:"id"`
 	Name        string       `gorm:"unique"`
@@ -22,6 +28,12 @@ type Roles struct {
 	Permissions []Permission `gorm:"many2many:role_permissions;"`
 	Users       []Users      `gorm:"foreignKey:RoleId"`
 	gorm.Model
+}
+
+type CreateRole struct {
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Permissions []string `json:"permissions"`
 }
 
 type Permission struct {
