@@ -16,3 +16,10 @@ type MasterParameter struct {
 	ParamKey           string    `json:"param_key"`
 	ParamValue         string    `json:"param_value"`
 }
+
+type CreateMasterParameter struct {
+	Description        string    `json:"description"`
+	EnglishDescription string    `json:"english_description"`
+	ParamKey           string    `json:"param_key"`
+	ParamValue         string    `json:"param_value"`
+}
