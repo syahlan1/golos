@@ -53,6 +53,22 @@ type MasterColumn struct {
 	MasterSourceColumn []MasterSourceColumn `gorm:"foreignKey:ColumnId"`
 }
 
+type CreateMasterColumn struct {
+	FieldName          string `json:"field_name"`
+	FieldType          string `json:"field_type"`
+	FieldLength        int    `json:"field_length"`
+	Description        string `json:"description"`
+	EnglishDescription string `json:"english_description"`
+	IsMandatory        bool   `json:"is_mandatory"`
+	Sequence           int    `json:"sequence"`
+	TableId            int    `json:"table_id"`
+	UiSourceQuery      string `json:"ui_source_query"`
+	UiSourceType       string `json:"ui_source_type"`
+	UiType             string `json:"ui_type"`
+	IsExport           bool   `json:"es_export"`
+	SqlFunction        string `json:"sql_function"`
+	OnblurScript       string `json:"onblur_script"`
+}
 type MasterSourceColumn struct {
 	Id           int       `json:"id"`
 	CreatedDate  time.Time `json:"created_date"`
