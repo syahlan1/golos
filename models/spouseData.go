@@ -1,7 +1,7 @@
 package models
 
 type SpouseData struct {
-	Id                  int    `json:"int"`
+	Id                  int    `json:"id"`
 	SpouseName          string `json:"spouse_name"`
 	SpouseIdCard        string `json:"spouse_id_card"`
 	SpouseAddress       string `json:"spouse_address"`

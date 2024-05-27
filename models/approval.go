@@ -53,6 +53,32 @@ type ApprovalSetting struct {
 	UsingProcessDate        bool      `json:"using_process_date"`
 }
 
+type ShowApproval struct {
+	Id             string `json:"id"`
+	DisplayData    string `json:"display_data"`
+	ApprovalStatus string `json:"approval_status"`
+	CreatedBy      string `json:"created_by"`
+	CreatedDate    string `json:"created_date"`
+	Description    string `json:"description"`
+	Module         string `json:"module"`
+	Type           string `json:"type"`
+}
+
+type CreateApprovalSetting struct {
+	Module            string                  `json:"module"`
+	Type              string                  `json:"type"`
+	Description       string                  `json:"description"`
+	ApprovalWorkflows []CrateApprovalWorkflow `json:"approval_workflows"`
+}
+
+type CrateApprovalWorkflow struct {
+	Name          string `json:"name"`
+	ProcessStatus string `json:"process_status"`
+	Order         int    `json:"order"`
+	RoleID        []int  `json:"role_id"`
+	IsFirstStep   bool   `json:"is_first_step"`
+}
+
 type ApprovalWorkflow struct {
 	Id                     int       `gorm:"primary_key" json:"id"`
 	ApprovalSettingID      int       `json:"approval_setting_id"`
@@ -90,6 +116,10 @@ type ApprovalWorkflowRole struct {
 	Actions            string    `json:"actions" gorm:"type:text"`
 	Conditions         string    `json:"conditions" gorm:"type:text"`
 	UserApprover       string    `json:"user_approver"`
+}
+
+type UpdateApprovalWorkflowRoles struct {
+	RoleIDs []int `json:"role_id"`
 }
 
 type ApprovalHistory struct {

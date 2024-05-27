@@ -1,21 +1,14 @@
 package approvalController
 
 import (
-	"log"
-	"math/rand"
-	"time"
-
 	"github.com/gofiber/fiber/v2"
-	"github.com/oklog/ulid"
-	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
+	"github.com/syahlan1/golos/services/approvalService"
 	"github.com/syahlan1/golos/utils"
-	"gorm.io/gorm"
 )
 
 func CreateApprovalSetting(c *fiber.Ctx) error {
-	var data map[string]interface{}
-	currentTime := time.Now()
+	var data models.CreateApprovalSetting
 
 	if err := c.BodyParser(&data); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
@@ -24,7 +17,7 @@ func CreateApprovalSetting(c *fiber.Ctx) error {
 		})
 	}
 
-	createdBy, err := utils.TakeUsername(c)
+	username, err := utils.TakeUsername(c)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
 			Code:    fiber.StatusInternalServerError,
@@ -32,60 +25,12 @@ func CreateApprovalSetting(c *fiber.Ctx) error {
 		})
 	}
 
-	approvalSetting := models.ApprovalSetting{
-		Module:      data["module"].(string),
-		Type:        data["type"].(string),
-		Description: data["description"].(string),
-		Status:      "active",
-		CreatedDate: currentTime,
-		CreatedBy:   createdBy,
-	}
-
-	if err := connection.DB.Create(&approvalSetting).Error; err != nil {
+	err = approvalService.CreateApprovalSetting(data, username)
+	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
 			Code:    fiber.StatusInternalServerError,
 			Message: err.Error(),
 		})
-	}
-
-	approvalWorkflowsData := data["approval_workflows"].([]interface{})
-	for _, wfData := range approvalWorkflowsData {
-		wf := wfData.(map[string]interface{})
-		approvalWorkflow := models.ApprovalWorkflow{
-			ApprovalSettingID: approvalSetting.Id,
-			Name:              wf["name"].(string),
-			ProcessStatus:     wf["process_status"].(string),
-			Order:             int(wf["order"].(float64)),
-			CreatedDate:       currentTime,
-			CreatedBy:         createdBy,
-		}
-
-		if err := connection.DB.Create(&approvalWorkflow).Error; err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-				Code:    fiber.StatusInternalServerError,
-				Message: err.Error(),
-			})
-		}
-
-		// Get Role IDs from request
-		roleIds := wf["role_id"].([]interface{})
-		for _, roleId := range roleIds {
-			// Create ApprovalWorkflowRole for each Role ID
-			approvalWorkflowRole := models.ApprovalWorkflowRole{
-				ApprovalWorkflowID: int(approvalWorkflow.Id),
-				RoleID:             int(roleId.(float64)),
-				Status:             "active",
-				CreatedDate:        currentTime,
-				CreatedBy:          createdBy,
-			}
-
-			if err := connection.DB.Create(&approvalWorkflowRole).Error; err != nil {
-				return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-					Code:    fiber.StatusInternalServerError,
-					Message: err.Error(),
-				})
-			}
-		}
 	}
 
 	return c.JSON(models.Response{
@@ -96,14 +41,6 @@ func CreateApprovalSetting(c *fiber.Ctx) error {
 
 func UpdateApprovalStatus(c *fiber.Ctx) error {
 	approvalID := c.Params("id")
-	createdBy, err := utils.TakeUsername(c)
-	if err != nil {
-		log.Println("Error taking username:", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: err.Error(),
-		})
-	}
 
 	// Get user role ID
 	claims, err := utils.ExtractJWT(c)
@@ -112,130 +49,23 @@ func UpdateApprovalStatus(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"message": "Unauthorized"})
 	}
 
-	var user models.Users
-	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
-		log.Println("Error retrieving user:", err)
+	result, err := approvalService.UpdateApprovalStatus(claims, approvalID)
+	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
 			Code:    fiber.StatusInternalServerError,
 			Message: err.Error(),
 		})
 	}
 
-	// Get the Approval to be updated
-	var approval models.Approval
-	if err := connection.DB.Where("id = ?", approvalID).First(&approval).Error; err != nil {
-		log.Println("Error retrieving approval:", err)
-		return c.Status(fiber.StatusNotFound).JSON(models.Response{
-			Code:    fiber.StatusNotFound,
-			Message: "Data Not Found",
-		})
-	}
-
-	// Get the ApprovalWorkflow based on the current process of the Approval
-	var currentWorkflow models.ApprovalWorkflow
-	if err := connection.DB.Where("approval_setting_id = ? AND id = ?", approval.ApprovalSettingID, approval.CurrentProcess).First(&currentWorkflow).Error; err != nil {
-		log.Println("Error retrieving current workflow:", err)
-		return c.Status(fiber.StatusNotFound).JSON(models.Response{
-			Code:    fiber.StatusNotFound,
-			Message: "No current approval workflow found",
-		})
-	}
-
-	// Check if the user has permission to access the current ApprovalWorkflow
-	var workflowRole models.ApprovalWorkflowRole
-	if err := connection.DB.Where("approval_workflow_id = ? AND role_id = ? AND status = ?", currentWorkflow.Id, user.RoleId, "active").First(&workflowRole).Error; err != nil {
-		log.Println("User does not have permission:", err)
-		return c.Status(fiber.StatusUnauthorized).JSON(models.Response{
-			Code:    fiber.StatusUnauthorized,
-			Message: "User does not have permission to access the current ApprovalWorkflow",
-		})
-	}
-
-	// Get the next ApprovalWorkflow
-	var nextWorkflow models.ApprovalWorkflow
-	if err := connection.DB.Where("approval_setting_id = ? AND \"order\" > ?", approval.ApprovalSettingID, currentWorkflow.Order).Order("\"order\" asc").First(&nextWorkflow).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			log.Println("No next approval workflow found:", err)
-			return c.Status(fiber.StatusNotFound).JSON(models.Response{
-				Code:    fiber.StatusNotFound,
-				Message: "No next approval workflow found",
-			})
-		}
-		log.Println("Error retrieving next workflow:", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: err.Error(),
-		})
-	}
-
-	// Update current_process on Approval with the id of the found ApprovalWorkflow
-	approval.CurrentProcess = nextWorkflow.Id
-	approval.UpdatedDate = time.Now()
-	approval.UpdatedBy = createdBy
-
-	// Determine approval_status based on process_status
-	switch nextWorkflow.ProcessStatus {
-	case "draft":
-		approval.ApprovalStatus = "draft"
-	case "open":
-		approval.ApprovalStatus = "pending"
-	case "closed":
-		approval.ApprovalStatus = "approved"
-	default:
-		// If process_status does not match the expected ones, set approval_status to a default value or adjust it according to your application's needs
-		approval.ApprovalStatus = "unknown"
-	}
-
-	if err := connection.DB.Save(&approval).Error; err != nil {
-		log.Println("Error saving approval:", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: "Failed to update approval data",
-		})
-	}
-
-	// Approval history
-	t := time.Now().UTC()
-	entropy := rand.New(rand.NewSource(t.UnixNano()))
-	id := ulid.MustNew(ulid.Timestamp(t), entropy)
-
-	history := models.ApprovalHistory{
-		Id:             id.String(),
-		ApprovalID:     approval.Id,
-		Date:           time.Now(),
-		Data:           approval.Data,
-		UserID:         approval.CreatedBy,
-		CurrentProcess: approval.CurrentProcess,
-		Notes:          approval.CurrentNotes,
-		Status:         approval.ApprovalStatus,
-	}
-
-	if err := connection.DB.Create(&history).Error; err != nil {
-		log.Println("Error creating approval history:", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: err.Error(),
-		})
-	}
-
-	log.Println("Approval updated successfully")
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
 		Message: "Approval updated successfully",
-		Data:    approval,
+		Data:    result,
 	})
 }
 
 func RejectApproval(c *fiber.Ctx) error {
 	approvalId := c.Params("id")
-
-	var approval models.Approval
-	if err := connection.DB.Where("id = ?", approvalId).First(&approval).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(models.Response{
-			Code:    fiber.StatusNotFound,
-			Message: "Data not found",
-		})
-	}
 
 	var updatedApproval models.Approval
 	if err := c.BodyParser(&updatedApproval); err != nil {
@@ -245,52 +75,8 @@ func RejectApproval(c *fiber.Ctx) error {
 		})
 	}
 
-	// Dapatkan ApprovalSettingID dari Approval yang akan diperbarui
-	approvalSettingID := approval.ApprovalSettingID
-
-	// Dapatkan ApprovalWorkflow dengan urutan pertama
-	var firstWorkflow models.ApprovalWorkflow
-	if err := connection.DB.Where("approval_setting_id = ?", approvalSettingID).Order("\"order\" asc").First(&firstWorkflow).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return c.Status(fiber.StatusNotFound).JSON(models.Response{
-				Code:    fiber.StatusNotFound,
-				Message: "No first approval workflow found",
-			})
-		}
-		return err
-	}
-
-	// Perbarui current_process pada Approval dengan urutan ApprovalWorkflow pertama yang ditemukan
-	approval.CurrentProcess = firstWorkflow.Id
-	approval.CurrentNotes = updatedApproval.CurrentNotes
-
-	// Set approval_status menjadi "rejected"
-	approval.ApprovalStatus = "rejected"
-
-	if err := connection.DB.Save(&approval).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: "Failed to reject approval data",
-		})
-	}
-
-	//history approval
-	t := time.Now().UTC()
-	entropy := rand.New(rand.NewSource(t.UnixNano()))
-	id := ulid.MustNew(ulid.Timestamp(t), entropy)
-
-	history := models.ApprovalHistory{
-		Id:             id.String(),
-		ApprovalID:     approval.Id,
-		Date:           time.Now(),
-		Data:           approval.Data,
-		UserID:         approval.CreatedBy,
-		CurrentProcess: approval.CurrentProcess,
-		Notes:          approval.CurrentNotes,
-		Status:         approval.ApprovalStatus,
-	}
-
-	if err := connection.DB.Create(&history).Error; err != nil {
+	result, err := approvalService.RejectApproval(approvalId, updatedApproval)
+	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
 			Code:    fiber.StatusInternalServerError,
 			Message: err.Error(),
@@ -300,29 +86,14 @@ func RejectApproval(c *fiber.Ctx) error {
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
 		Message: "Approval rejected successfully",
-		Data:    approval,
+		Data:    result,
 	})
 }
 
 func ShowAllData(c *fiber.Ctx) error {
-	var approvals []struct {
-		Id             string `json:"id"`
-		DisplayData    string `json:"display_data"`
-		ApprovalStatus string `json:"approval_status"`
-		CreatedBy      string `json:"created_by"`
-		CreatedDate    string `json:"created_date"`
-		Description    string `json:"description"`
-		Module         string `json:"module"`
-		Type           string `json:"type"`
-	}
 
-	// Query menggunakan raw SQL untuk melakukan join antara tabel Approval dan ApprovalWorkflow
-	query := `SELECT a.id, a.display_data, a.approval_status, a.created_by, a.created_date, aw.description, ast.module, ast.type, ast.type
-              FROM approvals a
-              JOIN approval_workflows aw ON a.current_process = aw.id
-			  JOIN approval_settings ast ON a.approval_setting_id = ast.id`
-
-	if err := connection.DB.Raw(query).Scan(&approvals).Error; err != nil {
+	result, err := approvalService.ShowAllData()
+	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
 			Code:    fiber.StatusInternalServerError,
 			Message: err.Error(),
@@ -332,15 +103,15 @@ func ShowAllData(c *fiber.Ctx) error {
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
 		Message: "Success",
-		Data:    approvals,
+		Data:    result,
 	})
 }
 
 func ApprovalDataDetail(c *fiber.Ctx) error {
 	approvalID := c.Params("id")
 
-	var data string
-	if err := connection.DB.Raw("SELECT data FROM approvals WHERE id = ?", approvalID).Scan(&data).Error; err != nil {
+	result, err := approvalService.ApprovalDataDetail(approvalID)
+	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
 			Code:    fiber.StatusInternalServerError,
 			Message: err.Error(),
@@ -350,16 +121,14 @@ func ApprovalDataDetail(c *fiber.Ctx) error {
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
 		Message: "Success",
-		Data:    data,
+		Data:    result,
 	})
 }
 
 func UpdateApprovalWorkflowRoles(c *fiber.Ctx) error {
 	// Parse request body
-	var req struct {
-		RoleIDs []int `json:"role_id"`
-	}
-	if err := c.BodyParser(&req); err != nil {
+	var data models.UpdateApprovalWorkflowRoles
+	if err := c.BodyParser(&data); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
@@ -369,17 +138,8 @@ func UpdateApprovalWorkflowRoles(c *fiber.Ctx) error {
 	// Get approval_workflow_id from URL parameter
 	approvalWorkflowID := c.Params("id")
 
-	// Find existing approval workflow by ID
-	var existingWorkflow models.ApprovalWorkflow
-	if err := connection.DB.Where("id = ?", approvalWorkflowID).First(&existingWorkflow).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(models.Response{
-			Code:    fiber.StatusNotFound,
-			Message: "Approval workflow not found",
-		})
-	}
-
-	// Update approval workflow roles
-	if err := updateApprovalWorkflowRoles(existingWorkflow.Id, req.RoleIDs); err != nil {
+	err := approvalService.UpdateApprovalWorkflowRoles(approvalWorkflowID, data)
+	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
 			Code:    fiber.StatusInternalServerError,
 			Message: err.Error(),
@@ -390,25 +150,4 @@ func UpdateApprovalWorkflowRoles(c *fiber.Ctx) error {
 		Code:    fiber.StatusOK,
 		Message: "Approval workflow roles updated successfully",
 	})
-}
-
-func updateApprovalWorkflowRoles(approvalWorkflowID int, roleIDs []int) error {
-	// Delete existing ApprovalWorkflowRoles entries for the approval_workflow_id
-	if err := connection.DB.Where("approval_workflow_id = ?", approvalWorkflowID).Delete(&models.ApprovalWorkflowRole{}).Error; err != nil {
-		return err
-	}
-
-	// Create new ApprovalWorkflowRoles entries for the approval_workflow_id and role_ids
-	var workflowRoles []models.ApprovalWorkflowRole
-	for _, roleID := range roleIDs {
-		workflowRoles = append(workflowRoles, models.ApprovalWorkflowRole{
-			ApprovalWorkflowID: approvalWorkflowID,
-			RoleID:             roleID,
-		})
-	}
-	if err := connection.DB.Create(&workflowRoles).Error; err != nil {
-		return err
-	}
-
-	return nil
 }
