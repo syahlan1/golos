@@ -19,6 +19,15 @@ type MasterCode struct {
 	CodeGroup          string    `json:"code_group"`
 }
 
+type CreateMasterCode struct {
+	Code               string `json:"code"`
+	CodeGroupId        int    `json:"code_group_id"`
+	Description        string `json:"description"`
+	EnglishDescription string `json:"english_description"`
+	Sequence           int    `json:"sequence"`
+	CodeGroup          string `json:"code_group"`
+}
+
 type MasterCodeGroup struct {
 	Id                 int       `json:"id"`
 	Authoriser         string    `json:"authoriser"`
