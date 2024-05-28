@@ -15,7 +15,6 @@ func UploadFile(file *multipart.FileHeader, dir string) (filename, filepath stri
 
 	uploadedFile, err := file.Open()
 	if err != nil {
-		log.Println("tes1")
 		return "", "", err
 	}
 	defer uploadedFile.Close()
@@ -26,23 +25,19 @@ func UploadFile(file *multipart.FileHeader, dir string) (filename, filepath stri
 
 	uploadDir := "./" + dir
 	if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
-		log.Println("tes2")
 		return "", "", err
 	}
 
 	destinationFile, err := os.Create(filepath)
 	if err != nil {
-		log.Println("tes3")
 		return "", "", err
 	}
 	defer destinationFile.Close()
 
 	if _, err := uploadedFile.Seek(0, 0); err != nil {
-		log.Println("tes4")
 		return "", "", err
 	}
 	if _, err := io.Copy(destinationFile, uploadedFile); err != nil {
-		log.Println("tes5")
 		return "", "", err
 	}
 
