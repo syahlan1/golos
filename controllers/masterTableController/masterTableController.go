@@ -2,7 +2,6 @@ package masterTableController
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
 	"github.com/syahlan1/golos/services/masterTableService"
 	"github.com/syahlan1/golos/utils"
@@ -52,19 +51,18 @@ func ShowMasterTable(c *fiber.Ctx) error {
 
 func ShowMasterTableDetail(c *fiber.Ctx) error {
 	masterTableId := c.Params("id")
-	var masterTable models.MasterTable
-
-	// Mencari detail MasterTable berdasarkan id
-	if err := connection.DB.Where("id = ?", masterTableId).First(&masterTable).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(models.Response{
-			Code:    fiber.StatusNotFound,
-			Message: "MasterTable not found"})
+	result, err := masterTableService.ShowMasterTableDetail(masterTableId)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
 	}
 
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
 		Message: "Success",
-		Data:    masterTable,
+		Data:    result,
 	})
 }
 
