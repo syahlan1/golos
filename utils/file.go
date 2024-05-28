@@ -2,7 +2,6 @@ package utils
 
 import (
 	"io"
-	"log"
 	"math/rand"
 	"mime/multipart"
 	"os"
