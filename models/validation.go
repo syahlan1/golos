@@ -18,6 +18,15 @@ type MasterValidation struct {
 	IsActive           int       `json:"is_active"`
 }
 
+type CreateValidation struct {
+	Description        string    `json:"description"`
+	EnglishDescription string    `json:"english_description"`
+	MessageType        string    `json:"message_type"`
+	ValidationFunction string    `json:"validation_function"`
+	IsActive           int       `json:"is_active"`
+	MasterCodeId       int       `json:"master_code_id"`
+}
+
 type MasterValidationRelation struct {
 	Id              int       `json:"id"`
 	CreatedDate     time.Time `json:"created_Date"`

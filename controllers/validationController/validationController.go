@@ -1,68 +1,17 @@
 package validationController
 
 import (
-	"log"
 	"strconv"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
+	"github.com/syahlan1/golos/services/validationService"
 	"github.com/syahlan1/golos/utils"
 )
 
 func ShowAllValidations(c *fiber.Ctx) error {
-	var validations []models.MasterValidation
-	if err := connection.DB.Where("status = ? AND is_active = ?", "L", 1).Find(&validations).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: "Failed to fetch validations",
-		})
-	}
-	return c.JSON(models.Response{
-		Code:    fiber.StatusOK,
-		Message: "Success",
-		Data:    validations,
-	})
-}
 
-func ShowDetailValidation(c *fiber.Ctx) error {
-	var validations models.MasterValidation
-	validationId := c.Params("id")
-
-	if err := connection.DB.Where("id = ?", validationId).Find(&validations).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: "Failed to fetch validations",
-		})
-	}
-	return c.JSON(models.Response{
-		Code:    fiber.StatusOK,
-		Message: "Success",
-		Data:    validations,
-	})
-}
-
-func ShowValidationByColumn(c *fiber.Ctx) error {
-	var validations []models.MasterValidation
-	columnId := c.Params("id")
-
-	if err := connection.DB.Where("status = ? AND is_active = ? AND column_id = ?", "L", 1, columnId).Find(&validations).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: "Failed to fetch validations"})
-	}
-	return c.JSON(models.Response{
-		Code:    fiber.StatusOK,
-		Message: "Success",
-		Data:    validations,
-	})
-}
-
-func CreateValidation(c *fiber.Ctx) error {
-	columnIdStr := c.Params("id")
-	columnId, err := strconv.Atoi(columnIdStr)
-
+	result, err := validationService.ShowAllValidations()
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
@@ -70,11 +19,51 @@ func CreateValidation(c *fiber.Ctx) error {
 		})
 	}
 
-	var data map[string]interface{}
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
 
-	timeNow := time.Now()
+func ShowDetailValidation(c *fiber.Ctx) error {
+	validationId := c.Params("id")
 
-	if err := c.BodyParser(&data); err != nil {
+	result, err := validationService.ShowDetailValidation(validationId)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func ShowValidationByColumn(c *fiber.Ctx) error {
+	columnId := c.Params("id")
+
+	result, err := validationService.ShowValidationByColumn(columnId)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func CreateValidation(c *fiber.Ctx) error {
+	columnIdStr := c.Params("id")
+	columnId, err := strconv.Atoi(columnIdStr)
+	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
@@ -88,32 +77,19 @@ func CreateValidation(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"message": "Unauthorized"})
 	}
 
-	var user models.Users
-	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
-		log.Println("Error retrieving user:", err)
+	var data models.CreateValidation
+	if err := c.BodyParser(&data); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
 		})
 	}
 
-	newMasterValidation := models.MasterValidation{
-		CreatedBy:          user.Username,
-		CreatedDate:        timeNow,
-		Status:             "L",
-		Description:        data["description"].(string),
-		EnglishDescription: data["english_description"].(string),
-		MessageType:        data["message_type"].(string),
-		ValidationFunction: data["validation_function"].(string),
-		IsActive:           int(data["is_active"].(float64)),
-		MasterCodeId:       int(data["master_code_id"].(float64)),
-		ColumnId:           columnId,
-	}
-
-	if err := connection.DB.Create(&newMasterValidation).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: "Failed to create Master Validation",
+	err = validationService.CreateValidation(claims, columnId, data)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
 		})
 	}
 
@@ -134,52 +110,26 @@ func UpdateValidation(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"message": "Unauthorized"})
 	}
 
-	var user models.Users
-	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
-		log.Println("Error retrieving user:", err)
-		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
-			Code:    fiber.StatusBadRequest,
-			Message: err.Error(),
-		})
-	}
-
-	//
-
-	var masterValidation models.MasterValidation
-	if err := connection.DB.First(&masterValidation, masterValidationId).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(models.Response{
-			Code:    fiber.StatusNotFound,
-			Message: "Data Not Found",
-		})
-	}
-
-	var updatedMasterValidation models.MasterValidation
-	if err := c.BodyParser(&updatedMasterValidation); err != nil {
+	var data models.MasterValidation
+	if err := c.BodyParser(&data); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
 			Message: "Invalid Master Validation Data",
 		})
 	}
 
-	masterValidation.UpdatedBy = user.Username
-	masterValidation.UpdatedDate = time.Now()
-	masterValidation.Description = updatedMasterValidation.Description
-	masterValidation.EnglishDescription = updatedMasterValidation.EnglishDescription
-	masterValidation.MessageType = updatedMasterValidation.MessageType
-	masterValidation.ValidationFunction = updatedMasterValidation.ValidationFunction
-	masterValidation.IsActive = updatedMasterValidation.IsActive
-
-	if err := connection.DB.Save(&masterValidation).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: "Failed to update Master Validation",
+	result, err := validationService.UpdateValidation(claims, masterValidationId, data)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
 		})
 	}
 
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
 		Message: "Updated!",
-		Data:   masterValidation,
+		Data:    result,
 	})
 }
 
@@ -193,39 +143,17 @@ func DeleteValidation(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"message": "Unauthorized"})
 	}
 
-	var user models.Users
-	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
-		log.Println("Error retrieving user:", err)
+	result, err := validationService.DeleteValidation(claims, masterValidateId)
+	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
 		})
 	}
 
-	//
-
-	var masterValidate models.MasterCode
-	if err := connection.DB.First(&masterValidate, masterValidateId).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(models.Response{
-			Code:    fiber.StatusNotFound,
-			Message: "Data Not Found",
-		})
-	}
-
-	masterValidate.UpdatedBy = user.Username
-	masterValidate.UpdatedDate = time.Now()
-	masterValidate.Status = "D"
-
-	if err := connection.DB.Save(&masterValidate).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: "Failed to delete Master Validation",
-		})
-	}
-
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
 		Message: "Deleted!",
-		Data:   masterValidate,
+		Data:    result,
 	})
 }
