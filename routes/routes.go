@@ -72,6 +72,7 @@ func Setup(app *fiber.App) {
 	api.Get("/applicant/show/:id", aplicantController.ApplicantShowDetail)
 	api.Put("/applicant/update/:id", middleware.Authorize("update"), aplicantController.ApplicantUpdate)
 	api.Delete("/applicant/delete/:id", middleware.Authorize("delete"), aplicantController.ApplicantDelete)
+	api.Post("/applicant/upload", aplicantController.ApplicantUploadFile)
 	api.Get("/applicant/show-homestatus", aplicantController.ShowHomeStatus)
 	api.Get("/applicant/show-applicant-addresstype", aplicantController.ShowApplicantAddressType)
 	api.Get("/applicant/show-education", aplicantController.ShowEducation)

@@ -5,11 +5,13 @@ import (
 	"errors"
 	"log"
 	"math/rand"
+	"mime/multipart"
 	"time"
 
 	"github.com/oklog/ulid"
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
+	"github.com/syahlan1/golos/utils"
 )
 
 func ApplicantShow() (result []models.ApplicantDetail, err error) {
@@ -317,6 +319,19 @@ func ApplicantDelete(applicantID string) (err error) {
 	}
 
 	return nil
+}
+
+func ApplicantUploadFile(file *multipart.FileHeader) (err error) {
+
+	filename, filepath, err :=utils.UploadFile(file, "documents/")
+	if err != nil {
+		return err
+	}
+
+	log.Println(filename)
+	log.Println(filepath)
+	
+	return
 }
 
 func ShowHomeStatus() (result []string, err error) {
