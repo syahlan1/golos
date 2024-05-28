@@ -25,6 +25,19 @@ type MasterTable struct {
 	TableId       int    `json:"table_id"`
 }
 
+type CreateMasterTable struct {
+	TableName          string `json:"table_name"`
+	Description        string `json:"description"`
+	EnglishDescription string `json:"english_description"`
+	OrderField         string `json:"order_field"`
+	FormType           string `json:"form_type"`
+	PeriodType         string `json:"period_type"`
+	UsePeriod          int    `json:"use_period"`
+	UseWorkflow        int    `json:"use_workflow"`
+	UseBranch          int    `json:"use_branch"`
+	UseDataLoader      int    `json:"use_data_loader"`
+}
+
 type MasterColumn struct {
 	Id                 int                  `json:"id"`
 	CreatedDate        time.Time            `json:"created_date"`
