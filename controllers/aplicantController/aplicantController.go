@@ -118,7 +118,7 @@ func ApplicantDelete(c *fiber.Ctx) error {
 	})
 }
 
-func ApplicantUploadFile (c *fiber.Ctx) error {
+func ApplicantUploadFile(c *fiber.Ctx) error {
 
 	file, err := c.FormFile("file")
 	if err != nil {
@@ -135,11 +135,20 @@ func ApplicantUploadFile (c *fiber.Ctx) error {
 			Message: err.Error(),
 		})
 	}
-	
+
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
 		Message: "Success Upload!",
 	})
+}
+
+func ShowFile(c *fiber.Ctx) error {
+
+	filename := c.Params("filename")
+	filePath := "./documents/"
+	filePath += filename
+
+	return c.SendFile(filePath)
 }
 
 func ShowHomeStatus(c *fiber.Ctx) error {
