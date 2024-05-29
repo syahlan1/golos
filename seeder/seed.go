@@ -86,3 +86,64 @@ func UserSeed() {
 	connection.DB.Save(&users)
 	connection.DB.Save(&rolePermissions)
 }
+
+
+func CreditSeed() {
+	var credit = []models.CreditType{
+		{
+			Code: "0213",
+			Name: "MIKRO INVESTASI",
+		},
+		{
+			Code: "0216",
+			Name: "MIKRO MODAL KERJA",
+		},
+		{
+			Code: "0521",
+			Name: "PEMILIKAN KENDARAAN BERMOTOR",
+		},
+		{
+			Code: "0527",
+			Name: "MULTIGUNA UMUM",
+		},
+		{
+			Code: "0529",
+			Name: "KREDIT TANPA AGUNAN",
+		},
+
+	}
+
+	var usage = []models.Usage{
+		{
+			Code: "1",
+			Name: "Modal Kerja",
+		},
+		{
+			Code: "2",
+			Name: "Investasi",
+		},
+		{
+			Code: "3",
+			Name: "Konsumsi",
+		},
+	}
+
+	var currency = []models.Currency{
+		{
+			Code: "IDR",
+			Name: "Rupiah",
+		},
+		{
+			Code: "USD",
+			Name: "Dollar",
+		},
+		{
+			Code: "EUR",
+			Name: "Euro",
+		},
+	}
+
+	connection.DB.Save(&credit)
+	connection.DB.Save(&usage)
+	connection.DB.Save(&currency)
+}

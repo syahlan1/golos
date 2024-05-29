@@ -8,6 +8,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/routes"
+	"github.com/syahlan1/golos/seeder"
 	// "github.com/syahlan1/golos/seeder"
 )
 
@@ -21,6 +22,7 @@ func main() {
 	app := fiber.New()
 
 	routes.Setup(app)
+	seeder.CreditSeed()
 	// seeder.UserSeed()
 	// app.Use(cors.New(cors.Config{
 	// 	AllowCredentials: true,
