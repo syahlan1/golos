@@ -11,6 +11,7 @@ import (
 	"github.com/syahlan1/golos/controllers/businessController"
 	"github.com/syahlan1/golos/controllers/masterCodeController"
 	"github.com/syahlan1/golos/controllers/masterColumnController"
+	"github.com/syahlan1/golos/controllers/masterParameterController"
 	"github.com/syahlan1/golos/controllers/masterTableController"
 	"github.com/syahlan1/golos/controllers/ownershipDataController"
 	"github.com/syahlan1/golos/controllers/validationController"
@@ -33,6 +34,9 @@ func Setup(app *fiber.App) {
 	api.Post("/login", authController.Login)
 	api.Get("/user", authController.User)
 	api.Post("/logout", authController.Logout)
+	api.Put("/user/update/:id", authController.UpdateUser)
+	api.Put("/user/delete/:id", authController.DeleteUser)
+	api.Put("/user/change-password/:id", authController.ChangePassword)
 
 	//business
 	api.Post("/business/create", middleware.Authorize("create"), businessController.BusinessCreate)
@@ -144,4 +148,11 @@ func Setup(app *fiber.App) {
 
 	// //generate table
 	api.Post("/master-table/generate/:id", masterTableController.GenerateTable)
+
+	// //master parameter
+	api.Post("/master-parameter/create", masterParameterController.CreateParameter)
+	api.Put("/master-parameter/update/:id", masterParameterController.UpdateMasterParameter)
+	api.Put("/master-parameter/delete/:id", masterParameterController.DeleteMasterParameter)
+	api.Get("/master-parameter/show", masterParameterController.ShowAllParameter)
+	api.Get("/master-parameter/show/:id", masterParameterController.ShowParameterDetail)
 }

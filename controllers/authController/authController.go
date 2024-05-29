@@ -34,7 +34,7 @@ func Register(c *fiber.Ctx) error {
 }
 
 func Login(c *fiber.Ctx) error {
-	var data models.Register
+	var data models.Login
 
 	if err := c.BodyParser(&data); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
@@ -64,6 +64,77 @@ func Login(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"message": "Login Succcessfully",
 		"token":   token,
+	})
+}
+
+func UpdateUser(c *fiber.Ctx) error {
+	userID := c.Params("id")
+
+	var data models.Users
+
+	if err := c.BodyParser(&data); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	result, err := authService.UpdateUser(userID, data)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Updated!",
+		Data:    result,
+	})
+}
+
+func DeleteUser(c *fiber.Ctx) error {
+	userID := c.Params("id")
+
+	err := authService.DeleteUser(userID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Deleted!",
+	})
+}
+
+func ChangePassword(c *fiber.Ctx) error {
+	userID := c.Params("id")
+
+	var data models.Register
+
+	if err := c.BodyParser(&data); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	result, err := authService.ChangePassword(userID, data)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Change Password Success!",
+		Data:    result,
 	})
 }
 

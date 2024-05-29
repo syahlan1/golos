@@ -3,19 +3,32 @@ package models
 import "gorm.io/gorm"
 
 type Users struct {
-	Id       uint   `json:"id" gorm:"primaryKey"`
-	Username string `json:"username" gorm:"unique"`
-	Email    string `json:"email" gorm:"unique"`
-	IsLogin  int    `json:"is_login"`
-	Password []byte `json:"-"`
-	RoleId   uint
-	Role     Roles
+	Id             uint   `json:"id" gorm:"primaryKey"`
+	Username       string `json:"username" gorm:"unique"`
+	FirstName      string `json:"first_name"`
+	LastName       string `json:"last_name"`
+	Email          string `json:"email" gorm:"unique"`
+	IsActive       int    `json:"is_active"`
+	Status         string `json:"status"`
+	IsLogin        int    `json:"is_login"`
+	Password       []byte `json:"-"`
+	FailedAttempts int    `gorm:"default:0"`
+	RoleId         uint
+	Role           Roles
 	gorm.Model
 }
 
 type Register struct {
+	Username  string `json:"username"`
+	Email     string `json:"email"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	IsActive  int    `json:"is_active"`
+	Password  string `json:"password"`
+}
+
+type Login struct {
 	Username string `json:"username"`
-	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 

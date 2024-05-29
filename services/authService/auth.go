@@ -28,11 +28,15 @@ func Register(data models.Register) (err error) {
 
 	// Create new user entry
 	newUser := models.Users{
-		Username: data.Username,
-		Email:    data.Email,
-		Password: hashedPassword,
-		IsLogin:  0, // IsLogin default nya 0
-		RoleId:   1,
+		Username:  data.Username,
+		Email:     data.Email,
+		FirstName: data.FirstName,
+		LastName:  data.LastName,
+		IsActive:  data.IsActive,
+		Password:  hashedPassword,
+		IsLogin:   0, // IsLogin default nya 0
+		RoleId:    1,
+		Status:    "L",
 	}
 	if err := connection.DB.Create(&newUser).Error; err != nil {
 		return errors.New("failed to create user")
@@ -41,7 +45,7 @@ func Register(data models.Register) (err error) {
 	return nil
 }
 
-func Login(data models.Register) (token string, tokenTTL int, err error) {
+func Login(data models.Login) (token string, tokenTTL int, err error) {
 	var user models.Users
 
 	connection.DB.Where("username = ?", data.Username).First(&user)
@@ -50,18 +54,32 @@ func Login(data models.Register) (token string, tokenTTL int, err error) {
 		return token, tokenTTL, errors.New("user not found")
 	}
 
+	var attempt models.MasterParameter
+	connection.DB.Where("param_key = ?", "AUTH_ATM").First(&attempt)
+
+	maxFailedAttempts, err := strconv.Atoi(attempt.ParamValue)
+	if err != nil {
+		return token, tokenTTL, errors.New("invalid AUTH_ATM value")
+	}
+
+	if user.FailedAttempts >= maxFailedAttempts {
+		return token, tokenTTL, errors.New("account locked due to too many failed login attempts")
+	}
+
 	if user.IsLogin == 1 {
 		return token, tokenTTL, errors.New("user is already active")
 	}
 
 	if err := bcrypt.CompareHashAndPassword(user.Password, []byte(data.Password)); err != nil {
+		user.FailedAttempts++
+		connection.DB.Save(&user)
 		return token, tokenTTL, errors.New("incorrect password")
 	}
 
-	var param models.MasterParameter
-	connection.DB.Where("param_key = ?", "TOKEN_TTL").First(&param)
+	var ttl models.MasterParameter
+	connection.DB.Where("param_key = ?", "AUTH_TTL").First(&ttl)
 
-	tokenTTL, err = strconv.Atoi(param.ParamValue)
+	tokenTTL, err = strconv.Atoi(ttl.ParamValue)
 
 	// tokenTTL*=tokenTTL
 
@@ -84,6 +102,61 @@ func Login(data models.Register) (token string, tokenTTL int, err error) {
 	})
 
 	return token, tokenTTL, nil
+}
+
+func UpdateUser(UserID string, data models.Users) (user models.Users, err error) {
+
+	if err := connection.DB.First(&user, UserID).Error; err != nil {
+		return user, errors.New("user not found")
+	}
+
+	user.Username = data.Username
+	user.Email = data.Email
+	user.FirstName = data.FirstName
+	user.LastName = data.LastName
+	user.IsActive = data.IsActive
+
+	if err := connection.DB.Save(&user).Error; err != nil {
+		return user, errors.New("failed to update user")
+	}
+
+	return user, nil
+}
+
+func DeleteUser(UserID string) (err error) {
+
+	var user models.Users
+	if err := connection.DB.First(&user, UserID).Error; err != nil {
+		return errors.New("user not found")
+	}
+
+	user.Status = "D"
+
+	if err := connection.DB.Save(&user).Error; err != nil {
+		return errors.New("failed to delete user")
+	}
+
+	return nil
+}
+
+func ChangePassword(UserID string, data models.Register) (user models.Users, err error) {
+
+	if err := connection.DB.First(&user, UserID).Error; err != nil {
+		return user, errors.New("user not found")
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return user, err
+	}
+
+	user.Password = hashedPassword
+
+	if err := connection.DB.Save(&user).Error; err != nil {
+		return user, errors.New("failed to update user")
+	}
+
+	return user, nil
 }
 
 func User(userId string) (result models.Users, err error) {
@@ -150,9 +223,9 @@ func CreateRole(userId string, data models.CreateRole) (err error) {
 
 	// Buat role baru
 	newRole := models.Roles{
-		Name: data.Name, 
-		Description: data.Description, 
-		CreatedBy: user.Username,
+		Name:        data.Name,
+		Description: data.Description,
+		CreatedBy:   user.Username,
 	}
 
 	// Simpan role baru ke dalam database

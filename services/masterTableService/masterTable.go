@@ -1,13 +1,20 @@
 package masterTableService
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
+	"html/template"
 	"log"
+	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
+	"github.com/syahlan1/golos/utils"
+	"github.com/syahlan1/golos/utils/templates"
 )
 
 func CreateMasterTable(claims string, data models.CreateMasterTable) (err error) {
@@ -121,57 +128,205 @@ func DeleteMasterTable(claims, masterTableId string) (result models.MasterTable,
 func GenerateTable(tableID string) (err error) {
 	db := connection.DB
 
-	// Ambil data tabel berdasarkan ID dari database
 	var masterTable models.MasterTable
 	if err := db.First(&masterTable, tableID).Error; err != nil {
-		return errors.New("data Not Found")
+		return errors.New("Data not found")
 	}
 
-	// Ambil semua kolom dari tabel
 	var columns []models.MasterColumn
 	db.Where("table_id = ?", masterTable.Id).Find(&columns)
 
-	// Buat definisi SQL untuk membuat tabel baru
-	createTableSQL := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (\n", masterTable.TableName)
-	createTableSQL += "\tID SERIAL PRIMARY KEY,\n" // Tambahkan kolom ID secara manual dengan auto-increment
-
-	// Tambahkan kolom lain dari MasterColumn
-	for _, column := range columns {
-		fieldSQL := fmt.Sprintf("\t%s %s", column.FieldName, mapFieldType(column.FieldType, column.FieldLength))
-		if column.IsMandatory {
-			fieldSQL += " NOT NULL"
-		}
-		createTableSQL += fieldSQL + ",\n"
-	}
-
-	// Hapus koma terakhir dan tambahkan penutup query
-	createTableSQL = createTableSQL[:len(createTableSQL)-2] + "\n);"
-
-	// Eksekusi query untuk membuat tabel
-	if err := db.Exec(createTableSQL).Error; err != nil {
+	var tableExists bool
+	err = db.Raw("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = ?)", masterTable.TableName).Scan(&tableExists).Error
+	if err != nil {
 		return err
 	}
+
+	if !tableExists {
+		createTableSQL := fmt.Sprintf("CREATE TABLE %s (\n", masterTable.TableName)
+		createTableSQL += "\tID SERIAL PRIMARY KEY,\n"
+
+		for _, column := range columns {
+			fieldSQL := fmt.Sprintf("\t%s %s", column.FieldName, utils.MapFieldType(column.FieldType, column.FieldLength))
+			if column.IsMandatory {
+				fieldSQL += " NOT NULL"
+			}
+			createTableSQL += fieldSQL + ",\n"
+		}
+
+		createTableSQL = createTableSQL[:len(createTableSQL)-2] + "\n);"
+		if err := db.Exec(createTableSQL).Error; err != nil {
+			return err
+		}
+	} else {
+		var existingColumns []struct {
+			ColumnName             string
+			DataType               string
+			CharacterMaximumLength sql.NullInt32
+		}
+		rows, err := db.Raw(fmt.Sprintf("SELECT column_name, data_type, character_maximum_length FROM information_schema.columns WHERE table_name = '%s'", masterTable.TableName)).Rows()
+		if err != nil {
+			return err
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var column struct {
+				ColumnName             string
+				DataType               string
+				CharacterMaximumLength sql.NullInt32
+			}
+			rows.Scan(&column.ColumnName, &column.DataType, &column.CharacterMaximumLength)
+			existingColumns = append(existingColumns, column)
+		}
+
+		columnMap := make(map[string]models.MasterColumn)
+		for _, column := range columns {
+			columnMap[column.FieldName] = column
+		}
+
+		var alterTableQueries []string
+
+		for _, column := range columns {
+			existingColumn, exists := findExistingColumn(existingColumns, column.FieldName)
+			if !exists {
+				fieldSQL := fmt.Sprintf("%s %s", column.FieldName, utils.MapFieldType(column.FieldType, column.FieldLength))
+				if column.IsMandatory {
+					fieldSQL += " NOT NULL"
+				}
+				alterTableQueries = append(alterTableQueries, fmt.Sprintf("ADD COLUMN %s", fieldSQL))
+			} else {
+				modifySQL := ""
+				if existingColumn.DataType != utils.MapFieldType(column.FieldType, column.FieldLength) {
+					modifySQL = fmt.Sprintf("%s TYPE %s", column.FieldName, utils.MapFieldType(column.FieldType, column.FieldLength))
+				} else if column.FieldType == "A" && existingColumn.CharacterMaximumLength.Valid && existingColumn.CharacterMaximumLength.Int32 != int32(column.FieldLength) {
+					modifySQL = fmt.Sprintf("%s TYPE VARCHAR(%d)", column.FieldName, column.FieldLength)
+				}
+				if modifySQL != "" {
+					alterTableQueries = append(alterTableQueries, fmt.Sprintf("ALTER COLUMN %s", modifySQL))
+				}
+			}
+		}
+
+		for _, existingColumn := range existingColumns {
+			if existingColumn.ColumnName != "id" && !containsMasterColumn(columns, existingColumn.ColumnName) {
+				alterTableQueries = append(alterTableQueries, fmt.Sprintf("DROP COLUMN %s", existingColumn.ColumnName))
+			}
+		}
+
+		if len(alterTableQueries) > 0 {
+			alterTableSQL := fmt.Sprintf("ALTER TABLE %s\n%s;", masterTable.TableName, strings.Join(alterTableQueries, ",\n"))
+			if err := db.Exec(alterTableSQL).Error; err != nil {
+				return err
+			}
+		}
+	}
+
+	// Generate Model and CRUD handlers
+	GenerateModel(masterTable, columns)
+	GenerateCRUDHandlers(masterTable, columns)
 
 	return nil
 }
 
-// mapFieldType berfungsi untuk memetakan tipe data dari MasterColumn ke tipe data SQL
-func mapFieldType(fieldType string, fieldLength int) string {
-	switch fieldType {
-	case "A":
-		if fieldLength > 0 {
-			return fmt.Sprintf("VARCHAR(%d)", fieldLength)
+func findExistingColumn(existingColumns []struct {
+	ColumnName             string
+	DataType               string
+	CharacterMaximumLength sql.NullInt32
+}, columnName string) (struct {
+	ColumnName             string
+	DataType               string
+	CharacterMaximumLength sql.NullInt32
+}, bool) {
+	for _, column := range existingColumns {
+		if column.ColumnName == columnName {
+			return column, true
 		}
-		return "VARCHAR"
-	case "N":
-		return "INTEGER"
-	case "B":
-		return "BOOLEAN"
-	case "F":
-		return "FLOAT"
-	case "D":
-		return "TIMESTAMP"
-	default:
-		return "VARCHAR"
+	}
+	return struct {
+		ColumnName             string
+		DataType               string
+		CharacterMaximumLength sql.NullInt32
+	}{}, false
+}
+
+func containsMasterColumn(columns []models.MasterColumn, fieldName string) bool {
+	for _, column := range columns {
+		if column.FieldName == fieldName {
+			return true
+		}
+	}
+	return false
+}
+
+// generateModel generates the Go model file
+func GenerateModel(masterTable models.MasterTable, columns []models.MasterColumn) {
+	modelTemplate := templates.ModelTemplate()
+
+	funcMap := template.FuncMap{
+		"ToCamel":           utils.ToCamelCase,
+		"mapFieldTypeModel": utils.MapFieldTypeModel,
+	}
+
+	tmpl, err := template.New("model").Funcs(funcMap).Parse(modelTemplate)
+	if err != nil {
+		panic(err)
+	}
+
+	f, err := os.Create(filepath.Join("models", masterTable.TableName+".go"))
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	data := struct {
+		TableName string
+		Columns   []models.MasterColumn
+	}{
+		TableName: masterTable.TableName,
+		Columns:   columns,
+	}
+
+	err = tmpl.Execute(f, data)
+	if err != nil {
+		panic(err)
+	}
+}
+
+// generateCRUDHandlers generates the CRUD handler files
+func GenerateCRUDHandlers(masterTable models.MasterTable, columns []models.MasterColumn) {
+	handlerTemplate := templates.HandlerCRUDTemplate()
+
+	funcMap := template.FuncMap{
+		"ToCamel":           utils.ToCamelCase,
+		"mapFieldTypeModel": utils.MapFieldTypeModel,
+	}
+
+	tmpl, err := template.New("controller").Funcs(funcMap).Parse(handlerTemplate)
+	if err != nil {
+		panic(err)
+	}
+
+	handlersDir := "controllers"
+	utils.CreateDirIfNotExist(handlersDir)
+
+	f, err := os.Create(filepath.Join(handlersDir, utils.ToCamelCase(masterTable.TableName+"Controller.go")))
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	data := struct {
+		TableName   string
+		PackagePath string
+		Columns     []models.MasterColumn
+	}{
+		TableName:   masterTable.TableName,
+		PackagePath: "github.com/syahlan1/golos",
+		Columns:     columns,
+	}
+
+	err = tmpl.Execute(f, data)
+	if err != nil {
+		panic(err)
 	}
 }
