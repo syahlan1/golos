@@ -118,6 +118,46 @@ func ApplicantDelete(c *fiber.Ctx) error {
 	})
 }
 
+func ApplicantUploadFile(c *fiber.Ctx) error {
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	result, err := applicantService.ApplicantUploadFile(file)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success Upload!",
+		Data:    result,
+	})
+}
+
+func ApplicantShowFile(c *fiber.Ctx) error {
+
+	id := c.Params("id")
+	result, err := applicantService.ApplicantShowFile(id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	c.Set("Content-Disposition", "attachment; filename=\""+result.DocumentFile+"\"")
+	return c.SendFile(result.DocumentPath)
+}
+
 func ShowHomeStatus(c *fiber.Ctx) error {
 
 	result, err := applicantService.ShowHomeStatus()

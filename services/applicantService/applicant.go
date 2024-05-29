@@ -5,11 +5,13 @@ import (
 	"errors"
 	"log"
 	"math/rand"
+	"mime/multipart"
 	"time"
 
 	"github.com/oklog/ulid"
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
+	"github.com/syahlan1/golos/utils"
 )
 
 func ApplicantShow() (result []models.ApplicantDetail, err error) {
@@ -317,6 +319,34 @@ func ApplicantDelete(applicantID string) (err error) {
 	}
 
 	return nil
+}
+
+func ApplicantUploadFile(file *multipart.FileHeader) (result models.Document ,err error) {
+
+	filename, filepath, err :=utils.UploadFile(file, "documents/applicant/")
+	if err != nil {
+		return result, err
+	}
+
+	result.DocumentFile = filename
+	result.DocumentPath = filepath
+	
+	return
+}
+
+func ApplicantShowFile(id string) (result models.Document, err error) {
+
+	// if err := connection.DB.Model(&models.Document{}).Where("id = ?", id).Pluck("document_path", &result).Error; err != nil {
+	if err := connection.DB.Select("documents.*").
+	Joins("JOIN applicants ON documents.id = applicants.document_id").
+	Where("applicants.id = ?", id).
+	Find(&result).Error; err != nil {
+		return result, errors.New("failed to get Document Data")
+	}
+
+	result.DocumentPath = "."+result.DocumentPath
+
+	return result, nil
 }
 
 func ShowHomeStatus() (result []string, err error) {
