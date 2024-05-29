@@ -143,11 +143,16 @@ func ApplicantUploadFile(c *fiber.Ctx) error {
 	})
 }
 
-func ShowFile(c *fiber.Ctx) error {
+func ApplicantShowFile(c *fiber.Ctx) error {
 
-	filename := c.Params("filename")
-	filePath := "./documents/"
-	filePath += filename
+	id := c.Params("id")
+	filePath, err := applicantService.ApplicantShowFile(id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
 
 	return c.SendFile(filePath)
 }
