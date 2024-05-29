@@ -134,6 +134,46 @@ func BusinessDelete(c *fiber.Ctx) error {
 	})
 }
 
+func BusinessUploadFile(c *fiber.Ctx) error {
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	result, err := businessService.BusinessUploadFile(file)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success Upload!",
+		Data:    result,
+	})
+}
+
+func BusinessShowFile(c *fiber.Ctx) error {
+
+	id := c.Params("id")
+	result, err := businessService.BusinessShowFile(id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	c.Set("Content-Disposition", "attachment; filename=\""+result.DocumentFile+"\"")
+	return c.SendFile(result.DocumentPath)
+}
+
 func BusinessApproveUpdate(c *fiber.Ctx) error {
 	businessID := c.Params("id")
 

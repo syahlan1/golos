@@ -39,6 +39,8 @@ func Setup(app *fiber.App) {
 	api.Get("/business/show", businessController.BusinessShow)
 	api.Put("/business/update/:id", middleware.Authorize("update"), businessController.BusinessUpdate)
 	api.Delete("/business/delete/:id", middleware.Authorize("delete"), businessController.BusinessDelete)
+	api.Post("/business/upload", businessController.BusinessUploadFile)
+	api.Get("/business/file/:id", businessController.BusinessShowFile)
 	api.Get("/business/show/:id", businessController.BusinessShowDetail)
 	api.Get("/business/showcompanyfirstname", businessController.ShowCompanyFirstName)
 	api.Get("/business/showcompanytype", businessController.ShowCompanyType)

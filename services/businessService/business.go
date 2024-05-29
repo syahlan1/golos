@@ -5,11 +5,13 @@ import (
 	"errors"
 	"log"
 	"math/rand"
+	"mime/multipart"
 	"time"
 
 	"github.com/oklog/ulid"
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
+	"github.com/syahlan1/golos/utils"
 )
 
 func ShowBusinessApplicant() (result models.BusinessApplicant) {
@@ -34,10 +36,9 @@ func BusinessShowDetail(id string) (result models.Business) {
 func BusinessCreate(username string, data models.CreateBusiness) (err error) {
 
 	business := data.Business
+	business.Status = "L"
 
 	document := data.Document
-	document.DocumentFile = business.DocumentFile
-	document.Status = business.Status
 
 	generalInformation := data.GeneralInformation
 	generalInformation.BankName = business.BankName
@@ -52,7 +53,7 @@ func BusinessCreate(username string, data models.CreateBusiness) (err error) {
 	generalInformation.NoAplikasi = business.NoAplikasi
 	generalInformation.MarketInterestRate = business.MarketInterestRate
 	generalInformation.RequestedInterestRate = business.RequestedInterestRate
-	generalInformation.DocumentFile = business.DocumentFile
+	// generalInformation.DocumentFile = business.DocumentFile
 	generalInformation.Status = business.Status
 
 	if err := connection.DB.Create(&generalInformation).Error; err != nil {
@@ -64,7 +65,7 @@ func BusinessCreate(username string, data models.CreateBusiness) (err error) {
 
 	// business := data.Business
 	business.CustomerName = business.CompanyFirstName + ". " + business.CompanyName
-	business.Status = "L"
+	// business.Status = "L"
 	business.DocumentId = document.Id
 	business.GeneralInformationId = generalInformation.Id
 
@@ -115,7 +116,7 @@ func BusinessCreate(username string, data models.CreateBusiness) (err error) {
 func BusinessUpdate(businessID string, updatedBusiness models.Business) (result models.Business, err error) {
 	var businesses models.Business
 	if err := connection.DB.First(&businesses, businessID).Error; err != nil {
-		return result,errors.New("business not found")
+		return result, errors.New("business not found")
 	}
 
 	businesses.Cif = updatedBusiness.Cif
@@ -163,41 +164,69 @@ func BusinessUpdate(businessID string, updatedBusiness models.Business) (result 
 	businesses.DocumentFile = updatedBusiness.DocumentFile
 
 	if err := connection.DB.Save(&businesses).Error; err != nil {
-		return result,errors.New("failed to update the business data")
+		return result, errors.New("failed to update the business data")
 	}
 
 	return businesses, nil
 }
 
-func BusinessDelete(businessID string) (result models.Business,err error) {
+func BusinessDelete(businessID string) (result models.Business, err error) {
 	var businesses models.Business
 	if err := connection.DB.First(&businesses, businessID).Error; err != nil {
-		return result,errors.New("business not found")
+		return result, errors.New("business not found")
 	}
 
 	businesses.Status = "D"
 
 	if err := connection.DB.Save(&businesses).Error; err != nil {
-		return result,errors.New("failed to delete the business data")
+		return result, errors.New("failed to delete the business data")
 	}
 
 	return businesses, nil
 }
 
+func BusinessUploadFile(file *multipart.FileHeader) (result models.Document, err error) {
+
+	filename, filepath, err := utils.UploadFile(file, "documents/business/")
+	if err != nil {
+		return result, err
+	}
+
+	result.DocumentFile = filename
+	result.DocumentPath = filepath
+
+	return
+}
+
+func BusinessShowFile(id string) (result models.Document, err error) {
+
+	// if err := connection.DB.Model(&models.Document{}).Where("id = ?", id).Pluck("document_path", &result).Error; err != nil {
+	if err := connection.DB.Select("documents.*").
+	Joins("JOIN businesses ON documents.id = businesses.document_id").
+	Where("businesses.id = ?", id).
+	Find(&result).Error; err != nil {
+		return result, errors.New("failed to get Document Data")
+	}
+
+	result.DocumentPath = "."+result.DocumentPath
+
+	return result, nil
+}
+
 func BusinessApproveUpdate(businessID string) (result models.Business, err error) {
 	var business models.Business
 	if err := connection.DB.First(&business, businessID).Error; err != nil {
-		return result,errors.New("business not found")
+		return result, errors.New("business not found")
 	}
 
 	if err := connection.DB.Save(&business).Error; err != nil {
-		return result,errors.New("failed to update the business data")
+		return result, errors.New("failed to update the business data")
 	}
 
 	return business, nil
 }
 
-func ShowCompanyFirstName() (result []string,err error) {
+func ShowCompanyFirstName() (result []string, err error) {
 	var companyFirstNames []string
 
 	if err := connection.DB.Model(&models.CompanyFirstName{}).Pluck("name", &companyFirstNames).Error; err != nil {
@@ -207,7 +236,7 @@ func ShowCompanyFirstName() (result []string,err error) {
 	return companyFirstNames, nil
 }
 
-func ShowCompanyType() (result []string,err error) {
+func ShowCompanyType() (result []string, err error) {
 	var companyType []string
 
 	if err := connection.DB.Model(&models.CompanyType{}).Pluck("name", &companyType).Error; err != nil {
@@ -217,7 +246,7 @@ func ShowCompanyType() (result []string,err error) {
 	return companyType, nil
 }
 
-func ShowBusinessAddressType() (result []string,err error){
+func ShowBusinessAddressType() (result []string, err error) {
 	var businessAddressType []string
 
 	if err := connection.DB.Model(&models.BusinessAddressType{}).Pluck("name", &businessAddressType).Error; err != nil {
@@ -227,7 +256,7 @@ func ShowBusinessAddressType() (result []string,err error){
 	return businessAddressType, nil
 }
 
-func ShowEternalRatingCompany() (result []string,err error) {
+func ShowEternalRatingCompany() (result []string, err error) {
 	var eternalRatingCompany []string
 
 	if err := connection.DB.Model(&models.EternalRatingCompany{}).Pluck("name", &eternalRatingCompany).Error; err != nil {
@@ -237,7 +266,7 @@ func ShowEternalRatingCompany() (result []string,err error) {
 	return eternalRatingCompany, nil
 }
 
-func ShowRatingClass() (result []string,err error) {
+func ShowRatingClass() (result []string, err error) {
 	var ratingClass []string
 
 	if err := connection.DB.Model(&models.RatingClass{}).Pluck("name", &ratingClass).Error; err != nil {
@@ -247,7 +276,7 @@ func ShowRatingClass() (result []string,err error) {
 	return ratingClass, nil
 }
 
-func ShowKodeBursa() (result []string,err error) {
+func ShowKodeBursa() (result []string, err error) {
 	var kodeBursa []string
 
 	if err := connection.DB.Model(&models.KodeBursa{}).Pluck("name", &kodeBursa).Error; err != nil {
@@ -257,7 +286,7 @@ func ShowKodeBursa() (result []string,err error) {
 	return kodeBursa, nil
 }
 
-func ShowBusinessType() (result []string,err error){
+func ShowBusinessType() (result []string, err error) {
 	var businessType []string
 
 	if err := connection.DB.Model(&models.BusinessType{}).Pluck("name", &businessType).Error; err != nil {
@@ -267,7 +296,7 @@ func ShowBusinessType() (result []string,err error){
 	return businessType, nil
 }
 
-func GetProvinces() (result []string,err error){
+func GetProvinces() (result []string, err error) {
 	var provinces []string
 	if err := connection.DB.Model(&models.ZipCode{}).Distinct("province").Pluck("province", &provinces).Error; err != nil {
 		return result, err
@@ -276,7 +305,7 @@ func GetProvinces() (result []string,err error){
 	return provinces, nil
 }
 
-func GetCitiesByProvince(province string) (result []string,err error) {
+func GetCitiesByProvince(province string) (result []string, err error) {
 	var cities []string
 	if err := connection.DB.Model(&models.ZipCode{}).Distinct("city").Where("province = ?", province).Pluck("city", &cities).Error; err != nil {
 		return result, err
@@ -285,7 +314,7 @@ func GetCitiesByProvince(province string) (result []string,err error) {
 	return cities, nil
 }
 
-func GetDistrictByCity(city string) (result []string,err error) {
+func GetDistrictByCity(city string) (result []string, err error) {
 	var district []string
 	if err := connection.DB.Model(&models.ZipCode{}).Distinct("district").Where("city = ?", city).Pluck("district", &district).Error; err != nil {
 		return result, err
@@ -294,7 +323,7 @@ func GetDistrictByCity(city string) (result []string,err error) {
 	return district, nil
 }
 
-func GetSubdistrictByDistrict(district string) (result []string,err error) {
+func GetSubdistrictByDistrict(district string) (result []string, err error) {
 	var subdistrict []string
 	if err := connection.DB.Model(&models.ZipCode{}).Distinct("subdistrict").Where("district = ?", district).Pluck("subdistrict", &subdistrict).Error; err != nil {
 		return result, err
@@ -303,7 +332,7 @@ func GetSubdistrictByDistrict(district string) (result []string,err error) {
 	return subdistrict, nil
 }
 
-func GetZipCodesBySubdistrict(subdistrict string) (result []string,err error) {
+func GetZipCodesBySubdistrict(subdistrict string) (result []string, err error) {
 	var zipCodes []string
 	if err := connection.DB.Model(&models.ZipCode{}).Where("subdistrict = ?", subdistrict).Pluck("zip_code", &zipCodes).First(&zipCodes).Error; err != nil {
 		return result, err

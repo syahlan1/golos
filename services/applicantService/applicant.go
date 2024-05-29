@@ -323,7 +323,7 @@ func ApplicantDelete(applicantID string) (err error) {
 
 func ApplicantUploadFile(file *multipart.FileHeader) (result models.Document ,err error) {
 
-	filename, filepath, err :=utils.UploadFile(file, "documents/")
+	filename, filepath, err :=utils.UploadFile(file, "documents/applicant/")
 	if err != nil {
 		return result, err
 	}
