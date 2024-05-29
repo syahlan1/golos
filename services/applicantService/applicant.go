@@ -334,17 +334,19 @@ func ApplicantUploadFile(file *multipart.FileHeader) (result models.Document ,er
 	return
 }
 
-func ApplicantShowFile(id string) (result string, err error) {
+func ApplicantShowFile(id string) (result models.Document, err error) {
 
 	// if err := connection.DB.Model(&models.Document{}).Where("id = ?", id).Pluck("document_path", &result).Error; err != nil {
-	if err := connection.DB.Table("applicants").
-	Joins("JOIN documents ON applicants.document_id = documents.id").
+	if err := connection.DB.Select("documents.*").
+	Joins("JOIN applicants ON documents.id = applicants.document_id").
 	Where("applicants.id = ?", id).
-	Pluck("document_path", &result).Error; err != nil {
-		return "", errors.New("failed to get Document Data")
+	Find(&result).Error; err != nil {
+		return result, errors.New("failed to get Document Data")
 	}
 
-	return "."+result, nil
+	result.DocumentPath = "."+result.DocumentPath
+
+	return result, nil
 }
 
 func ShowHomeStatus() (result []string, err error) {

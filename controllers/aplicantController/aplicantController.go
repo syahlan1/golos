@@ -146,7 +146,7 @@ func ApplicantUploadFile(c *fiber.Ctx) error {
 func ApplicantShowFile(c *fiber.Ctx) error {
 
 	id := c.Params("id")
-	filePath, err := applicantService.ApplicantShowFile(id)
+	result, err := applicantService.ApplicantShowFile(id)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
 			Code:    fiber.StatusInternalServerError,
@@ -154,7 +154,8 @@ func ApplicantShowFile(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.SendFile(filePath)
+	c.Set("Content-Disposition", "attachment; filename=\""+result.DocumentFile+"\"")
+	return c.SendFile(result.DocumentPath)
 }
 
 func ShowHomeStatus(c *fiber.Ctx) error {
