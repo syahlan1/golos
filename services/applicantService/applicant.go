@@ -321,15 +321,15 @@ func ApplicantDelete(applicantID string) (err error) {
 	return nil
 }
 
-func ApplicantUploadFile(file *multipart.FileHeader) (err error) {
+func ApplicantUploadFile(file *multipart.FileHeader) (result models.Document ,err error) {
 
 	filename, filepath, err :=utils.UploadFile(file, "documents/")
 	if err != nil {
-		return err
+		return result, err
 	}
 
-	log.Println(filename)
-	log.Println(filepath)
+	result.DocumentFile = filename
+	result.DocumentPath = filepath
 	
 	return
 }

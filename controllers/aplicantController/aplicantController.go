@@ -128,7 +128,7 @@ func ApplicantUploadFile(c *fiber.Ctx) error {
 		})
 	}
 
-	err = applicantService.ApplicantUploadFile(file)
+	result, err := applicantService.ApplicantUploadFile(file)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
 			Code:    fiber.StatusInternalServerError,
@@ -139,6 +139,7 @@ func ApplicantUploadFile(c *fiber.Ctx) error {
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
 		Message: "Success Upload!",
+		Data:    result,
 	})
 }
 

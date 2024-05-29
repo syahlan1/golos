@@ -40,7 +40,7 @@ func UploadFile(file *multipart.FileHeader, dir string) (filename, filepath stri
 		return "", "", err
 	}
 
-	return trueFilename, "/"+filepath, nil
+	return filename, "/"+filepath, nil
 }
 
 func GetFileExtension(filename string) (ext string) {
