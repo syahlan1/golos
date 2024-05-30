@@ -1,21 +1,23 @@
 package models
 
 type CreditTerms struct {
-	Id                  int    `json:"id" gorm:"primaryKey"`
-	NewApplication      int    `json:"new_application"`
-	ChannelingCompany   int    `json:"channeling_company"`
-	TakeoverBank        bool   `json:"takeover_bank"`
-	AccountAccomodation int    `json:"account_accommodation"`
-	NCLProduct          int    `json:"ncl_product"`
-	Facility            int    `json:"facility"`
-	AccountNumber       string `json:"account_number"`
-	ApplicationType     string `json:"application_type"`
-	Project             int    `json:"project"`
+	Id                   int    `json:"id" gorm:"primaryKey"`
+	GeneralInformationId int    `json:"general_information_id"`
+	NewApplication       int    `json:"new_application"`
+	ChannelingCompany    int    `json:"channeling_company"`
+	TakeoverBank         bool   `json:"takeover_bank"`
+	AccountAccomodation  int    `json:"account_accommodation"`
+	NCLProduct           int    `json:"ncl_product"`
+	Facility             int    `json:"facility"`
+	AccountNumber        string `json:"account_number"`
+	ApplicationType      string `json:"application_type"`
+	Project              int    `json:"project"`
 }
 
 type LoanInformation struct {
 	Id             int    `json:"id" gorm:"primaryKey"`
 	CreditId       int    `json:"credit_id"`
+	SubmissionType int    `json:"submission_type"`
 	CreditType     int    `json:"credit_type"`
 	Limit          int    `json:"limit"`
 	ExchangeRate   int    `json:"exchange_rate"`
