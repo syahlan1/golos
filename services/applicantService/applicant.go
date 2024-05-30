@@ -321,16 +321,22 @@ func ApplicantDelete(applicantID string) (err error) {
 	return nil
 }
 
-func ApplicantUploadFile(file *multipart.FileHeader) (result models.Document ,err error) {
+func ApplicantUploadFile(file *multipart.FileHeader) (result models.Document, err error) {
 
-	filename, filepath, err :=utils.UploadFile(file, "documents/applicant/")
+	var paramPath models.MasterParameter
+	connection.DB.Where("param_key = ?", "DOC_PATH_APNT").First(&paramPath)
+
+	if err != nil {
+		return result, errors.New("invalid DOC_PATH_APNT value")
+	}
+	filename, filepath, err := utils.UploadFile(file, paramPath.ParamValue)
 	if err != nil {
 		return result, err
 	}
 
 	result.DocumentFile = filename
 	result.DocumentPath = filepath
-	
+
 	return
 }
 
@@ -338,13 +344,13 @@ func ApplicantShowFile(id string) (result models.Document, err error) {
 
 	// if err := connection.DB.Model(&models.Document{}).Where("id = ?", id).Pluck("document_path", &result).Error; err != nil {
 	if err := connection.DB.Select("documents.*").
-	Joins("JOIN applicants ON documents.id = applicants.document_id").
-	Where("applicants.id = ?", id).
-	Find(&result).Error; err != nil {
+		Joins("JOIN applicants ON documents.id = applicants.document_id").
+		Where("applicants.id = ?", id).
+		Find(&result).Error; err != nil {
 		return result, errors.New("failed to get Document Data")
 	}
 
-	result.DocumentPath = "."+result.DocumentPath
+	result.DocumentPath = "." + result.DocumentPath
 
 	return result, nil
 }
@@ -361,7 +367,7 @@ func ShowApplicantAddressType() (result []string, err error) {
 	if err := connection.DB.Model(&models.ApplicantAddressType{}).Pluck("name", &result).Error; err != nil {
 		return nil, errors.New("failed to get Applicant Address Type")
 	}
-	
+
 	return result, nil
 }
 
@@ -374,7 +380,7 @@ func ShowEducation() (result []string, err error) {
 }
 
 func ShowJobPosition() (result []string, err error) {
-if err := connection.DB.Model(&models.JobPosition{}).Pluck("name", &result).Error; err != nil {
+	if err := connection.DB.Model(&models.JobPosition{}).Pluck("name", &result).Error; err != nil {
 		return nil, errors.New("failed to get Job Position Data")
 	}
 
@@ -430,7 +436,7 @@ func ShowHubunganKeluarga() (result []string, err error) {
 }
 
 func ShowLokasiPabrik() (result []string, err error) {
-if err := connection.DB.Model(&models.LokasiPabrik{}).Pluck("name", &result).Error; err != nil {
+	if err := connection.DB.Model(&models.LokasiPabrik{}).Pluck("name", &result).Error; err != nil {
 		return nil, errors.New("failed to get Lokasi Pabrik Data")
 	}
 
@@ -441,7 +447,7 @@ func ShowMaritalStatus() (result []string, err error) {
 	if err := connection.DB.Model(&models.MaritalStatus{}).Pluck("name", &result).Error; err != nil {
 		return nil, errors.New("failed to get Marital Status Data")
 	}
-	
+
 	return result, nil
 }
 

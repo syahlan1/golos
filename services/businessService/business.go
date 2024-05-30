@@ -187,7 +187,13 @@ func BusinessDelete(businessID string) (result models.Business, err error) {
 
 func BusinessUploadFile(file *multipart.FileHeader) (result models.Document, err error) {
 
-	filename, filepath, err := utils.UploadFile(file, "documents/business/")
+	var paramPath models.MasterParameter
+	connection.DB.Where("param_key = ?", "DOC_PATH_BSNS").First(&paramPath)
+
+	if err != nil {
+		return result, errors.New("invalid DOC_PATH_BSNS value")
+	}
+	filename, filepath, err := utils.UploadFile(file, paramPath.ParamValue)
 	if err != nil {
 		return result, err
 	}
@@ -202,13 +208,13 @@ func BusinessShowFile(id string) (result models.Document, err error) {
 
 	// if err := connection.DB.Model(&models.Document{}).Where("id = ?", id).Pluck("document_path", &result).Error; err != nil {
 	if err := connection.DB.Select("documents.*").
-	Joins("JOIN businesses ON documents.id = businesses.document_id").
-	Where("businesses.id = ?", id).
-	Find(&result).Error; err != nil {
+		Joins("JOIN businesses ON documents.id = businesses.document_id").
+		Where("businesses.id = ?", id).
+		Find(&result).Error; err != nil {
 		return result, errors.New("failed to get Document Data")
 	}
 
-	result.DocumentPath = "."+result.DocumentPath
+	result.DocumentPath = "." + result.DocumentPath
 
 	return result, nil
 }
