@@ -1,38 +1,48 @@
 package models
 
 type CreditTerms struct {
-	Id                   int    `json:"id" gorm:"primaryKey"`
-	GeneralInformationId int    `json:"general_information_id"`
-	NewApplication       int    `json:"new_application"`
-	ChannelingCompany    int    `json:"channeling_company"`
-	TakeoverBank         bool   `json:"takeover_bank"`
-	AccountAccomodation  int    `json:"account_accommodation"`
-	NCLProduct           int    `json:"ncl_product"`
-	Facility             int    `json:"facility"`
-	AccountNumber        string `json:"account_number"`
-	ApplicationType      string `json:"application_type"`
-	Project              int    `json:"project"`
+	Id                   int              `json:"id" gorm:"primaryKey"`
+	GeneralInformationId int              `json:"general_information_id"`
+	NewApplication       int              `json:"new_application"`
+	ChannelingCompany    int              `json:"channeling_company"`
+	TakeoverBank         bool             `json:"takeover_bank"`
+	AccountAccomodation  int              `json:"account_accommodation"`
+	NCLProduct           int              `json:"ncl_product"`
+	Facility             int              `json:"facility"`
+	AccountNumber        string           `json:"account_number"`
+	ApplicationType      string           `json:"application_type"`
+	Project              int              `json:"project"`
+	Status               string           `json:"status"`
+	LoanInformation      *LoanInformation `json:"loan_information" gorm:"-:all"`
 }
 
+// type CreateCreditTerms struct {
+// 	*CreditTerms
+// 	LoanInformation *LoanInformation `json:"loan_information"`
+// 	Guarantee       *Guarantee       `json:"guarantee"`
+// }
+
 type LoanInformation struct {
-	Id             int    `json:"id" gorm:"primaryKey"`
-	CreditId       int    `json:"credit_id"`
-	SubmissionType int    `json:"submission_type"`
-	CreditType     int    `json:"credit_type"`
-	Limit          int    `json:"limit"`
-	ExchangeRate   int    `json:"exchange_rate"`
-	LimitRp        int    `json:"limit_rp"`
-	TimePeriod     int    `json:"time_period"`
-	PeriodType     string `json:"period_type"`
-	Usage          int    `json:"usage"`
-	Description    string `json:"description" gorm:"type:text"`
-	Guarantee      bool   `json:"guarantee"`
-	DeptorTransfer bool   `json:"depositor_transfer"`
+	Id              int        `json:"id" gorm:"primaryKey"`
+	CreditId        int        `json:"-"`
+	SubmissionType  int        `json:"submission_type"`
+	CreditType      int        `json:"credit_type"`
+	Limit           int        `json:"limit"`
+	ExchangeRate    int        `json:"exchange_rate"`
+	LimitRp         int        `json:"limit_rp"`
+	TimePeriod      int        `json:"time_period"`
+	PeriodType      string     `json:"period_type"`
+	Usage           int        `json:"usage"`
+	Description     string     `json:"description" gorm:"type:text"`
+	GuaranteeStatus bool       `json:"guarantee_status"`
+	Guarantee       *Guarantee `json:"guarantee" gorm:"-:all"`
+	DeptorTransfer  bool       `json:"depositor_transfer"`
+	Status          string     `json:"status"`
 }
 
 type Guarantee struct {
 	Id                      int    `json:"id" gorm:"primaryKey"`
-	LoanId                  int    `json:"loan_id"`
+	LoanId                  int    `json:"-"`
 	GuaranteeType           int    `json:"guarantee_type"`
 	Description             string `json:"description"`
 	IdCoreCollateral        int    `json:"id_core_collateral"`
@@ -46,6 +56,12 @@ type Guarantee struct {
 	InsuranceValue          int    `json:"insurance_value"`
 	BindingValue            int    `json:"binding_value"`
 	PPADeductionValue       int    `json:"ppa_deduction_value"`
+	Status                  string `json:"status"`
+}
+
+type Dropdown struct {
+	Id   int    `json:"id"`
+	Name string `json:"name"`
 }
 
 type CreditType struct {

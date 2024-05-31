@@ -9,6 +9,7 @@ import (
 	"github.com/syahlan1/golos/controllers/approvalController"
 	"github.com/syahlan1/golos/controllers/authController"
 	"github.com/syahlan1/golos/controllers/businessController"
+	"github.com/syahlan1/golos/controllers/creditTermsController"
 	"github.com/syahlan1/golos/controllers/masterCodeController"
 	"github.com/syahlan1/golos/controllers/masterColumnController"
 	"github.com/syahlan1/golos/controllers/masterTableController"
@@ -88,6 +89,14 @@ func Setup(app *fiber.App) {
 	api.Get("/applicant/show-hubungan-keluarga", aplicantController.ShowHubunganKeluarga)
 	api.Get("/applicant/show-lokasi-pabrik", aplicantController.ShowLokasiPabrik)
 	api.Get("/applicant/marital-status", aplicantController.ShowMaritalStatus)
+
+	api.Get("/credit-type", creditTermsController.GetCreditType)
+	api.Get("/credit-usage", creditTermsController.GetCreditUsage)
+	api.Get("/credit-currency", creditTermsController.GetCreditCurrency)
+	api.Post("/credit/create", creditTermsController.CreateCreditTerms)
+	api.Get("/credit/show", creditTermsController.ShowCreditTerms)
+	api.Put("/credit/update/:id", creditTermsController.UpdateCreditTerms)
+	api.Delete("/credit/delete/:id", creditTermsController.DeleteCreditTerms)
 
 	//zipcode
 	api.Get("/provinces", businessController.GetProvinces)
