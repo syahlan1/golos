@@ -23,9 +23,9 @@ func GetCreditType() (result []models.Dropdown, err error) {
 	return
 }
 
-func GetCreditUsage() (result []models.Dropdown, err error) {
+func GetCreditPurpose() (result []models.Dropdown, err error) {
 	if err = connection.DB.Select("id", "CONCAT(code, ' - ', name) AS name").
-		Model(&models.Usage{}).
+		Model(&models.Purpose{}).
 		Find(&result).Error; err != nil {
 		return nil, err
 	}
@@ -35,9 +35,67 @@ func GetCreditUsage() (result []models.Dropdown, err error) {
 	return
 }
 
+func GetCollateralType() (result []models.Dropdown, err error) {
+	if err = connection.DB.Select("id", "CONCAT(code, ' - ', name) AS name").
+		Order("code").
+		Model(&models.CollateralType{}).
+		Find(&result).Error; err != nil {
+		return nil, err
+	}
+
+	result = utils.Prepend(result, models.Dropdown{Id: 0, Name: "- PILIH -"})
+
+	return
+}
+
+func GetProofOfOwnership() (result []models.Dropdown, err error) {
+	if err = connection.DB.Select("id", "name").
+		Model(&models.ProofOfOwnership{}).
+		Find(&result).Error; err != nil {
+		return nil, err
+	}
+
+	result = utils.Prepend(result, models.Dropdown{Id: 0, Name: "- PILIH -"})
+
+	return
+}
+
+func GetFormOfBinding() (result []models.Dropdown, err error) {
+	if err = connection.DB.Select("id", "name").
+		Model(&models.FormOfBinding{}).
+		Find(&result).Error; err != nil {
+		return nil, err
+	}
+	
+	result = utils.Prepend(result, models.Dropdown{Id: 0, Name: "- PILIH -"})
+
+	return
+}
+
+func GetCollateralClassification() (result []models.Dropdown, err error) {
+	if err = connection.DB.Select("id", "name").
+		Model(&models.CollateralClassification{}).
+		Find(&result).Error; err != nil {
+		return nil, err
+	}
+	
+	result = utils.Prepend(result, models.Dropdown{Id: 0, Name: "- PILIH -"})
+
+	return
+}
+
 func GetCreditCurrency() (result []models.Dropdown, err error) {
 	if err = connection.DB.Select("id", "CONCAT(code, ' - ', name) AS name").
 		Model(&models.Currency{}).
+		Find(&result).Error; err != nil {
+		return nil, err
+	}
+
+	return
+}
+
+func GetAssessmentBy() (result []models.Assessment, err error) {
+	if err = connection.DB.Select("id", "name").
 		Find(&result).Error; err != nil {
 		return nil, err
 	}
@@ -152,7 +210,7 @@ func UpdateCreditTerms(id string, data models.CreditTerms) (result models.Credit
 		result.LoanInformation.LimitRp = data.LoanInformation.LimitRp
 		result.LoanInformation.TimePeriod = data.LoanInformation.TimePeriod
 		result.LoanInformation.PeriodType = data.LoanInformation.PeriodType
-		result.LoanInformation.Usage = data.LoanInformation.Usage
+		result.LoanInformation.Purpose = data.LoanInformation.Purpose
 		result.LoanInformation.Description = data.LoanInformation.Description
 		result.LoanInformation.CollateralStatus = data.LoanInformation.CollateralStatus
 		result.LoanInformation.DeptorTransfer = data.LoanInformation.DeptorTransfer
@@ -179,6 +237,9 @@ func UpdateCreditTerms(id string, data models.CreditTerms) (result models.Credit
 			result.LoanInformation.Collateral.InsuranceValue = data.LoanInformation.Collateral.InsuranceValue
 			result.LoanInformation.Collateral.BindingValue = data.LoanInformation.Collateral.BindingValue
 			result.LoanInformation.Collateral.PPADeductionValue = data.LoanInformation.Collateral.PPADeductionValue
+			result.LoanInformation.Collateral.LiquidationValue = data.LoanInformation.Collateral.LiquidationValue
+			result.LoanInformation.Collateral.AssessmentDate = data.LoanInformation.Collateral.AssessmentDate
+			result.LoanInformation.Collateral.AssessmentBy = data.LoanInformation.Collateral.AssessmentBy
 
 			guarantee := result.LoanInformation.Collateral
 

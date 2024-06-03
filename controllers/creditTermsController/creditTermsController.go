@@ -22,8 +22,8 @@ func GetCreditType(c *fiber.Ctx) error {
 	})
 }
 
-func GetCreditUsage(c *fiber.Ctx) error {
-	result, err := creditTermsService.GetCreditUsage()
+func GetCreditPurpose(c *fiber.Ctx) error {
+	result, err := creditTermsService.GetCreditPurpose()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
 			Code:    fiber.StatusInternalServerError,
@@ -38,9 +38,88 @@ func GetCreditUsage(c *fiber.Ctx) error {
 	})
 }
 
+func GetCollateralType(c *fiber.Ctx) error {
+	result, err := creditTermsService.GetCollateralType()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func GetProofOfOwnership(c *fiber.Ctx) error {
+	result, err := creditTermsService.GetProofOfOwnership()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func GetFormOfBinding(c *fiber.Ctx) error {
+	result, err := creditTermsService.GetFormOfBinding()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func CollateralClassification(c *fiber.Ctx) error {
+	result, err := creditTermsService.GetCollateralClassification()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
 
 func GetCreditCurrency(c *fiber.Ctx) error {
 	result, err := creditTermsService.GetCreditCurrency()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func GetAssessmentBy(c *fiber.Ctx) error {
+	result, err := creditTermsService.GetAssessmentBy()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
 			Code:    fiber.StatusInternalServerError,

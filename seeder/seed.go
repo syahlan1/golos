@@ -87,7 +87,6 @@ func UserSeed() {
 	connection.DB.Save(&rolePermissions)
 }
 
-
 func CreditSeed() {
 	var credit = []models.CreditType{
 		{
@@ -110,22 +109,81 @@ func CreditSeed() {
 			Code: "0529",
 			Name: "KREDIT TANPA AGUNAN",
 		},
-
 	}
 
-	var usage = []models.Usage{
+	var purpose = []models.Purpose{
 		{
-			Code: "1",
-			Name: "Modal Kerja",
-		},
-		{
-			Code: "2",
-			Name: "Investasi",
-		},
-		{
-			Code: "3",
-			Name: "Konsumsi",
-		},
+			Code: "06",
+			Name: "Kredit Rekening Koran (KRK)",
+		  },
+		  {
+			Code: "10",
+			Name: "Kredit Atas Permintaan (KAP)",
+		  },
+		  {
+			Code: "18",
+			Name: "Kredit Angsuran Berjangka (KAB)",
+		  },
+		  {
+			Code: "25",
+			Name: "KMK Khusus Kepada Jasa Pengembang",
+		  },
+		  {
+			Code: "26",
+			Name: "Kredit Investasi (KIN)",
+		  },
+		  {
+			Code: "31",
+			Name: "Kredit Kepemilikan Rumah (KPR)",
+		  },
+		  {
+			Code: "33",
+			Name: "Kredit Kepemilikan Kendaraan Bermotor (KKB)",
+		  },
+		  {
+			Code: "34",
+			Name: "Kredit Serba Guna (KSG)",
+		  },
+		  {
+			Code: "35",
+			Name: "Kredit Tanpa Agunan (KTA)",
+		  },
+		  {
+			Code: "39",
+			Name: "Kredit Dengan Agunan Deposito",
+		  },
+		  {
+			Code: "45",
+			Name: "Kredit Excecuting Multifinance",
+		  },
+		  {
+			Code: "46",
+			Name: "Joint Financing",
+		  },
+		  {
+			Code: "47",
+			Name: "Channeling Loan",
+		  },
+		  {
+			Code: "48",
+			Name: "Sindikasi",
+		  },
+		  {
+			Code: "49",
+			Name: "Agriculture Financing",
+		  },
+		  {
+			Code: "50",
+			Name: "Bank Garansi",
+		  },
+		  {
+			Code: "51",
+			Name: "Standby Letter of Credit (L/C)",
+		  },
+		  {
+			Code: "52",
+			Name: "Pre Export Financing",
+		  },
 	}
 
 	var currency = []models.Currency{
@@ -143,7 +201,539 @@ func CreditSeed() {
 		},
 	}
 
+	var assessment = []models.Assessment{
+		{
+			Name: "Menurut penilaian bank",
+		},
+		{
+			Name: "Menurut penilaian appraisal",
+		},
+	}
+
+	var collateral = []models.CollateralType{
+		{
+
+			Code:         "RE",
+			Name:         "Tanah Dan Bangunan",
+			LinkTable:    "COLLATERAL_RE",
+			CodeIbs:      "001",
+			ReqAppraisal: "1",
+			RatingCode:   "A",
+		},
+		{
+
+			Code:         "VEH",
+			Name:         "Mesin-Mesin",
+			LinkTable:    "COLLATERAL_VEH",
+			CodeIbs:      "061",
+			ReqAppraisal: "1",
+			RatingCode:   "4",
+		},
+		{
+
+			Code:         "DEP",
+			Name:         "Deposito",
+			LinkTable:    "COLLATERAL_DEP",
+			CodeIbs:      "101",
+			ReqAppraisal: "1",
+			RatingCode:   "7",
+		},
+		{
+
+			Code:         "BOND",
+			Name:         "Garansi Bank",
+			LinkTable:    "COLLATERAL_BOND",
+			CodeIbs:      "202",
+			ReqAppraisal: "1",
+			RatingCode:   "1",
+		},
+		{
+
+			Code:         "PG",
+			Name:         "Personal Guarantee",
+			LinkTable:    "COLLATERAL_PG",
+			CodeIbs:      "281",
+			ReqAppraisal: "1",
+			RatingCode:   "1",
+		},
+		{
+
+			Code:         "MISC",
+			Name:         "Emas dan Perhiasan",
+			LinkTable:    "COLLATERAL_MISC",
+			CodeIbs:      "331",
+			ReqAppraisal: "1",
+			RatingCode:   "7",
+		},
+		{
+
+			Code:         "STOCK",
+			Name:         "Saham",
+			LinkTable:    "COLLATERAL_STOCK",
+			CodeIbs:      "351",
+			ReqAppraisal: "1",
+			RatingCode:   "7",
+		},
+		{
+
+			Code:         "AR",
+			Name:         "Piutang/Tagihan",
+			LinkTable:    "COLLATERAL_AR",
+			CodeIbs:      "381",
+			ReqAppraisal: "1",
+			RatingCode:   "2",
+		},
+		{
+
+			Code:         "LC",
+			Name:         "Standby LC",
+			LinkTable:    "COLLATERAL_LC",
+			CodeIbs:      "401",
+			ReqAppraisal: "1",
+			RatingCode:   "1",
+		},
+		{
+
+			Code:         "PNCHQ",
+			Name:         "Promisary Note/Cheques",
+			LinkTable:    "COLLATERAL_PNCHQ",
+			CodeIbs:      "431",
+			ReqAppraisal: "1",
+			RatingCode:   "1",
+		},
+		{
+
+			Code:         "TRCON",
+			Name:         "Transfer Contract",
+			LinkTable:    "COLLATERAL_TRCON",
+			CodeIbs:      "451",
+			ReqAppraisal: "1",
+			RatingCode:   "1",
+		},
+		{
+
+			Code:         "SPK",
+			Name:         "Contract dan SPK",
+			LinkTable:    "COLLATERAL_SPK",
+			CodeIbs:      "481",
+			ReqAppraisal: "1",
+			RatingCode:   "1",
+		},
+		{
+
+			Code:         "LSAGR",
+			Name:         "Lease Agreement",
+			LinkTable:    "COLLATERAL_LSAGR",
+			CodeIbs:      "501",
+			ReqAppraisal: "1",
+			RatingCode:   "1",
+		},
+		{
+
+			Code:         "RE",
+			Name:         "Tanah Darat",
+			LinkTable:    "COLLATERAL_RE",
+			CodeIbs:      "004",
+			ReqAppraisal: "1",
+			RatingCode:   "3",
+		},
+		{
+
+			Code:         "RE",
+			Name:         "Tanah dan Pabrik/Proyek",
+			LinkTable:    "COLLATERAL_RE",
+			CodeIbs:      "005",
+			ReqAppraisal: "1",
+			RatingCode:   "A",
+		},
+		{
+
+			Code:         "RE",
+			Name:         "Bangunan",
+			LinkTable:    "COLLATERAL_RE",
+			CodeIbs:      "002",
+			ReqAppraisal: "1",
+			RatingCode:   "A",
+		},
+		{
+
+			Code:         "RE",
+			Name:         "Pabrik/Proyek",
+			LinkTable:    "COLLATERAL_RE",
+			CodeIbs:      "003",
+			ReqAppraisal: "1",
+			RatingCode:   "A",
+		},
+		{
+
+			Code:         "RE",
+			Name:         "Tanah Kebun",
+			LinkTable:    "COLLATERAL_RE",
+			CodeIbs:      "006",
+			ReqAppraisal: "1",
+			RatingCode:   "3",
+		},
+		{
+
+			Code:         "VEH",
+			Name:         "Kapal dan Sejenisnya",
+			LinkTable:    "COLLATERAL_VEH",
+			CodeIbs:      "062",
+			ReqAppraisal: "1",
+			RatingCode:   "9",
+		},
+		{
+
+			Code:         "VEH",
+			Name:         "Pesawat terbang dan sejenisnya",
+			LinkTable:    "COLLATERAL_VEH",
+			CodeIbs:      "063",
+			ReqAppraisal: "1",
+			RatingCode:   "9",
+		},
+		{
+
+			Code:         "VEH",
+			Name:         "Kenderaan Bermotor",
+			LinkTable:    "COLLATERAL_VEH",
+			CodeIbs:      "064",
+			ReqAppraisal: "1",
+			RatingCode:   "5",
+		},
+		{
+
+			Code:         "VEH",
+			Name:         "Alat Berat",
+			LinkTable:    "COLLATERAL_VEH",
+			CodeIbs:      "065",
+			ReqAppraisal: "1",
+			RatingCode:   "4",
+		},
+		{
+
+			Code:         "BOND",
+			Name:         "Obligasi",
+			LinkTable:    "COLLATERAL_BOND",
+			CodeIbs:      "203",
+			ReqAppraisal: "1",
+			RatingCode:   "6",
+		},
+		{
+
+			Code:         "BOND",
+			Name:         "Retention Bond",
+			LinkTable:    "COLLATERAL_BOND",
+			CodeIbs:      "204",
+			ReqAppraisal: "1",
+			RatingCode:   "6",
+		},
+		{
+
+			Code:         "BOND",
+			Name:         "Performance Bond",
+			LinkTable:    "COLLATERAL_BOND",
+			CodeIbs:      "205",
+			ReqAppraisal: "1",
+			RatingCode:   "6",
+		},
+		{
+
+			Code:         "BOND",
+			Name:         "Advance Payment Bond",
+			LinkTable:    "COLLATERAL_BOND",
+			CodeIbs:      "206",
+			ReqAppraisal: "1",
+			RatingCode:   "6",
+		},
+		{
+
+			Code:         "BOND",
+			Name:         "Surety Bond",
+			LinkTable:    "COLLATERAL_BOND",
+			CodeIbs:      "207",
+			ReqAppraisal: "1",
+			RatingCode:   "6",
+		},
+		{
+
+			Code:         "BOND",
+			Name:         "Sertifikat Bank Indonesia",
+			LinkTable:    "COLLATERAL_BOND",
+			CodeIbs:      "208",
+			ReqAppraisal: "1",
+			RatingCode:   "6",
+		},
+		{
+
+			Code:         "PG",
+			Name:         "Pemerintahan",
+			LinkTable:    "COLLATERAL_PG",
+			CodeIbs:      "282",
+			ReqAppraisal: "1",
+			RatingCode:   "1",
+		},
+		{
+
+			Code:         "PG",
+			Name:         "Askrindo",
+			LinkTable:    "COLLATERAL_PG",
+			CodeIbs:      "283",
+			ReqAppraisal: "1",
+			RatingCode:   "1",
+		},
+		{
+
+			Code:         "PG",
+			Name:         "Perum PKK/PT SPU",
+			LinkTable:    "COLLATERAL_PG",
+			CodeIbs:      "284",
+			ReqAppraisal: "1",
+			RatingCode:   "1",
+		},
+		{
+
+			Code:         "PG",
+			Name:         "Perusahaan (Corp GTE)",
+			LinkTable:    "COLLATERAL_PG",
+			CodeIbs:      "285",
+			ReqAppraisal: "1",
+			RatingCode:   "1",
+		},
+		{
+
+			Code:         "PG",
+			Name:         "Avalist Guarantee",
+			LinkTable:    "COLLATERAL_PG",
+			CodeIbs:      "286",
+			ReqAppraisal: "1",
+			RatingCode:   "1",
+		},
+		{
+
+			Code:         "PG",
+			Name:         "PT. ASEI",
+			LinkTable:    "COLLATERAL_PG",
+			CodeIbs:      "287",
+			ReqAppraisal: "1",
+			RatingCode:   "1",
+		},
+		{
+
+			Code:         "MISC",
+			Name:         "Lainnya",
+			LinkTable:    "COLLATERAL_MISC",
+			CodeIbs:      "332",
+			ReqAppraisal: "1",
+			RatingCode:   "1",
+		},
+		{
+
+			Code:         "LC",
+			Name:         "SKBDN",
+			LinkTable:    "COLLATERAL_LC",
+			CodeIbs:      "402",
+			ReqAppraisal: "1",
+			RatingCode:   "1",
+		},
+		{
+
+			Code:         "INV",
+			Name:         "Barang Inventory",
+			LinkTable:    "COLLATERAL_INV",
+			CodeIbs:      "161",
+			ReqAppraisal: "1",
+			RatingCode:   "2",
+		},
+		{
+
+			Code:         "INV",
+			Name:         "Persediaan Barang / Stock",
+			LinkTable:    "COLLATERAL_INV",
+			CodeIbs:      "162",
+			ReqAppraisal: "1",
+			RatingCode:   "2",
+		},
+		{
+
+			Code:         "VEH",
+			Name:         "Mesin dan Tanah",
+			LinkTable:    "COLLATERAL_VEH",
+			CodeIbs:      "066",
+			ReqAppraisal: "1",
+			RatingCode:   "4",
+		},
+		{
+
+			Code:         "VEH",
+			Name:         "Mesin dan Alat Berat",
+			LinkTable:    "COLLATERAL_VEH",
+			CodeIbs:      "067",
+			ReqAppraisal: "1",
+			RatingCode:   "4",
+		},
+	}
+
+	adr := func(s string) *string { return &s }
+	var proofOfOwnership = []models.ProofOfOwnership{
+
+		{
+			Code:       "A-FIDUCIA",
+			Name:       "FEO-AKTA FIDUCIA",
+			Flag:       nil,
+			RatingCode: adr("A"),
+		},
+		{
+			Code:       "BOT",
+			Name:       "BANGUN GUNA SERAH (BUILD OPERATE TRANSFER)",
+			Flag:       nil,
+			RatingCode: adr(""),
+		},
+		{
+			Code:       "BPKB",
+			Name:       "BUKTI PEMILIKAN KENDARAAN BERMOTOR",
+			Flag:       nil,
+			RatingCode: nil,
+		},
+		{
+			Code:       "CLERANCE",
+			Name:       "CLERANCE SERT./KETERANGAN DARI BPN",
+			Flag:       adr("RE"),
+			RatingCode: adr("10"),
+		},
+		{
+			Code:       "COVERNOTE",
+			Name:       "SURAT KETERANGAN NOTARIS",
+			Flag:       adr("RE"),
+			RatingCode: adr("10"),
+		},
+		{
+			Code:       "GIRIK",
+			Name:       "GIRIK/PETOK D/LETTER C",
+			Flag:       adr("RE"),
+			RatingCode: adr("10"),
+		},
+		{
+			Code:       "KAD",
+			Name:       "milik sendiri",
+			Flag:       adr("DEP"),
+			RatingCode: nil,
+		},
+		{
+			Code:       "SHGB",
+			Name:       "SERT. HAK GUNA BANGUNAN",
+			Flag:       adr("RE"),
+			RatingCode: adr("9"),
+		},
+		{
+			Code:       "SHGBHM",
+			Name:       "SERT. HAK GUNA BANGUNAN ATAS HAK MILIK",
+			Flag:       adr("RE"),
+			RatingCode: adr("9"),
+		},
+		{
+			Code:       "SHGU",
+			Name:       "SERT. HAK GUNA USAHA",
+			Flag:       adr("RE"),
+			RatingCode: adr("9"),
+		},
+		{
+			Code:       "SHM",
+			Name:       "SERT. HAK MILIK",
+			Flag:       adr("RE"),
+			RatingCode: adr("8"),
+		},
+		{
+			Code:       "SHMSRS",
+			Name:       "SERT. HAK MILIK ATAS SATUAN RUSUN/APT.",
+			Flag:       adr("RE"),
+			RatingCode: adr("8"),
+		},
+		{
+			Code:       "SHP",
+			Name:       "SERT. HAK PAKAI",
+			Flag:       adr("RE"),
+			RatingCode: adr("10"),
+		},
+		{
+			Code:       "SHPM",
+			Name:       "SERT. HAK PAKAI DI ATAS TANAH HAK MILIK",
+			Flag:       adr("RE"),
+			RatingCode: adr("10"),
+		},
+		{
+			Code:       "SKPT",
+			Name:       "SURAT KETERANGAN PENDAFTARAN TANAH",
+			Flag:       adr("RE"),
+			RatingCode: adr("10"),
+		},
+	}
+
+	var formOfBindings = []models.FormOfBinding{
+		{
+			Name: "Hak Tanggungan",
+		},
+		{
+			Name: "APHT",
+		},
+		{
+			Name: "Fiducial Bawah Tangan",
+		},
+		{
+			Name: "Akta Fiducia",
+		},
+		{
+			Name: "Kuasa Jual Bawah Tangan",
+		},
+		{
+			Name: "Kuasa Jual Notarial",
+		},
+		{
+			Name: "Tanpa Pengikatan",
+		},
+		{
+			Name: "Gadai",
+		},
+		{
+			Name: "Fidusia",
+		},
+		{
+			Name: "SKMHT",
+		},
+		{
+			Name: "Cessie",
+		},
+		{
+			Name: "Belum Diikat atau Tidak Diikat",
+		},
+		{
+			Name: "Hipotik",
+		},
+		{
+			Name: "Surat Kuasa Jual (SKJ)",
+		},
+		{
+			Name: "SKHMT",
+		},
+		{
+			Name: "Lainnya",
+		},
+	}
+
+	var collateralClassification = []models.CollateralClassification{
+		{
+			Name: "Jaminan Utama",
+		},
+		{
+			Name: "Jaminan Tambahan",
+		},
+	}
+
 	connection.DB.Save(&credit)
-	connection.DB.Save(&usage)
+	connection.DB.Save(&purpose)
 	connection.DB.Save(&currency)
+	connection.DB.Save(&assessment)
+	connection.DB.Save(&collateral)
+	connection.DB.Save(&proofOfOwnership)
+	connection.DB.Save(&formOfBindings)
+	connection.DB.Save(&collateralClassification)
 }
