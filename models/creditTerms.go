@@ -19,7 +19,7 @@ type CreditTerms struct {
 // type CreateCreditTerms struct {
 // 	*CreditTerms
 // 	LoanInformation *LoanInformation `json:"loan_information"`
-// 	Guarantee       *Guarantee       `json:"guarantee"`
+// 	Collateral       *Collateral       `json:"guarantee"`
 // }
 
 type LoanInformation struct {
@@ -34,21 +34,21 @@ type LoanInformation struct {
 	PeriodType      string     `json:"period_type"`
 	Usage           int        `json:"usage"`
 	Description     string     `json:"description" gorm:"type:text"`
-	GuaranteeStatus bool       `json:"guarantee_status"`
-	Guarantee       *Guarantee `json:"guarantee" gorm:"-:all"`
+	CollateralStatus bool       `json:"guarantee_status"`
+	Collateral       *Collateral `json:"guarantee" gorm:"-:all"`
 	DeptorTransfer  bool       `json:"depositor_transfer"`
 	Status          string     `json:"status"`
 }
 
-type Guarantee struct {
+type Collateral struct {
 	Id                      int    `json:"id" gorm:"primaryKey"`
 	LoanId                  int    `json:"-"`
-	GuaranteeType           int    `json:"guarantee_type"`
+	CollateralType           int    `json:"guarantee_type"`
 	Description             string `json:"description"`
 	IdCoreCollateral        int    `json:"id_core_collateral"`
 	ProofOfOwnership        int    `json:"proof_of_ownership"`
 	FormOfBinding           int    `json:"form_of_binding"`
-	GuaranteeClassification int    `json:"guarantee_classification"`
+	CollateralClassification int    `json:"guarantee_classification"`
 	CurrencyId              int    `json:"currency_id"`
 	ExchangeRate            int    `json:"exchange_rate"`
 	BankValue               int    `json:"bank_value"`
@@ -76,7 +76,7 @@ type Usage struct {
 	Name string `json:"name"`
 }
 
-type GuaranteeType struct {
+type CollateralType struct {
 	Id   int    `json:"id" gorm:"primaryKey"`
 	Code string `json:"code"`
 	Name string `json:"name"`
@@ -94,7 +94,7 @@ type FormOfBinding struct {
 	Name string `json:"name"`
 }
 
-type GuaranteeClassification struct {
+type CollateralClassification struct {
 	Id   int    `json:"id" gorm:"primaryKey"`
 	Code string `json:"code"`
 	Name string `json:"name"`
