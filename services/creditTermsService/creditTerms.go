@@ -10,6 +10,19 @@ import (
 	"gorm.io/gorm"
 )
 
+func GetSubmissionType() (result []models.Dropdown, err error) {
+
+	if err = connection.DB.Select("id", "name").
+		Model(&models.SubmissionType{}).
+		Find(&result).Error; err != nil {
+		return nil, err
+	}
+
+	result = utils.Prepend(result, models.Dropdown{Id: 0, Name: "- PILIH -"})
+
+	return
+}
+
 func GetCreditType() (result []models.Dropdown, err error) {
 
 	if err = connection.DB.Select("id", "CONCAT(code, ' - ', name) AS name").
@@ -112,10 +125,10 @@ func CreateCreditTerms(data *models.CreditTerms) (err error) {
 		return err
 	}
 
-	// check if LoanInformation is not empty
-	if data.LoanInformation != nil {
+	// check if LoanNew is not empty
+	if data.LoanNew != nil {
 
-		loanInformation := data.LoanInformation
+		loanInformation := data.LoanNew
 		loanInformation.CreditId = data.Id
 		loanInformation.Status = "L"
 
@@ -126,7 +139,7 @@ func CreateCreditTerms(data *models.CreditTerms) (err error) {
 		// check if Collateral is not empty
 		if loanInformation.CollateralStatus {
 
-			guarantee := data.LoanInformation.Collateral
+			guarantee := data.LoanNew.Collateral
 			guarantee.LoanId = loanInformation.Id
 			guarantee.Status = "L"
 
@@ -147,21 +160,21 @@ func ShowCreditTerms(id string) (result []models.CreditTerms, err error) {
 
 	for i, value := range result {
 
-		if err = connection.DB.Where("credit_id = ?", value.Id).Not("status", "D").First(&result[i].LoanInformation).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		if err = connection.DB.Where("credit_id = ?", value.Id).Not("status", "D").First(&result[i].LoanNew).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			return result, err
 		}
 
-		if result[i].LoanInformation.Id == 0 {
-			result[i].LoanInformation = nil
+		if result[i].LoanNew.Id == 0 {
+			result[i].LoanNew = nil
 			continue
 		}
 
-		if !result[i].LoanInformation.CollateralStatus {
-			result[i].LoanInformation.Collateral = nil
+		if !result[i].LoanNew.CollateralStatus {
+			result[i].LoanNew.Collateral = nil
 			continue
 		}
 
-		if err = connection.DB.Where("loan_id = ?", result[i].LoanInformation.Id).Not("status", "D").First(&result[i].LoanInformation.Collateral).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		if err = connection.DB.Where("loan_id = ?", result[i].LoanNew.Id).Not("status", "D").First(&result[i].LoanNew.Collateral).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			return result, err
 		}
 	}
@@ -175,12 +188,12 @@ func UpdateCreditTerms(id string, data models.CreditTerms) (result models.Credit
 		return result, err
 	}
 
-	if err = connection.DB.Where("credit_id = ?", id).Not("status", "D").First(&result.LoanInformation).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err = connection.DB.Where("credit_id = ?", id).Not("status", "D").First(&result.LoanNew).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		log.Println("error1", err)
 		return result, err
 	}
 
-	if err = connection.DB.Where("loan_id = ?", id).Not("status", "D").First(&result.LoanInformation.Collateral).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err = connection.DB.Where("loan_id = ?", id).Not("status", "D").First(&result.LoanNew.Collateral).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		log.Println("error2", err)
 		return result, err
 	}
@@ -200,22 +213,22 @@ func UpdateCreditTerms(id string, data models.CreditTerms) (result models.Credit
 		return result, err
 	}
 
-	// check if LoanInformation is not empty
-	if data.LoanInformation != nil {
+	// check if LoanNew is not empty
+	if data.LoanNew != nil {
 
-		result.LoanInformation.SubmissionType = data.LoanInformation.SubmissionType
-		result.LoanInformation.CreditType = data.LoanInformation.CreditType
-		result.LoanInformation.Limit = data.LoanInformation.Limit
-		result.LoanInformation.ExchangeRate = data.LoanInformation.ExchangeRate
-		result.LoanInformation.LimitRp = data.LoanInformation.LimitRp
-		result.LoanInformation.TimePeriod = data.LoanInformation.TimePeriod
-		result.LoanInformation.PeriodType = data.LoanInformation.PeriodType
-		result.LoanInformation.Purpose = data.LoanInformation.Purpose
-		result.LoanInformation.Description = data.LoanInformation.Description
-		result.LoanInformation.CollateralStatus = data.LoanInformation.CollateralStatus
-		result.LoanInformation.DeptorTransfer = data.LoanInformation.DeptorTransfer
+		// result.LoanNew.SubmissionType = data.LoanNew.SubmissionType
+		result.LoanNew.CreditType = data.LoanNew.CreditType
+		result.LoanNew.Limit = data.LoanNew.Limit
+		result.LoanNew.ExchangeRate = data.LoanNew.ExchangeRate
+		result.LoanNew.LimitRp = data.LoanNew.LimitRp
+		result.LoanNew.TimePeriod = data.LoanNew.TimePeriod
+		result.LoanNew.PeriodType = data.LoanNew.PeriodType
+		result.LoanNew.Purpose = data.LoanNew.Purpose
+		result.LoanNew.Description = data.LoanNew.Description
+		result.LoanNew.CollateralStatus = data.LoanNew.CollateralStatus
+		result.LoanNew.DeptorTransfer = data.LoanNew.DeptorTransfer
 
-		loanInformation := result.LoanInformation
+		loanInformation := result.LoanNew
 
 		if err := connection.DB.Save(&loanInformation).Error; err != nil {
 			return result, err
@@ -224,47 +237,47 @@ func UpdateCreditTerms(id string, data models.CreditTerms) (result models.Credit
 		// check if Collateral is not empty
 		if loanInformation.CollateralStatus {
 
-			result.LoanInformation.Collateral.CollateralType = data.LoanInformation.Collateral.CollateralType
-			result.LoanInformation.Collateral.Description = data.LoanInformation.Collateral.Description
-			result.LoanInformation.Collateral.IdCoreCollateral = data.LoanInformation.Collateral.IdCoreCollateral
-			result.LoanInformation.Collateral.ProofOfOwnership = data.LoanInformation.Collateral.ProofOfOwnership
-			result.LoanInformation.Collateral.FormOfBinding = data.LoanInformation.Collateral.FormOfBinding
-			result.LoanInformation.Collateral.CollateralClassification = data.LoanInformation.Collateral.CollateralClassification
-			result.LoanInformation.Collateral.CurrencyId = data.LoanInformation.Collateral.CurrencyId
-			result.LoanInformation.Collateral.ExchangeRate = data.LoanInformation.Collateral.ExchangeRate
-			result.LoanInformation.Collateral.BankValue = data.LoanInformation.Collateral.BankValue
-			result.LoanInformation.Collateral.MarketValue = data.LoanInformation.Collateral.MarketValue
-			result.LoanInformation.Collateral.InsuranceValue = data.LoanInformation.Collateral.InsuranceValue
-			result.LoanInformation.Collateral.BindingValue = data.LoanInformation.Collateral.BindingValue
-			result.LoanInformation.Collateral.PPADeductionValue = data.LoanInformation.Collateral.PPADeductionValue
-			result.LoanInformation.Collateral.LiquidationValue = data.LoanInformation.Collateral.LiquidationValue
-			result.LoanInformation.Collateral.AssessmentDate = data.LoanInformation.Collateral.AssessmentDate
-			result.LoanInformation.Collateral.AssessmentBy = data.LoanInformation.Collateral.AssessmentBy
+			result.LoanNew.Collateral.CollateralType = data.LoanNew.Collateral.CollateralType
+			result.LoanNew.Collateral.Description = data.LoanNew.Collateral.Description
+			result.LoanNew.Collateral.IdCoreCollateral = data.LoanNew.Collateral.IdCoreCollateral
+			result.LoanNew.Collateral.ProofOfOwnership = data.LoanNew.Collateral.ProofOfOwnership
+			result.LoanNew.Collateral.FormOfBinding = data.LoanNew.Collateral.FormOfBinding
+			result.LoanNew.Collateral.CollateralClassification = data.LoanNew.Collateral.CollateralClassification
+			result.LoanNew.Collateral.CurrencyId = data.LoanNew.Collateral.CurrencyId
+			result.LoanNew.Collateral.ExchangeRate = data.LoanNew.Collateral.ExchangeRate
+			result.LoanNew.Collateral.BankValue = data.LoanNew.Collateral.BankValue
+			result.LoanNew.Collateral.MarketValue = data.LoanNew.Collateral.MarketValue
+			result.LoanNew.Collateral.InsuranceValue = data.LoanNew.Collateral.InsuranceValue
+			result.LoanNew.Collateral.BindingValue = data.LoanNew.Collateral.BindingValue
+			result.LoanNew.Collateral.PPADeductionValue = data.LoanNew.Collateral.PPADeductionValue
+			result.LoanNew.Collateral.LiquidationValue = data.LoanNew.Collateral.LiquidationValue
+			result.LoanNew.Collateral.AssessmentDate = data.LoanNew.Collateral.AssessmentDate
+			result.LoanNew.Collateral.AssessmentBy = data.LoanNew.Collateral.AssessmentBy
 
-			guarantee := result.LoanInformation.Collateral
+			guarantee := result.LoanNew.Collateral
 
 			if err := connection.DB.Save(&guarantee).Error; err != nil {
 				return result, err
 			}
 		} else {
 			// if empty then delete
-			guarantee := result.LoanInformation.Collateral
+			guarantee := result.LoanNew.Collateral
 			guarantee.Status = "D"
 
 			if err := connection.DB.Save(&guarantee).Error; err != nil {
 				return result, err
 			}
-			result.LoanInformation.Collateral = nil
+			result.LoanNew.Collateral = nil
 		}
 	} else {
 		// if empty then delete
-		loanInformation := result.LoanInformation
+		loanInformation := result.LoanNew
 		loanInformation.Status = "D"
 
 		if err := connection.DB.Save(&loanInformation).Error; err != nil {
 			return result, err
 		}
-		result.LoanInformation = nil
+		result.LoanNew = nil
 	}
 
 	return result, nil

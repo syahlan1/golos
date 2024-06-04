@@ -86,7 +86,12 @@ func Connect() {
 
 	// credit terms
 	connection.AutoMigrate(&models.CreditTerms{})
-	connection.AutoMigrate(&models.LoanInformation{})
+	connection.AutoMigrate(&models.LoanNew{})
+	connection.AutoMigrate(&models.LoanRenewal{})
+	connection.AutoMigrate(&models.LoanWithdrawal{})
+	connection.AutoMigrate(&models.LoanPostFin{})
+	
+	connection.AutoMigrate(&models.SubmissionType{})
 	connection.AutoMigrate(&models.Collateral{})
 	connection.AutoMigrate(&models.CreditType{})
 	connection.AutoMigrate(&models.Purpose{})

@@ -90,6 +90,7 @@ func Setup(app *fiber.App) {
 	api.Get("/applicant/show-lokasi-pabrik", aplicantController.ShowLokasiPabrik)
 	api.Get("/applicant/marital-status", aplicantController.ShowMaritalStatus)
 
+	api.Get("/credit-submission-type", creditTermsController.GetSubmissionType)
 	api.Get("/credit-type", creditTermsController.GetCreditType)
 	api.Get("/credit-purpose", creditTermsController.GetCreditPurpose)
 	api.Get("/credit-collateral-type", creditTermsController.GetCollateralType)

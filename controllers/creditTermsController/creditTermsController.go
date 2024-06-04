@@ -6,6 +6,22 @@ import (
 	"github.com/syahlan1/golos/services/creditTermsService"
 )
 
+func GetSubmissionType(c *fiber.Ctx) error {
+	result, err := creditTermsService.GetSubmissionType()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
 func GetCreditType(c *fiber.Ctx) error {
 	result, err := creditTermsService.GetCreditType()
 	if err != nil {
