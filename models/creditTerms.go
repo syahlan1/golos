@@ -13,54 +13,72 @@ type CreditTerms struct {
 	ApplicationType      string          `json:"application_type"`
 	Project              int             `json:"project"`
 	Status               string          `json:"status"`
-	LoanNew              *LoanNew        `json:"loan_information,omitempty" gorm:"-:all"`
+	LoanNew              *LoanNew        `json:"loan_new,omitempty" gorm:"-:all"`
 	LoanRenewal          *LoanRenewal    `json:"loan_renewal,omitempty" gorm:"-:all"`
 	LoanWithdrawal       *LoanWithdrawal `json:"loan_withdrawal,omitempty" gorm:"-:all"`
 	LoanPostFin          *LoanPostFin    `json:"loan_post_fin,omitempty" gorm:"-:all"`
 }
 
+type CheckLoan struct {
+	LoanNew     bool
+	LoanRenewal bool
+	// LoanWithdrawal bool
+	// LoanPostFin bool
+}
+
 // type CreateCreditTerms struct {
 // 	*CreditTerms
-// 	LoanInformation *LoanInformation `json:"loan_information"`
+// 	LoanInformation *LoanInformation `json:"loan_new"`
 // 	Collateral       *Collateral       `json:"collateral"`
 // }
 
 type LoanNew struct {
 	Id               int         `json:"id" gorm:"primaryKey"`
 	CreditId         int         `json:"-"`
-	SubmissionType   int         `json:"submission_type"`
-	CreditType       int         `json:"credit_type"`
+	SubmissionTypeId int         `json:"submission_type_id"`
+	SubmissionType   string      `json:"submission_type" gorm:"-:migration"`
+	CreditTypeId     int         `json:"credit_type_id"`
+	CreditType       string      `json:"credit_type" gorm:"-:migration"`
 	Limit            int         `json:"limit"`
 	ExchangeRate     int         `json:"exchange_rate"`
 	LimitRp          int         `json:"limit_rp"`
 	TimePeriod       int         `json:"time_period"`
 	PeriodType       string      `json:"period_type"`
-	Purpose          int         `json:"purpose"`
+	PurposeId        int         `json:"purpose_id"`
+	Purpose          string      `json:"purpose" gorm:"-:migration"`
 	Description      string      `json:"description" gorm:"type:text"`
 	CollateralStatus bool        `json:"collateral_status"`
 	Collateral       *Collateral `json:"collateral" gorm:"-:all"`
 	DeptorTransfer   bool        `json:"depositor_transfer"`
-	OldCifNo         *string      `json:"old_cif_no" gorm:"default:null"`
-	OldAccountNo     *string      `json:"old_account_no" gorm:"default:null"`
+	OldCifNo         *string     `json:"old_cif_no" gorm:"default:null"`
+	OldAccountNo     *string     `json:"old_account_no" gorm:"default:null"`
 	Status           string      `json:"status"`
+}
+
+func (LoanNew) TableName() string {
+	return "loan_new"
 }
 
 type LoanRenewal struct {
 	Id                  int    `json:"id" gorm:"primaryKey"`
 	CreditId            int    `json:"-"`
-	SubmissionType      int    `json:"submission_type"`
+	SubmissionTypeId    int    `json:"submission_type_id"`
+	SubmissionType      string `json:"submission_type" gorm:"-:migration"`
 	AccountAccomodation int    `json:"account_accommodation"`
 	AccountNumber       string `json:"account_number"`
+	FacilityNumber      string `json:"facility_number"`
 	CreditType          string `json:"credit_type"`
 	Limit               int    `json:"limit"`
 	TimePeriod          int    `json:"time_period"`
 	PeriodType          string `json:"period_type"`
-	Purpose             int    `json:"purpose"`
+	PurposeId           int    `json:"purpose_id"`
+	Purpose             string `json:"purpose" gorm:"-:migration"`
 	TimePeriodRequest   int    `json:"time_period_request"`
 	LimitRequest        int    `json:"limit_request"`
 	ExchangeRate        int    `json:"exchange_rate"`
 	LimitRp             int    `json:"limit_rp"`
 	Description         string `json:"description" gorm:"type:text"`
+	Status              string `json:"status"`
 }
 
 type LoanWithdrawal struct {
@@ -70,25 +88,31 @@ type LoanPostFin struct {
 }
 
 type Collateral struct {
-	Id                       int    `json:"id" gorm:"primaryKey"`
-	LoanId                   int    `json:"-"`
-	CollateralType           int    `json:"collateral_type"`
-	Description              string `json:"description"`
-	IdCoreCollateral         int    `json:"id_core_collateral"`
-	ProofOfOwnership         int    `json:"proof_of_ownership"`
-	FormOfBinding            int    `json:"form_of_binding"`
-	CollateralClassification int    `json:"collateral_classification"`
-	CurrencyId               int    `json:"currency_id"`
-	ExchangeRate             int    `json:"exchange_rate"`
-	BankValue                int    `json:"bank_value"`
-	MarketValue              int    `json:"market_value"`
-	InsuranceValue           int    `json:"insurance_value"`
-	BindingValue             int    `json:"binding_value"`
-	PPADeductionValue        int    `json:"ppa_deduction_value"`
-	LiquidationValue         int    `json:"liquidation_value"`
-	AssessmentDate           string `json:"assessment_date"`
-	AssessmentBy             int    `json:"assessment_by"`
-	Status                   string `json:"status"`
+	Id                         int    `json:"id" gorm:"primaryKey"`
+	LoanId                     int    `json:"-"`
+	CollateralTypeId           int    `json:"collateral_type_id"`
+	CollateralType             string `json:"collateral_type" gorm:"-:migration"`
+	Description                string `json:"description"`
+	IdCoreCollateral           int    `json:"id_core_collateral"`
+	ProofOfOwnershipId         int    `json:"proof_of_ownership_id"`
+	ProofOfOwnership           string `json:"proof_of_ownership" gorm:"-:migration"`
+	FormOfBindingId            int    `json:"form_of_binding_id"`
+	FormOfBinding              string `json:"form_of_binding" gorm:"-:migration"`
+	CollateralClassificationId int    `json:"collateral_classification_id"`
+	CollateralClassification   string `json:"collateral_classification" gorm:"-:migration"`
+	CurrencyId                 int    `json:"currency_id"`
+	Currency                   string `json:"currency" gorm:"-:migration"`
+	ExchangeRate               int    `json:"exchange_rate"`
+	BankValue                  int    `json:"bank_value"`
+	MarketValue                int    `json:"market_value"`
+	InsuranceValue             int    `json:"insurance_value"`
+	BindingValue               int    `json:"binding_value"`
+	PPADeductionValue          int    `json:"ppa_deduction_value"`
+	LiquidationValue           int    `json:"liquidation_value"`
+	AssessmentDate             string `json:"assessment_date"`
+	AssessmentById             int    `json:"assessment_by_id"`
+	AssessmentBy               string `json:"assessment_by" gorm:"-:migration"`
+	Status                     string `json:"status"`
 }
 
 type Dropdown struct {
@@ -97,9 +121,9 @@ type Dropdown struct {
 }
 
 type SubmissionType struct {
-	Id         int     `json:"id" gorm:"primaryKey"`
-	Code       string  `json:"code"`
-	Name       string  `json:"name"`
+	Id         int      `json:"id" gorm:"primaryKey"`
+	Code       string   `json:"code"`
+	Name       string   `json:"name"`
 	SibsCode   *string  `json:"sibs_code" gorm:"default:null"`
 	Scoring    *string  `json:"scoring" gorm:"default:null"`
 	StopTrack  *string  `json:"stop_track" gorm:"default:null"`

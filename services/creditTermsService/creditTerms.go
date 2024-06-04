@@ -79,7 +79,7 @@ func GetFormOfBinding() (result []models.Dropdown, err error) {
 		Find(&result).Error; err != nil {
 		return nil, err
 	}
-	
+
 	result = utils.Prepend(result, models.Dropdown{Id: 0, Name: "- PILIH -"})
 
 	return
@@ -91,7 +91,7 @@ func GetCollateralClassification() (result []models.Dropdown, err error) {
 		Find(&result).Error; err != nil {
 		return nil, err
 	}
-	
+
 	result = utils.Prepend(result, models.Dropdown{Id: 0, Name: "- PILIH -"})
 
 	return
@@ -128,24 +128,34 @@ func CreateCreditTerms(data *models.CreditTerms) (err error) {
 	// check if LoanNew is not empty
 	if data.LoanNew != nil {
 
-		loanInformation := data.LoanNew
-		loanInformation.CreditId = data.Id
-		loanInformation.Status = "L"
+		loanNew := data.LoanNew
+		loanNew.CreditId = data.Id
+		loanNew.Status = "L"
 
-		if err := connection.DB.Create(&loanInformation).Error; err != nil {
+		if err := connection.DB.Create(&loanNew).Error; err != nil {
 			return err
 		}
 
 		// check if Collateral is not empty
-		if loanInformation.CollateralStatus {
+		if loanNew.CollateralStatus {
 
-			guarantee := data.LoanNew.Collateral
-			guarantee.LoanId = loanInformation.Id
-			guarantee.Status = "L"
+			collateral := data.LoanNew.Collateral
+			collateral.LoanId = loanNew.Id
+			collateral.Status = "L"
 
-			if err := connection.DB.Create(&guarantee).Error; err != nil {
+			if err := connection.DB.Create(&collateral).Error; err != nil {
 				return err
 			}
+		}
+		// check if LoanRenewal is not empty
+	} else if data.LoanRenewal != nil {
+
+		loanNew := data.LoanRenewal
+		loanNew.CreditId = data.Id
+		loanNew.Status = "L"
+
+		if err := connection.DB.Create(&loanNew).Error; err != nil {
+			return err
 		}
 	}
 
@@ -160,23 +170,60 @@ func ShowCreditTerms(id string) (result []models.CreditTerms, err error) {
 
 	for i, value := range result {
 
-		if err = connection.DB.Where("credit_id = ?", value.Id).Not("status", "D").First(&result[i].LoanNew).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		// check if LoanNew and LoanRenewal is exist
+		var checkLoan models.CheckLoan
+		if err = connection.DB.Select(`
+			CASE WHEN ln.id IS NOT NULL THEN TRUE ELSE FALSE END AS loan_new, 
+			CASE WHEN lr.id IS NOT NULL THEN TRUE ELSE FALSE END AS loan_renewal`).
+			Table("credit_terms ct").
+			Joins("LEFT JOIN loan_new ln ON ln.credit_id = ct.id").
+			Joins("LEFT JOIN loan_renewals lr ON lr.credit_id = ct.id").
+			Where("ct.id = ?", value.Id).
+			Where("ln.status <> ? OR lr.status <> ?", "D", "D").
+			Find(&checkLoan).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			return result, err
 		}
 
-		if result[i].LoanNew.Id == 0 {
-			result[i].LoanNew = nil
-			continue
+		switch {
+		case checkLoan.LoanNew:
+
+			if err = connection.DB.Select("ln.*, st.name AS submission_type, CONCAT(ct.code, ' - ', ct.name) AS credit_type, CONCAT(p.code, ' - ', p.name) AS purpose").
+				Table("loan_new AS ln").
+				Joins("JOIN submission_types AS st ON st.id = ln.submission_type_id").
+				Joins("JOIN credit_types AS ct ON ct.id = ln.credit_type_id").
+				Joins("JOIN purposes AS p ON p.id = ln.purpose_id").
+				Where("credit_id = ?", value.Id).Not("status", "D").First(&result[i].LoanNew).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+				return result, err
+			}
+
+			if !result[i].LoanNew.CollateralStatus {
+				result[i].LoanNew.Collateral = nil
+				continue
+			}
+
+			if err = connection.DB.Select("c.*, CONCAT(ct.code, ' - ', ct.name) AS collateral_type, po.name AS proof_of_ownership, fob.name AS form_of_binding, cc.name AS collateral_classification, CONCAT(cur.code, ' - ', cur.name) AS currency, asmt.name AS assessment_by").
+				Table("collaterals AS c").
+				Joins("JOIN collateral_types AS ct ON ct.id = c.collateral_type_id").
+				Joins("JOIN proof_of_ownerships AS po ON po.id = c.proof_of_ownership_id").
+				Joins("JOIN form_of_bindings AS fob ON fob.id = c.form_of_binding_id").
+				Joins("JOIN collateral_classifications AS cc ON cc.id = c.collateral_classification_id").
+				Joins("JOIN currencies AS cur ON cur.id = c.currency_id").
+				Joins("JOIN assessments AS asmt ON asmt.id = c.assessment_by_id").
+				Where("loan_id = ?", result[i].LoanNew.Id).Not("status", "D").First(&result[i].LoanNew.Collateral).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+				return result, err
+			}
+
+		case checkLoan.LoanRenewal:
+
+			if err = connection.DB.Select("lr.*, st.name AS submission_type, CONCAT(p.code, ' - ', p.name) AS purpose").
+				Table("loan_renewals AS lr").
+				Joins("JOIN submission_types AS st ON st.id = lr.submission_type_id").
+				Joins("JOIN purposes AS p ON p.id = lr.purpose_id").
+				Where("credit_id = ?", value.Id).Not("status", "D").First(&result[i].LoanRenewal).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+				return result, err
+			}
 		}
 
-		if !result[i].LoanNew.CollateralStatus {
-			result[i].LoanNew.Collateral = nil
-			continue
-		}
-
-		if err = connection.DB.Where("loan_id = ?", result[i].LoanNew.Id).Not("status", "D").First(&result[i].LoanNew.Collateral).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-			return result, err
-		}
 	}
 
 	return result, nil
@@ -185,16 +232,6 @@ func ShowCreditTerms(id string) (result []models.CreditTerms, err error) {
 func UpdateCreditTerms(id string, data models.CreditTerms) (result models.CreditTerms, err error) {
 
 	if err = connection.DB.Where("id = ?", id).Not("status", "D").First(&result).Error; err != nil {
-		return result, err
-	}
-
-	if err = connection.DB.Where("credit_id = ?", id).Not("status", "D").First(&result.LoanNew).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		log.Println("error1", err)
-		return result, err
-	}
-
-	if err = connection.DB.Where("loan_id = ?", id).Not("status", "D").First(&result.LoanNew.Collateral).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		log.Println("error2", err)
 		return result, err
 	}
 
@@ -213,71 +250,142 @@ func UpdateCreditTerms(id string, data models.CreditTerms) (result models.Credit
 		return result, err
 	}
 
-	// check if LoanNew is not empty
-	if data.LoanNew != nil {
+	var checkLoan models.CheckLoan
+	if err = connection.DB.Select(`
+		CASE WHEN ln.id IS NOT NULL THEN TRUE ELSE FALSE END AS loan_new, 
+		CASE WHEN lr.id IS NOT NULL THEN TRUE ELSE FALSE END AS loan_renewal`).
+		Table("credit_terms ct").
+		Joins("LEFT JOIN loan_new ln ON ln.credit_id = ct.id").
+		Joins("LEFT JOIN loan_renewals lr ON lr.credit_id = ct.id").
+		Where("ct.id = ?", id).
+		Where("ln.status <> ? OR lr.status <> ?", "D", "D").
+		Find(&checkLoan).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return result, err
+	}
 
-		// result.LoanNew.SubmissionType = data.LoanNew.SubmissionType
-		result.LoanNew.CreditType = data.LoanNew.CreditType
-		result.LoanNew.Limit = data.LoanNew.Limit
-		result.LoanNew.ExchangeRate = data.LoanNew.ExchangeRate
-		result.LoanNew.LimitRp = data.LoanNew.LimitRp
-		result.LoanNew.TimePeriod = data.LoanNew.TimePeriod
-		result.LoanNew.PeriodType = data.LoanNew.PeriodType
-		result.LoanNew.Purpose = data.LoanNew.Purpose
-		result.LoanNew.Description = data.LoanNew.Description
-		result.LoanNew.CollateralStatus = data.LoanNew.CollateralStatus
-		result.LoanNew.DeptorTransfer = data.LoanNew.DeptorTransfer
+	switch {
+	case checkLoan.LoanNew:
 
-		loanInformation := result.LoanNew
+		// check if LoanNew is not empty
+		if data.LoanNew != nil {
 
-		if err := connection.DB.Save(&loanInformation).Error; err != nil {
-			return result, err
-		}
-
-		// check if Collateral is not empty
-		if loanInformation.CollateralStatus {
-
-			result.LoanNew.Collateral.CollateralType = data.LoanNew.Collateral.CollateralType
-			result.LoanNew.Collateral.Description = data.LoanNew.Collateral.Description
-			result.LoanNew.Collateral.IdCoreCollateral = data.LoanNew.Collateral.IdCoreCollateral
-			result.LoanNew.Collateral.ProofOfOwnership = data.LoanNew.Collateral.ProofOfOwnership
-			result.LoanNew.Collateral.FormOfBinding = data.LoanNew.Collateral.FormOfBinding
-			result.LoanNew.Collateral.CollateralClassification = data.LoanNew.Collateral.CollateralClassification
-			result.LoanNew.Collateral.CurrencyId = data.LoanNew.Collateral.CurrencyId
-			result.LoanNew.Collateral.ExchangeRate = data.LoanNew.Collateral.ExchangeRate
-			result.LoanNew.Collateral.BankValue = data.LoanNew.Collateral.BankValue
-			result.LoanNew.Collateral.MarketValue = data.LoanNew.Collateral.MarketValue
-			result.LoanNew.Collateral.InsuranceValue = data.LoanNew.Collateral.InsuranceValue
-			result.LoanNew.Collateral.BindingValue = data.LoanNew.Collateral.BindingValue
-			result.LoanNew.Collateral.PPADeductionValue = data.LoanNew.Collateral.PPADeductionValue
-			result.LoanNew.Collateral.LiquidationValue = data.LoanNew.Collateral.LiquidationValue
-			result.LoanNew.Collateral.AssessmentDate = data.LoanNew.Collateral.AssessmentDate
-			result.LoanNew.Collateral.AssessmentBy = data.LoanNew.Collateral.AssessmentBy
-
-			guarantee := result.LoanNew.Collateral
-
-			if err := connection.DB.Save(&guarantee).Error; err != nil {
+			if err = connection.DB.Where("credit_id = ?", id).Not("status", "D").First(&result.LoanNew).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+				log.Println("error1", err)
 				return result, err
+			}
+
+			// result.LoanNew.SubmissionType = data.LoanNew.SubmissionType
+			result.LoanNew.CreditTypeId = data.LoanNew.CreditTypeId
+			result.LoanNew.Limit = data.LoanNew.Limit
+			result.LoanNew.ExchangeRate = data.LoanNew.ExchangeRate
+			result.LoanNew.LimitRp = data.LoanNew.LimitRp
+			result.LoanNew.TimePeriod = data.LoanNew.TimePeriod
+			result.LoanNew.PeriodType = data.LoanNew.PeriodType
+			result.LoanNew.PurposeId = data.LoanNew.PurposeId
+			result.LoanNew.Description = data.LoanNew.Description
+			result.LoanNew.CollateralStatus = data.LoanNew.CollateralStatus
+			result.LoanNew.DeptorTransfer = data.LoanNew.DeptorTransfer
+			result.LoanNew.OldCifNo = data.LoanNew.OldCifNo
+			result.LoanNew.OldAccountNo = data.LoanNew.OldAccountNo
+
+			loanNew := result.LoanNew
+
+			if err := connection.DB.Save(&loanNew).Error; err != nil {
+				return result, err
+			}
+
+			// check if Collateral is not empty
+			if loanNew.CollateralStatus {
+
+				if err = connection.DB.Where("loan_id = ?", result.LoanNew.Id).Not("status", "D").First(&result.LoanNew.Collateral).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+					log.Println("error2", err)
+					return result, err
+				}
+
+				result.LoanNew.Collateral.CollateralTypeId = data.LoanNew.Collateral.CollateralTypeId
+				result.LoanNew.Collateral.Description = data.LoanNew.Collateral.Description
+				result.LoanNew.Collateral.IdCoreCollateral = data.LoanNew.Collateral.IdCoreCollateral
+				result.LoanNew.Collateral.ProofOfOwnershipId = data.LoanNew.Collateral.ProofOfOwnershipId
+				result.LoanNew.Collateral.FormOfBindingId = data.LoanNew.Collateral.FormOfBindingId
+				result.LoanNew.Collateral.CollateralClassificationId = data.LoanNew.Collateral.CollateralClassificationId
+				result.LoanNew.Collateral.CurrencyId = data.LoanNew.Collateral.CurrencyId
+				result.LoanNew.Collateral.ExchangeRate = data.LoanNew.Collateral.ExchangeRate
+				result.LoanNew.Collateral.BankValue = data.LoanNew.Collateral.BankValue
+				result.LoanNew.Collateral.MarketValue = data.LoanNew.Collateral.MarketValue
+				result.LoanNew.Collateral.InsuranceValue = data.LoanNew.Collateral.InsuranceValue
+				result.LoanNew.Collateral.BindingValue = data.LoanNew.Collateral.BindingValue
+				result.LoanNew.Collateral.PPADeductionValue = data.LoanNew.Collateral.PPADeductionValue
+				result.LoanNew.Collateral.LiquidationValue = data.LoanNew.Collateral.LiquidationValue
+				result.LoanNew.Collateral.AssessmentDate = data.LoanNew.Collateral.AssessmentDate
+				result.LoanNew.Collateral.AssessmentById = data.LoanNew.Collateral.AssessmentById
+
+				collateral := result.LoanNew.Collateral
+
+				if err := connection.DB.Save(&collateral).Error; err != nil {
+					return result, err
+				}
+			} else {
+				// if collateral empty then delete
+				collateral := result.LoanNew.Collateral
+				collateral.Status = "D"
+
+				if err := connection.DB.Save(&collateral).Error; err != nil {
+					return result, err
+				}
+				result.LoanNew.Collateral = nil
 			}
 		} else {
-			// if empty then delete
-			guarantee := result.LoanNew.Collateral
-			guarantee.Status = "D"
+			// if LoanNew empty then delete
+			loanNew := result.LoanNew
+			loanNew.Status = "D"
 
-			if err := connection.DB.Save(&guarantee).Error; err != nil {
+			if err := connection.DB.Save(&loanNew).Error; err != nil {
 				return result, err
 			}
-			result.LoanNew.Collateral = nil
+			result.LoanNew = nil
 		}
-	} else {
-		// if empty then delete
-		loanInformation := result.LoanNew
-		loanInformation.Status = "D"
 
-		if err := connection.DB.Save(&loanInformation).Error; err != nil {
-			return result, err
+	case checkLoan.LoanRenewal:
+
+		// check if LoanRenewal is not empty
+		if data.LoanRenewal != nil {
+			if err = connection.DB.Where("credit_id = ?", id).Not("status", "D").First(&result.LoanRenewal).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+				log.Println("error1", err)
+				return result, err
+			}
+
+			result.LoanRenewal.SubmissionTypeId = data.LoanRenewal.SubmissionTypeId
+			result.LoanRenewal.AccountAccomodation = data.LoanRenewal.AccountAccomodation
+			result.LoanRenewal.AccountNumber = data.LoanRenewal.AccountNumber
+			result.LoanRenewal.FacilityNumber = data.LoanRenewal.FacilityNumber
+			result.LoanRenewal.CreditType = data.LoanRenewal.CreditType
+			result.LoanRenewal.Limit = data.LoanRenewal.Limit
+			result.LoanRenewal.TimePeriod = data.LoanRenewal.TimePeriod
+			result.LoanRenewal.PeriodType = data.LoanRenewal.PeriodType
+			result.LoanRenewal.PurposeId = data.LoanRenewal.PurposeId
+			result.LoanRenewal.TimePeriodRequest = data.LoanRenewal.TimePeriodRequest
+			result.LoanRenewal.LimitRequest = data.LoanRenewal.LimitRequest
+			result.LoanRenewal.ExchangeRate = data.LoanRenewal.ExchangeRate
+			result.LoanRenewal.LimitRp = data.LoanRenewal.LimitRp
+			result.LoanRenewal.Description = data.LoanRenewal.Description
+
+			LoanRenewal := result.LoanRenewal
+
+			if err := connection.DB.Save(&LoanRenewal).Error; err != nil {
+				return result, err
+			}
+
+		} else {
+			// if LoanRenewal empty then delete
+			LoanRenewal := result.LoanRenewal
+			LoanRenewal.Status = "D"
+
+			if err := connection.DB.Save(&LoanRenewal).Error; err != nil {
+				return result, err
+			}
+			result.LoanRenewal = nil
 		}
-		result.LoanNew = nil
+
 	}
 
 	return result, nil
