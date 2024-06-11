@@ -13,7 +13,40 @@ import (
 	"gorm.io/gorm"
 )
 
+func getParameterValue(key string) (string, error) {
+	var param models.MasterParameter
+	if err := connection.DB.Where("param_key = ? AND status = ?", key, "L").First(&param).Error; err != nil {
+		return "", err
+	}
+	return param.ParamValue, nil
+}
+
 func Register(data models.Register) (err error) {
+	minLengthStr, err := getParameterValue("USR_MIN")
+	if err != nil {
+		return errors.New("failed to get USR_MIN parameter")
+	}
+
+	minLength, err := strconv.Atoi(minLengthStr)
+	if err != nil {
+		return errors.New("invalid USR_MIN parameter value")
+	}
+
+	validChars, err := getParameterValue("USR_CHAR")
+	if err != nil {
+		return errors.New("failed to get USR_CHAR parameter")
+	}
+
+	validNums, err := getParameterValue("USR_NUM")
+	if err != nil {
+		return errors.New("failed to get USR_NUM parameter")
+	}
+
+	// Validasi username
+	if !isValidUsername(data.Username, minLength, validChars, validNums) {
+		return errors.New("username must be at least " + minLengthStr + " characters long and contain at least one letter and one number")
+	}
+
 	// Check apakah username sudah ada
 	var existingUser models.Users
 	if err := connection.DB.Where("username = ?", data.Username).First(&existingUser).Error; !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -28,15 +61,16 @@ func Register(data models.Register) (err error) {
 
 	// Create new user entry
 	newUser := models.Users{
-		Username:  data.Username,
-		Email:     data.Email,
-		FirstName: data.FirstName,
-		LastName:  data.LastName,
-		IsActive:  data.IsActive,
-		Password:  hashedPassword,
-		IsLogin:   0, // IsLogin default nya 0
-		RoleId:    1,
-		Status:    "L",
+		Username:           data.Username,
+		Email:              data.Email,
+		FirstName:          data.FirstName,
+		LastName:           data.LastName,
+		IsActive:           data.IsActive,
+		Password:           hashedPassword,
+		LastPasswordChange: time.Now(),
+		IsLogin:            0, // IsLogin default nya 0
+		RoleId:             1,
+		Status:             "L",
 	}
 	if err := connection.DB.Create(&newUser).Error; err != nil {
 		return errors.New("failed to create user")
@@ -54,10 +88,12 @@ func Login(data models.Login) (token string, tokenTTL int, err error) {
 		return token, tokenTTL, errors.New("user not found")
 	}
 
-	var attempt models.MasterParameter
-	connection.DB.Where("param_key = ?", "AUTH_ATM").First(&attempt)
+	maxFailedAttemptsStr, err := getParameterValue("AUTH_ATM")
+	if err != nil {
+		return token, tokenTTL, errors.New("failed to retrieve AUTH_ATM parameter")
+	}
 
-	maxFailedAttempts, err := strconv.Atoi(attempt.ParamValue)
+	maxFailedAttempts, err := strconv.Atoi(maxFailedAttemptsStr)
 	if err != nil {
 		return token, tokenTTL, errors.New("invalid AUTH_ATM value")
 	}
@@ -70,30 +106,32 @@ func Login(data models.Login) (token string, tokenTTL int, err error) {
 		return token, tokenTTL, errors.New("user is already active")
 	}
 
-	if err := bcrypt.CompareHashAndPassword(user.Password, []byte(data.Password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.Password)); err != nil {
 		user.FailedAttempts++
 		connection.DB.Save(&user)
 		return token, tokenTTL, errors.New("incorrect password")
 	}
 
-	var ttl models.MasterParameter
-	connection.DB.Where("param_key = ?", "AUTH_TTL").First(&ttl)
-
-	tokenTTL, err = strconv.Atoi(ttl.ParamValue)
-
-	// tokenTTL*=tokenTTL
-
+	authTtlStr, err := getParameterValue("AUTH_TTL")
 	if err != nil {
-		return token, tokenTTL, errors.New("invalid token TTL value")
+		return token, tokenTTL, errors.New("failed to retrieve AUTH_TTL parameter")
+	}
+
+	tokenTTL, err = strconv.Atoi(authTtlStr)
+	if err != nil {
+		return token, tokenTTL, errors.New("invalid token AUTH_TTL value")
 	}
 
 	token, err = utils.GenerateJWT(user.Id, tokenTTL)
-
 	if err != nil {
-		return token, tokenTTL, errors.New("could't create token")
+		return token, tokenTTL, errors.New("couldn't create token")
 	}
 
-	if err := connection.DB.Model(&user).Update("is_login", 1).Error; err != nil {
+	user.IsLogin = 1
+	user.FailedAttempts = 0
+	user.LastLogin = time.Now()
+
+	if err := connection.DB.Save(&user).Error; err != nil {
 		return token, tokenTTL, errors.New("failed to update user status")
 	}
 
@@ -151,6 +189,8 @@ func ChangePassword(UserID string, data models.Register) (user models.Users, err
 	}
 
 	user.Password = hashedPassword
+	user.LastPasswordChange = time.Now()
+	user.Status = "L"
 
 	if err := connection.DB.Save(&user).Error; err != nil {
 		return user, errors.New("failed to update user")
@@ -158,6 +198,52 @@ func ChangePassword(UserID string, data models.Register) (user models.Users, err
 
 	return user, nil
 }
+
+// func CheckAndUpdateUserStatus() error {
+// 	var users []models.Users
+// 	ninetyDaysAgo := time.Now().AddDate(0, 0, -1)
+// 	fiftyDaysAgo := time.Now().AddDate(0, 0, -1)
+
+// 	// Mendapatkan pengguna yang statusnya "L" dan belum login selama 90 hari
+// 	if err := connection.DB.Where("status = ? AND last_login <= ?", "L", ninetyDaysAgo).Find(&users).Error; err != nil {
+// 		return fmt.Errorf("failed to fetch users who haven't logged in: %w", err)
+// 	}
+
+// 	for _, user := range users {
+// 		user.Status = "D" // Set status to "D" for blocked
+// 		if err := connection.DB.Save(&user).Error; err != nil {
+// 			log.Printf("Failed to update user status for user ID %d: %v\n", user.Id, err)
+// 		}
+// 	}
+
+// 	// Mendapatkan pengguna yang statusnya "L" dan belum mengganti kata sandi selama 50 hari
+// 	if err := connection.DB.Where("status = ? AND last_password_change <= ?", "L", fiftyDaysAgo).Find(&users).Error; err != nil {
+// 		return fmt.Errorf("failed to fetch users who haven't changed password: %w", err)
+// 	}
+
+// 	for _, user := range users {
+// 		user.Status = "D" // Set status to "D" for blocked
+// 		if err := connection.DB.Save(&user).Error; err != nil {
+// 			log.Printf("Failed to update user status for user ID %d: %v\n", user.Id, err)
+// 		}
+// 	}
+
+// 	return nil
+// }
+
+// func StartStatusCheckScheduler() {
+// 	ticker := time.NewTicker(24 * time.Hour)
+// 	go func() {
+// 		for {
+// 			select {
+// 			case <-ticker.C:
+// 				if err := CheckAndUpdateUserStatus(); err != nil {
+// 					log.Printf("Error updating user status: %v\n", err)
+// 				}
+// 			}
+// 		}
+// 	}()
+// }
 
 func User(userId string) (result models.Users, err error) {
 	var user models.Users
