@@ -118,33 +118,22 @@ func DeleteOwnershipData(ownershipId string) (result models.OwnershipData, err e
 	return ownership, nil
 }
 
-func CreateRelationWithBank(ownershipIdInt int, data models.CreateRelationWithBank) (err error) {
-	relation := models.RelationWithBank{
-		Giro:            data.Giro,
-		Tabungan:        data.Tabungan,
-		NoRekening:      data.NoRekening,
-		Debitur:         data.Debitur,
-		Status:          "L",
-		OwnershipDataId: ownershipIdInt,
+func CreateRelationWithBank(generalInformationId string, data *models.RelationWithBank) (err error) {
+
+	if generalInformationId == "" {
+		return errors.New("generalInformationId cannot be empty")
 	}
-
-	// debitur := models.DataRekeningDebitur{
-	// 	NoIdCard:        data.NoIdCard,
-	// 	NPWP:            data.NPWP,
-	// 	KeyPerson:       data.KeyPerson,
-	// 	NoRekening:      data.NoRekening,
-	// 	Remark:          data.Remark,
-	// 	Status:          "L",
-	// 	OwnershipDataId: ownershipIdInt,
-	// }
-
-	if err := connection.DB.Create(&relation).Error; err != nil {
+	generalInformationIdInt, err := strconv.Atoi(generalInformationId)
+	if err != nil {
 		return err
 	}
 
-	// if err := connection.DB.Create(&debitur).Error; err != nil {
-	// 	return err
-	// }
+	data.GeneralInformationId = generalInformationIdInt
+	data.Status = "L"
+
+	if err := connection.DB.Create(&data).Error; err != nil {
+		return err
+	}
 
 	return nil
 }

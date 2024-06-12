@@ -1,8 +1,6 @@
 package ownershipDataController
 
 import (
-	"strconv"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/syahlan1/golos/models"
 	"github.com/syahlan1/golos/services/ownershipDataService"
@@ -46,7 +44,7 @@ func ShowOwnershipData(c *fiber.Ctx) error {
 
 func ShowOwnershipName(c *fiber.Ctx) error {
 	generalInformationId := c.Query("general_information_id")
-	
+
 	result := ownershipDataService.ShowOwnershipName(generalInformationId)
 
 	return c.JSON(models.Response{
@@ -101,14 +99,9 @@ func DeleteOwnershipData(c *fiber.Ctx) error {
 }
 
 func CreateRelationWithBank(c *fiber.Ctx) error {
-	ownershipId := c.Params("id")
+	generalInformationId := c.Query("general_information_id")
 
-	ownershipIdInt, err := strconv.Atoi(ownershipId)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ownership ID"})
-	}
-
-	var data models.CreateRelationWithBank
+	var data models.RelationWithBank
 
 	if err := c.BodyParser(&data); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
@@ -117,7 +110,7 @@ func CreateRelationWithBank(c *fiber.Ctx) error {
 		})
 	}
 
-	err = ownershipDataService.CreateRelationWithBank(ownershipIdInt, data)
+	err := ownershipDataService.CreateRelationWithBank(generalInformationId, &data)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
@@ -128,6 +121,7 @@ func CreateRelationWithBank(c *fiber.Ctx) error {
 	return c.JSON(models.Response{
 		Code:    fiber.StatusCreated,
 		Message: "insert sukses",
+		Data:    data,
 	})
 }
 
@@ -151,7 +145,7 @@ func CreateRekeningDebitur(c *fiber.Ctx) error {
 
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
-		Message: "Updated!",
+		Message: "insert sukses",
 		Data:    data,
 	})
 }

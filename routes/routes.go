@@ -61,10 +61,10 @@ func Setup(app *fiber.App) {
 	api.Put("/ownership/delete/:id", ownershipDataController.DeleteOwnershipData)
 
 	//relation with bank
-	api.Post("/relation-with-bank/create/:id", ownershipDataController.CreateRelationWithBank)
+	api.Post("/relation-with-bank/create", ownershipDataController.CreateRelationWithBank)
 	api.Get("/relation-with-bank/show", ownershipDataController.ShowRelationWithBank)
 	api.Put("/relation-with-bank/update/:id", ownershipDataController.UpdateRelationWithBank)
-	api.Put("/relation-with-bank/delete/:id", ownershipDataController.DeleteRelationWithBank)
+	api.Delete("/relation-with-bank/delete/:id", ownershipDataController.DeleteRelationWithBank)
 
 	//Rekening Debitur
 	api.Post("/rekening-debitur/create", ownershipDataController.CreateRekeningDebitur)
