@@ -33,7 +33,21 @@ func CreateOwnershipData(c *fiber.Ctx) error {
 }
 
 func ShowOwnershipData(c *fiber.Ctx) error {
-	result := ownershipDataService.ShowOwnershipData()
+	generalInformationId := c.Query("general_information_id")
+
+	result := ownershipDataService.ShowOwnershipData(generalInformationId)
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func ShowOwnershipName(c *fiber.Ctx) error {
+	generalInformationId := c.Query("general_information_id")
+	
+	result := ownershipDataService.ShowOwnershipName(generalInformationId)
 
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,

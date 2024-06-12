@@ -55,6 +55,7 @@ func Setup(app *fiber.App) {
 
 	//ownership
 	api.Get("/ownership/show", ownershipDataController.ShowOwnershipData)
+	api.Get("/ownership/name", ownershipDataController.ShowOwnershipName)
 	api.Post("/ownership/create", ownershipDataController.CreateOwnershipData)
 	api.Put("/ownership/update/:id", ownershipDataController.EditOwnershipData)
 	api.Put("/ownership/delete/:id", ownershipDataController.DeleteOwnershipData)

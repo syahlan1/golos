@@ -9,28 +9,30 @@ import (
 
 func CreateOwnershipData(data models.CreateOwnershipData) (err error) {
 	ownership := models.OwnershipData{
-		Name:              data.Name,
-		NoIdentity:        data.NoIdentity,
-		IdCardAddress:     data.IdCardAddress,
-		City:              data.City,
-		ZipCode:           data.ZipCode,
-		HomeOwnership:     data.HomeOwnership,
-		Remark:            data.Remark,
-		CifManager:        data.CifManager,
-		BirthDate:         data.BirthDate,
-		LastEducation:     data.LastEducation,
-		NPWP:              data.NPWP,
-		JobTitle:          data.JobTitle,
-		Experince:         data.Experince,
-		OwnershipMarket:   data.OwnershipMarket,
-		CitizenshipStatus: data.CitizenshipStatus,
-		Gender:            data.Gender,
-		MaritalStatus:     data.MaritalStatus,
-		NumberOfChildren:  data.NumberOfChildren,
-		StartDate:         data.StartDate,
-		KeyPerson:         data.KeyPerson,
-		Removed:           data.Removed,
-		Status:            "L",
+		GeneralInformationId: data.GeneralInformationId,
+		OwnershipType:        data.OwnershipType,
+		Name:                 data.Name,
+		NoIdentity:           data.NoIdentity,
+		IdCardAddress:        data.IdCardAddress,
+		City:                 data.City,
+		ZipCode:              data.ZipCode,
+		HomeOwnership:        data.HomeOwnership,
+		Remark:               data.Remark,
+		CifManager:           data.CifManager,
+		BirthDate:            data.BirthDate,
+		LastEducation:        data.LastEducation,
+		NPWP:                 data.NPWP,
+		JobTitle:             data.JobTitle,
+		Experince:            data.Experince,
+		OwnershipMarket:      data.OwnershipMarket,
+		CitizenshipStatus:    data.CitizenshipStatus,
+		Gender:               data.Gender,
+		MaritalStatus:        data.MaritalStatus,
+		NumberOfChildren:     data.NumberOfChildren,
+		StartDate:            data.StartDate,
+		KeyPerson:            data.KeyPerson,
+		Removed:              data.Removed,
+		Status:               "L",
 	}
 
 	if err := connection.DB.Create(&ownership).Error; err != nil {
@@ -40,11 +42,25 @@ func CreateOwnershipData(data models.CreateOwnershipData) (err error) {
 	return nil
 }
 
-func ShowOwnershipData() (result []models.OwnershipData) {
+func ShowOwnershipData(generalInformationId string) (result []models.OwnershipData) {
 	var ownershipData []models.OwnershipData
 
-	connection.DB.Where("status = ?", "L").Find(&ownershipData)
+	if generalInformationId != "" {
+		connection.DB.Where("status = ? AND general_information_id = ?", "L", generalInformationId).Find(&ownershipData)
+	} else {
+		connection.DB.Where("status = ?", "L").Find(&ownershipData)
+		}
+
+		
+
 	return ownershipData
+}
+
+func ShowOwnershipName(generalInformationId string) (result []models.Dropdown)  {
+	connection.DB.Select("id, name").
+	Model(models.OwnershipData{}).
+	Where("status = ? AND general_information_id = ?", "L", generalInformationId).Find(&result)
+	return
 }
 
 func EditOwnershipData(id string, updatedOwnershipData models.OwnershipData) (result models.OwnershipData, err error) {
