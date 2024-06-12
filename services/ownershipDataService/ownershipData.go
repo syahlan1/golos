@@ -2,9 +2,11 @@ package ownershipDataService
 
 import (
 	"errors"
+	"strconv"
 
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
+	"github.com/syahlan1/golos/utils"
 )
 
 func CreateOwnershipData(data models.CreateOwnershipData) (err error) {
@@ -49,18 +51,20 @@ func ShowOwnershipData(generalInformationId string) (result []models.OwnershipDa
 		connection.DB.Where("status = ? AND general_information_id = ?", "L", generalInformationId).Find(&ownershipData)
 	} else {
 		connection.DB.Where("status = ?", "L").Find(&ownershipData)
-		}
-
-		
+	}
 
 	return ownershipData
 }
 
-func ShowOwnershipName(generalInformationId string) (result []models.Dropdown)  {
-	connection.DB.Select("id, name").
-	Model(models.OwnershipData{}).
-	Where("status = ? AND general_information_id = ?", "L", generalInformationId).Find(&result)
+func ShowOwnershipName(generalInformationId string) (result []models.OwnershipDataDropdown) {
+	connection.DB.Select("id, name, no_identity, npwp, key_person").
+		Model(models.OwnershipData{}).
+		Where("status = ? AND general_information_id = ?", "L", generalInformationId).Find(&result)
+
+	result = utils.Prepend(result, models.OwnershipDataDropdown{Name: "- SELECT -"})
+
 	return
+
 }
 
 func EditOwnershipData(id string, updatedOwnershipData models.OwnershipData) (result models.OwnershipData, err error) {
@@ -124,26 +128,45 @@ func CreateRelationWithBank(ownershipIdInt int, data models.CreateRelationWithBa
 		OwnershipDataId: ownershipIdInt,
 	}
 
-	debitur := models.DataRekeningDebitur{
-		Name:            data.Name,
-		NoIdCard:        data.NoIdCard,
-		NPWP:            data.NPWP,
-		KeyPerson:       data.KeyPerson,
-		NoRekening:      data.NoRekening,
-		Remark:          data.Remark,
-		Status:          "L",
-		OwnershipDataId: ownershipIdInt,
-	}
+	// debitur := models.DataRekeningDebitur{
+	// 	NoIdCard:        data.NoIdCard,
+	// 	NPWP:            data.NPWP,
+	// 	KeyPerson:       data.KeyPerson,
+	// 	NoRekening:      data.NoRekening,
+	// 	Remark:          data.Remark,
+	// 	Status:          "L",
+	// 	OwnershipDataId: ownershipIdInt,
+	// }
 
 	if err := connection.DB.Create(&relation).Error; err != nil {
 		return err
 	}
 
-	if err := connection.DB.Create(&debitur).Error; err != nil {
+	// if err := connection.DB.Create(&debitur).Error; err != nil {
+	// 	return err
+	// }
+
+	return nil
+}
+
+func CreateRekeningDebitur(generalInformationId string, data *models.DataRekeningDebitur) (err error) {
+
+	if generalInformationId == "" {
+		return errors.New("generalInformationId cannot be empty")
+	}
+
+	generalInformationIdInt, err := strconv.Atoi(generalInformationId)
+	if err != nil {
 		return err
 	}
 
-	return nil
+	data.GeneralInformationId = generalInformationIdInt
+	data.Status = "L"
+	// log.Println(data)
+	if err := connection.DB.Create(&data).Error; err != nil {
+		return err
+	}
+	return
 }
 
 func UpdateRekeningDebitur(id string, updatedRekeningDebitur models.DataRekeningDebitur) (result models.DataRekeningDebitur, err error) {
@@ -152,10 +175,6 @@ func UpdateRekeningDebitur(id string, updatedRekeningDebitur models.DataRekening
 		return result, errors.New("data Not Found")
 	}
 
-	rekeningDebitur.Name = updatedRekeningDebitur.Name
-	rekeningDebitur.NoIdCard = updatedRekeningDebitur.NoIdCard
-	rekeningDebitur.NPWP = updatedRekeningDebitur.NPWP
-	rekeningDebitur.KeyPerson = updatedRekeningDebitur.KeyPerson
 	rekeningDebitur.NoRekening = updatedRekeningDebitur.NoRekening
 	rekeningDebitur.Remark = updatedRekeningDebitur.Remark
 
@@ -222,10 +241,13 @@ func ShowRelationWithBank() (result []models.RelationWithBank) {
 	return relationBank
 }
 
-func ShowRekeningDebitur() (result []models.OwnershipData) {
-	var rekeningDebitur []models.OwnershipData
+func ShowRekeningDebitur(generalInformationId string) (result []models.ShowRekeningDebitur) {
+	connection.DB.Select("rd.*, od.name, od.no_identity, od.npwp, od.key_person, CASE WHEN od.key_person = TRUE THEN 'Yes' ELSE 'No' END as pemilik").
+		Table("data_rekening_debiturs AS rd").
+		Joins("JOIN ownership_data AS od ON od.id = rd.ownership_data_id").
+		Where("rd.status = ? AND od.status = ? AND rd.general_information_id = ?", "L", "L", generalInformationId).
+		Order("od.key_person DESC").
+		Find(&result)
 
-	connection.DB.Where("status = ?", "L").Find(&rekeningDebitur)
-
-	return rekeningDebitur
+	return
 }

@@ -67,9 +67,10 @@ func Setup(app *fiber.App) {
 	api.Put("/relation-with-bank/delete/:id", ownershipDataController.DeleteRelationWithBank)
 
 	//Rekening Debitur
+	api.Post("/rekening-debitur/create", ownershipDataController.CreateRekeningDebitur)
 	api.Get("/rekening-debitur/show", ownershipDataController.ShowRekeningDebitur)
 	api.Put("/rekening-debitur/update/:id", ownershipDataController.UpdateRekeningDebitur)
-	api.Put("/rekening-debitur/delete/:id", ownershipDataController.DeleteRekeningDebitur)
+	api.Delete("/rekening-debitur/delete/:id", ownershipDataController.DeleteRekeningDebitur)
 
 	api.Get("/show-business-applicant", businessController.ShowBusinessApplicant)
 

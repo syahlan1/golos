@@ -131,6 +131,31 @@ func CreateRelationWithBank(c *fiber.Ctx) error {
 	})
 }
 
+func CreateRekeningDebitur(c *fiber.Ctx) error {
+	generalInformationId := c.Query("general_information_id")
+	var data models.DataRekeningDebitur
+	if err := c.BodyParser(&data); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	err := ownershipDataService.CreateRekeningDebitur(generalInformationId, &data)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Updated!",
+		Data:    data,
+	})
+}
+
 func UpdateRekeningDebitur(c *fiber.Ctx) error {
 	id := c.Params("id")
 
@@ -230,7 +255,8 @@ func ShowRelationWithBank(c *fiber.Ctx) error {
 }
 
 func ShowRekeningDebitur(c *fiber.Ctx) error {
-	result := ownershipDataService.ShowRekeningDebitur()
+	generalInformationId := c.Query("general_information_id")
+	result := ownershipDataService.ShowRekeningDebitur(generalInformationId)
 
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
