@@ -731,6 +731,16 @@ func CreditSeed() {
 
 	var submissionType = []models.SubmissionType{
 		{
+			Code: "00",
+			Name: "Periodik Rating",
+			SibsCode: nil,
+			Scoring: nil,
+			StopTrack: nil,
+			GoToTrack: nil,
+			SibsLimit: nil,
+			Channeling: nil,
+		},
+		{
 			Code: "01",
 			Name: "Periodik Rating",
 			SibsCode: adrstr("1"),

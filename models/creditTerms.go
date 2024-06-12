@@ -1,22 +1,30 @@
 package models
 
 type CreditTerms struct {
-	Id                   int             `json:"id" gorm:"primaryKey"`
+	Id                   int             `json:"id" gorm:"primaryKey"` 
 	GeneralInformationId int             `json:"general_information_id"`
-	NewApplication       int             `json:"new_application"`
-	ChannelingCompany    int             `json:"channeling_company"`
-	TakeoverBank         bool            `json:"takeover_bank"`
-	AccountAccomodation  int             `json:"account_accommodation"`
-	NCLProduct           int             `json:"ncl_product"`
-	Facility             int             `json:"facility"`
-	AccountNumber        string          `json:"account_number"`
-	ApplicationType      string          `json:"application_type"`
-	Project              int             `json:"project"`
+	NewApplication       int             `json:"new_application"` //permohonan baru
+	ChannelingCompany    int             `json:"channeling_company"` //perusahaan channeling
+	TakeoverBank         bool            `json:"takeover_bank"` //nasabah ambil alih bank lain
+	AccountAccomodation  int             `json:"account_accommodation"` //no. akomodasi rekening
+	NCLProduct           int             `json:"ncl_product"` //produk ncl
+	Facility             int             `json:"facility"` //fasilitas
+	AccountNumber        string          `json:"account_number"` //no. rekening
+	ApplicationType      string          `json:"application_type"` //jenis permohonan
+	Project              int             `json:"project"` //proyek
 	Status               string          `json:"status"`
 	LoanNew              *LoanNew        `json:"loan_new,omitempty" gorm:"-:all"`
 	LoanRenewal          *LoanRenewal    `json:"loan_renewal,omitempty" gorm:"-:all"`
 	LoanWithdrawal       *LoanWithdrawal `json:"loan_withdrawal,omitempty" gorm:"-:all"`
 	LoanPostFin          *LoanPostFin    `json:"loan_post_fin,omitempty" gorm:"-:all"`
+}
+
+type Loan struct {
+	Id               int         `json:"id" gorm:"primaryKey"`
+	CreditId         int         `json:"-"`
+	SubmissionTypeId int         `json:"submission_type_id"`
+	SubmissionType   string      `json:"submission_type" gorm:"-:migration"`
+	
 }
 
 type CheckLoan struct {
@@ -109,6 +117,7 @@ type Collateral struct {
 	BindingValue               int    `json:"binding_value"`
 	PPADeductionValue          int    `json:"ppa_deduction_value"`
 	LiquidationValue           int    `json:"liquidation_value"`
+	PercentUse                 int    `json:"percent_use"`
 	AssessmentDate             string `json:"assessment_date"`
 	AssessmentById             int    `json:"assessment_by_id"`
 	AssessmentBy               string `json:"assessment_by" gorm:"-:migration"`

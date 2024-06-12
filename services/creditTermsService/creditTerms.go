@@ -142,6 +142,7 @@ func CreateCreditTerms(data *models.CreditTerms) (err error) {
 			collateral := data.LoanNew.Collateral
 			collateral.LoanId = loanNew.Id
 			collateral.Status = "L"
+			collateral.PercentUse = 100
 
 			if err := connection.DB.Create(&collateral).Error; err != nil {
 				return err
