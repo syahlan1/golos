@@ -19,7 +19,7 @@ type OwnershipData struct {
 	NPWP                 string  `json:"npwp"`
 	JobTitle             string  `json:"job_title"`
 	Experince            string  `json:"experience"`
-	OwnershipMarket      float64 `json:"ownership_market"`
+	OwnershipMarket      float64 `json:"ownership_market" gorm:"type:float"`
 	CitizenshipStatus    string  `json:"citizenship_status"`
 	Gender               string  `json:"gender"`
 	MaritalStatus        string  `json:"marital_status"`
@@ -46,7 +46,7 @@ type CreateOwnershipData struct {
 	NPWP                 string  `json:"npwp"`
 	JobTitle             string  `json:"job_title"`
 	Experince            string  `json:"experience"`
-	OwnershipMarket      float64 `json:"ownership_market"`
+	OwnershipMarket      float64 `json:"ownership_market" gorm:"type:float"`
 	CitizenshipStatus    string  `json:"citizenship_status"`
 	Gender               string  `json:"gender"`
 	MaritalStatus        string  `json:"marital_status"`
@@ -55,15 +55,6 @@ type CreateOwnershipData struct {
 	KeyPerson            bool    `json:"key_person"`
 	Removed              bool    `json:"removed"`
 }
-
-// type CreateRelationWithBank struct {
-// 	GeneralInformationId int    `json:"general_information_id"`
-// 	Giro                 string `json:"giro"`
-// 	Tabungan             string `json:"tabungan"`
-// 	NoRekening           int    `json:"no_rekening"`
-// 	Debitur              string `json:"debitur"`
-// }
-
 type RelationWithBank struct {
 	Id                   int                 `json:"id" gorm:"primaryKey;autoIncrement"`
 	GeneralInformationId int                 `json:"general_information_id"`
@@ -72,6 +63,25 @@ type RelationWithBank struct {
 	NoRekening           string              `json:"no_rekening"`
 	Debitur              formatTime.WrapDate `json:"debitur" gorm:"type:date"`
 	Status               string              `json:"status"`
+}
+
+type CustomerLoanInfo struct {
+	Id                   int    `json:"id" gorm:"primaryKey"`
+	GeneralInformationId int    `json:"general_information_id"`
+	AAStatus             int    `json:"aa_status" gorm:"-"`
+	AANo                 string `json:"aa_no"`
+	FacilityId           int    `json:"facility_id"`
+	FacilitySequence     string `json:"facility_sequence"`
+	ChannelingFacilty    bool   `json:"channeling_facility"`
+	ProductId            int    `json:"product_id"`
+	NoRekening           string `json:"no_rekening"`
+	Status               string `json:"status"`
+}
+
+type CustomerAA struct {
+	Id                   int    `json:"id"`
+	GeneralInformationId int    `json:"general_information_id"`
+	AANo                 string `json:"aa_no"`
 }
 
 type DataRekeningDebitur struct {

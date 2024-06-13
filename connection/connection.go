@@ -83,4 +83,5 @@ func Connect() {
 	connection.AutoMigrate(&models.OwnershipData{})
 	connection.AutoMigrate(&models.RelationWithBank{})
 	connection.AutoMigrate(&models.DataRekeningDebitur{})
+	connection.AutoMigrate(&models.CustomerLoanInfo{})
 }

@@ -8,6 +8,7 @@ import (
 
 func CreateOwnershipData(c *fiber.Ctx) error {
 	var data models.CreateOwnershipData
+	generalInformationId := c.Query("general_information_id")
 
 	if err := c.BodyParser(&data); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
@@ -16,7 +17,7 @@ func CreateOwnershipData(c *fiber.Ctx) error {
 		})
 	}
 
-	err := ownershipDataService.CreateOwnershipData(data)
+	err := ownershipDataService.CreateOwnershipData(generalInformationId,data)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
@@ -150,6 +151,31 @@ func CreateRekeningDebitur(c *fiber.Ctx) error {
 	})
 }
 
+func CreateCustomerLoanInfo(c *fiber.Ctx) error {
+	generalInformationId := c.Query("general_information_id")
+	var data models.CustomerLoanInfo
+	if err := c.BodyParser(&data); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	err := ownershipDataService.CreateCustomerLoanInfo(generalInformationId, &data)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "insert sukses",
+		Data:    data,
+	})
+}
+
 func UpdateRekeningDebitur(c *fiber.Ctx) error {
 	id := c.Params("id")
 
@@ -186,6 +212,31 @@ func UpdateRelationWithBank(c *fiber.Ctx) error {
 	}
 
 	result, err := ownershipDataService.UpdateRelationWithBank(id, data)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Updated!",
+		Data:    result,
+	})
+}
+
+func UpdateCustomerLoanInfo(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	var data models.CustomerLoanInfo
+	if err := c.BodyParser(&data); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status": "Invalid Data",
+		})
+	}
+
+	result, err := ownershipDataService.UpdateCustomerLoanInfo(id, data)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
@@ -238,6 +289,25 @@ func DeleteRekeningDebitur(c *fiber.Ctx) error {
 
 }
 
+func DeleteCustomerLoanInfo(c *fiber.Ctx) error {
+	Id := c.Params("id")
+
+	result, err := ownershipDataService.DeleteCustomerLoanInfo(Id)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Deleted!",
+		Data:    result,
+	})
+
+}
+
 func ShowRelationWithBank(c *fiber.Ctx) error {
 	result := ownershipDataService.ShowRelationWithBank()
 
@@ -251,6 +321,48 @@ func ShowRelationWithBank(c *fiber.Ctx) error {
 func ShowRekeningDebitur(c *fiber.Ctx) error {
 	generalInformationId := c.Query("general_information_id")
 	result := ownershipDataService.ShowRekeningDebitur(generalInformationId)
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func ShowCustomerLoanInfo(c *fiber.Ctx) error  {
+	generalInformationId := c.Query("general_information_id")
+	result := ownershipDataService.ShowCustomerLoanInfo(generalInformationId)
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func ShowFacilityNo(c *fiber.Ctx) error {
+	result := ownershipDataService.ShowFacilityNo()
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func ShowProduct(c *fiber.Ctx) error {
+	result := ownershipDataService.ShowProduct()
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func ShowCustomerAA(c *fiber.Ctx) error {
+	generalInformationId := c.Query("general_information_id")
+	result := ownershipDataService.ShowCustomerAA(generalInformationId)
 
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,

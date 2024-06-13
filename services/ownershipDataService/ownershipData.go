@@ -9,9 +9,18 @@ import (
 	"github.com/syahlan1/golos/utils"
 )
 
-func CreateOwnershipData(data models.CreateOwnershipData) (err error) {
+func CreateOwnershipData(generalInformationId string, data models.CreateOwnershipData) (err error) {
+
+	if generalInformationId == "" {
+		return errors.New("generalInformationId cannot be empty")
+	}
+	generalInformationIdInt, err := strconv.Atoi(generalInformationId)
+	if err != nil {
+		return err
+	}
+
 	ownership := models.OwnershipData{
-		GeneralInformationId: data.GeneralInformationId,
+		GeneralInformationId: generalInformationIdInt,
 		OwnershipType:        data.OwnershipType,
 		Name:                 data.Name,
 		NoIdentity:           data.NoIdentity,
@@ -35,6 +44,18 @@ func CreateOwnershipData(data models.CreateOwnershipData) (err error) {
 		KeyPerson:            data.KeyPerson,
 		Removed:              data.Removed,
 		Status:               "L",
+	}
+
+	var totalOwnershipMarket float64
+	if err := connection.DB.Select("SUM(ownership_market)").
+		Table("ownership_data").
+		Where("general_information_id = ? AND status = ?", generalInformationId, "L").
+		Scan(&totalOwnershipMarket).Error; err != nil {
+		return err
+	}
+
+	if totalOwnershipMarket+data.OwnershipMarket > 100 {
+		return errors.New("total ownership market cannot more than 100%")
 	}
 
 	if err := connection.DB.Create(&ownership).Error; err != nil {
@@ -138,6 +159,43 @@ func CreateRelationWithBank(generalInformationId string, data *models.RelationWi
 	return nil
 }
 
+func CreateCustomerLoanInfo(generalInformationId string, data *models.CustomerLoanInfo) (err error) {
+
+	if generalInformationId == "" {
+		return errors.New("generalInformationId cannot be empty")
+	}
+
+	generalInformationIdInt, err := strconv.Atoi(generalInformationId)
+	if err != nil {
+		return err
+	}
+	data.GeneralInformationId = generalInformationIdInt
+	data.Status = "L"
+
+	if data.AAStatus == 2 {
+		var checkAa int64
+
+		if err := connection.DB.Select("id").
+			Table("customer_loan_infos").
+			Where("aa_no =?", data.AANo).
+			Count(&checkAa).Error; err != nil {
+			return err
+		}
+
+		if checkAa > 0 {
+			return errors.New("aa_no already exist")
+		}
+	}
+
+	if err := connection.DB.Create(&data).Error; err != nil {
+		return err
+	}
+
+	return
+}
+
+
+
 func CreateRekeningDebitur(generalInformationId string, data *models.DataRekeningDebitur) (err error) {
 
 	if generalInformationId == "" {
@@ -192,6 +250,23 @@ func UpdateRelationWithBank(id string, updateRelationBank models.RelationWithBan
 	return relationBank, nil
 }
 
+func UpdateCustomerLoanInfo(id string, updatedCustomerLoanInfo models.CustomerLoanInfo) (result models.CustomerLoanInfo, err error) {
+	
+	var customerLoanInfo models.CustomerLoanInfo
+	if err := connection.DB.First(&customerLoanInfo, id).Error; err != nil {
+		return result, errors.New("data Not Found")
+	}
+
+	customerLoanInfo.NoRekening = updatedCustomerLoanInfo.NoRekening
+
+
+	if err := connection.DB.Save(&customerLoanInfo).Error; err != nil {
+		return result, errors.New("failed to update the user data")
+	}
+
+	return customerLoanInfo, nil
+}
+
 func DeleteRelationWithBank(Id string) (result models.RelationWithBank, err error) {
 	var relation models.RelationWithBank
 	if err := connection.DB.First(&relation, Id).Error; err != nil {
@@ -210,16 +285,31 @@ func DeleteRelationWithBank(Id string) (result models.RelationWithBank, err erro
 func DeleteRekeningDebitur(Id string) (result models.DataRekeningDebitur, err error) {
 	var rekeningDebitur models.DataRekeningDebitur
 	if err := connection.DB.First(&rekeningDebitur, Id).Error; err != nil {
-		return result, errors.New("Data Not Found")
+		return result, errors.New("data Not Found")
 	}
 
 	rekeningDebitur.Status = "D"
 
 	if err := connection.DB.Save(&rekeningDebitur).Error; err != nil {
-		return result, errors.New("Failed to delete")
+		return result, errors.New("failed to delete")
 	}
 
 	return rekeningDebitur, nil
+}
+
+func DeleteCustomerLoanInfo(id string) (result models.CustomerLoanInfo, err error) {
+	var customerLoanInfo models.CustomerLoanInfo
+	if err := connection.DB.First(&customerLoanInfo, id).Error; err != nil {
+		return result, errors.New("data Not Found")
+	}
+
+	customerLoanInfo.Status = "D"
+
+	if err := connection.DB.Save(&customerLoanInfo).Error; err != nil {
+		return result, errors.New("failed to delete")
+	}
+
+	return
 }
 
 func ShowRelationWithBank() (result []models.RelationWithBank) {
@@ -238,5 +328,37 @@ func ShowRekeningDebitur(generalInformationId string) (result []models.ShowReken
 		Order("od.key_person DESC").
 		Find(&result)
 
+	return
+}
+
+func ShowCustomerLoanInfo(generalInformationId string) (result []models.CustomerLoanInfo) {
+
+	return
+}
+
+func ShowFacilityNo() (result []models.Dropdown) {
+	connection.DB.Select("id, code AS name").
+		Table("credit_types").
+		Where("status = ?", "L").Find(&result)
+
+	result = utils.Prepend(result, models.Dropdown{Name: "- SELECT -"})
+	return
+}
+
+func ShowProduct() (result []models.Dropdown) {
+	connection.DB.Select("id, CONCAT(code, ' - ', name) AS name").
+		Table("credit_types").
+		Where("status = ?", "L").Find(&result)
+
+	result = utils.Prepend(result, models.Dropdown{Name: "- SELECT -"})
+	return
+}
+
+func ShowCustomerAA(generalInformationId string) (result []models.Dropdown) {
+	connection.DB.Select("id, aa_no AS name").
+		Table("customer_loan_infos").
+		Where("status = ? AND general_information_id = ?", "L", generalInformationId).Find(&result)
+
+	result = utils.Prepend(result, models.Dropdown{Name: "- SELECT -"})
 	return
 }
