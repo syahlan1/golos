@@ -68,12 +68,26 @@ type RelationWithBank struct {
 type CustomerLoanInfo struct {
 	Id                   int    `json:"id" gorm:"primaryKey"`
 	GeneralInformationId int    `json:"general_information_id"`
-	AAStatus             int    `json:"aa_status" gorm:"-"`
+	AAStatus             int    `json:"-" gorm:"-"`
 	AANo                 string `json:"aa_no"`
 	FacilityId           int    `json:"facility_id"`
 	FacilitySequence     string `json:"facility_sequence"`
 	ChannelingFacilty    bool   `json:"channeling_facility"`
 	ProductId            int    `json:"product_id"`
+	NoRekening           string `json:"no_rekening"`
+	Status               string `json:"status"`
+}
+
+type ShowCustomerLoanInfo struct {
+	Id                   int    `json:"id"`
+	GeneralInformationId int    `json:"general_information_id"`
+	AANo                 string `json:"aa_no"`
+	FacilityId           int    `json:"facility_id"`
+	Facility             string `json:"facility"`
+	FacilitySequence     string `json:"facility_sequence"`
+	ChannelingFacilty    bool   `json:"channeling_facility"`
+	ProductId            int    `json:"product_id"`
+	Product              string `json:"product"`
 	NoRekening           string `json:"no_rekening"`
 	Status               string `json:"status"`
 }

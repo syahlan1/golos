@@ -20,7 +20,7 @@ import (
 
 func Setup(app *fiber.App) {
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:5173",
+		AllowOrigins:     "http://192.168.100.32:5173, http://localhost:5173",
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
 		AllowMethods:     "GET, POST, PUT, DELETE",
 		AllowCredentials: true,
@@ -67,9 +67,9 @@ func Setup(app *fiber.App) {
 	api.Delete("/relation-with-bank/delete/:id", ownershipDataController.DeleteRelationWithBank)
 	
 	api.Post("/customer-loan-info/create", ownershipDataController.CreateCustomerLoanInfo)
-	api.Post("/customer-loan-info/show", ownershipDataController.ShowCustomerLoanInfo)
-	api.Post("/customer-loan-info/update/:id", ownershipDataController.UpdateCustomerLoanInfo)
-	api.Post("/customer-loan-info/delete/:id", ownershipDataController.DeleteCustomerLoanInfo)
+	api.Get("/customer-loan-info/show", ownershipDataController.ShowCustomerLoanInfo)
+	api.Put("/customer-loan-info/update/:id", ownershipDataController.UpdateCustomerLoanInfo)
+	api.Delete("/customer-loan-info/delete/:id", ownershipDataController.DeleteCustomerLoanInfo)
 	api.Get("/show-facility-no", ownershipDataController.ShowFacilityNo)
 	api.Get("/show-product", ownershipDataController.ShowProduct)
 	api.Get("/show-customer-aa", ownershipDataController.ShowCustomerAA)

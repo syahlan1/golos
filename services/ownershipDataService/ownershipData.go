@@ -172,7 +172,7 @@ func CreateCustomerLoanInfo(generalInformationId string, data *models.CustomerLo
 	data.GeneralInformationId = generalInformationIdInt
 	data.Status = "L"
 
-	if data.AAStatus == 2 {
+	if data.AAStatus == 1 {
 		var checkAa int64
 
 		if err := connection.DB.Select("id").
@@ -209,7 +209,7 @@ func CreateRekeningDebitur(generalInformationId string, data *models.DataRekenin
 
 	data.GeneralInformationId = generalInformationIdInt
 	data.Status = "L"
-	// log.Println(data)
+
 	if err := connection.DB.Create(&data).Error; err != nil {
 		return err
 	}
@@ -309,7 +309,7 @@ func DeleteCustomerLoanInfo(id string) (result models.CustomerLoanInfo, err erro
 		return result, errors.New("failed to delete")
 	}
 
-	return
+	return customerLoanInfo, nil
 }
 
 func ShowRelationWithBank() (result []models.RelationWithBank) {
@@ -331,7 +331,13 @@ func ShowRekeningDebitur(generalInformationId string) (result []models.ShowReken
 	return
 }
 
-func ShowCustomerLoanInfo(generalInformationId string) (result []models.CustomerLoanInfo) {
+func ShowCustomerLoanInfo(generalInformationId string) (result []models.ShowCustomerLoanInfo) {
+	connection.DB.Select("cl.*,ct2.code AS facility,ct.name AS product").
+	Table("customer_loan_infos AS cl").
+	Joins("JOIN credit_types AS ct ON ct.id = cl.product_id").
+	Joins("JOIN credit_types AS ct2 ON ct2.id = cl.facility_id").
+	Where("cl.status = ? AND cl.general_information_id = ?", "L", generalInformationId).
+	Find(&result)
 
 	return
 }
