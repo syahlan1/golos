@@ -19,7 +19,7 @@ func GenerateApplicationNumber(CabangAdmin int) (result string, err error) {
 	if err = connection.DB.Select("LPAD((COUNT(*)+1)::TEXT,6,'0')").
 		Table("general_informations AS gi").
 		Joins("JOIN cabangs c ON c.id = gi.cabang_admin_id").
-		Where("gi.created_at::date = ?", GetDateNow()).
+		Where("gi.created_at::date = ? and gi.cabang_admin_id = ?", GetDateNow(), CabangAdmin).
 		Scan(&seqNumber).Error; err != nil {
 		return
 	}
