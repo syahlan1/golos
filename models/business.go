@@ -36,14 +36,14 @@ type Business struct {
 	ApproveStatus         string `json:"approve_status"`
 	BankName              string `json:"bank_name"`
 	KCP                   string `json:"kcp"`
-	SubProgram            string `json:"sub_program"`
+	SubProgramId          int `json:"sub_program_id"`
 	Analisis              string `json:"analisis"`
-	CabangPencairan       string `json:"cabang_pencairan"`
-	CabangAdmin           string `json:"cabang_admin"`
+	CabangPencairanId     int    `json:"cabang_pencairan_id"`
+	CabangAdminId         int    `json:"cabang_admin_id"`
 	TglAplikasi           string `json:"tgl_aplikasi"`
 	TglPenerusan          string `json:"tgl_penerusan"`
-	Segmen                string `json:"segmen"`
-	NoAplikasi            int    `json:"no_aplikasi"`
+	SegmenId                int `json:"segmen_id"`
+	NoAplikasi            string `json:"no_aplikasi"`
 	MarketInterestRate    int    `json:"market_interest_rate"`
 	RequestedInterestRate int    `json:"requested_interest_rate"`
 	DocumentFile          string `json:"document_file"`

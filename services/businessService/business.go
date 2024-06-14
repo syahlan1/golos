@@ -43,18 +43,18 @@ func BusinessCreate(username string, data models.CreateBusiness) (err error) {
 	generalInformation := data.GeneralInformation
 	generalInformation.BankName = business.BankName
 	generalInformation.KCP = business.KCP
-	generalInformation.SubProgram = business.SubProgram
+	generalInformation.SubProgramId = business.SubProgramId
 	generalInformation.Analisis = business.Analisis
-	generalInformation.CabangPencairan = business.CabangPencairan
-	generalInformation.CabangAdmin = business.CabangAdmin
+	generalInformation.CabangPencairanId = business.CabangPencairanId
+	generalInformation.CabangAdminId = business.CabangAdminId
 	generalInformation.TglAplikasi = business.TglAplikasi
 	generalInformation.TglPenerusan = business.TglPenerusan
-	generalInformation.Segmen = business.Segmen
+	generalInformation.SegmenId = business.SegmenId
 	generalInformation.NoAplikasi = business.NoAplikasi
 	generalInformation.MarketInterestRate = business.MarketInterestRate
 	generalInformation.RequestedInterestRate = business.RequestedInterestRate
 	// generalInformation.DocumentFile = business.DocumentFile
-	generalInformation.Status = business.Status
+	// generalInformation.Status = business.Status
 
 	if err := connection.DB.Create(&generalInformation).Error; err != nil {
 		return err
@@ -151,13 +151,13 @@ func BusinessUpdate(businessID string, updatedBusiness models.Business) (result 
 	businesses.ContactPerson = updatedBusiness.ContactPerson
 	businesses.BankName = updatedBusiness.BankName
 	businesses.KCP = updatedBusiness.KCP
-	businesses.SubProgram = updatedBusiness.SubProgram
+	businesses.SubProgramId = updatedBusiness.SubProgramId
 	businesses.Analisis = updatedBusiness.Analisis
-	businesses.CabangPencairan = updatedBusiness.CabangPencairan
-	businesses.CabangAdmin = updatedBusiness.CabangAdmin
+	businesses.CabangPencairanId = updatedBusiness.CabangPencairanId
+	businesses.CabangAdminId = updatedBusiness.CabangAdminId
 	businesses.TglAplikasi = updatedBusiness.TglAplikasi
 	businesses.TglPenerusan = updatedBusiness.TglPenerusan
-	businesses.Segmen = updatedBusiness.Segmen
+	businesses.SegmenId = updatedBusiness.SegmenId
 	businesses.NoAplikasi = updatedBusiness.NoAplikasi
 	businesses.MarketInterestRate = updatedBusiness.MarketInterestRate
 	businesses.RequestedInterestRate = updatedBusiness.RequestedInterestRate

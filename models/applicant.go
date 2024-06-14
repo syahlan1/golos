@@ -57,7 +57,7 @@ type ApplicantDetail struct {
 	SpouseData         SpouseData         `json:"spouse"`
 	IdCard             IdCard             `json:"id_card"`
 	Document           Document           `json:"document"`
-	GeneralInformation GeneralInformation `json:"general_information"`
+	GeneralInformation ShowGeneralInformation `json:"general_information"`
 }
 
 type HomeStatus struct {

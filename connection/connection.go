@@ -39,6 +39,10 @@ func Connect() {
 	connection.AutoMigrate(&models.Document{})
 	connection.AutoMigrate(&models.GeneralInformation{})
 
+	connection.AutoMigrate(&models.Cabang{})
+	connection.AutoMigrate(&models.Program{})
+	connection.AutoMigrate(&models.Segment{})
+
 	// connection.AutoMigrate(&models.CompanyFirstName{})
 	// connection.AutoMigrate(&models.CompanyType{})
 	// connection.AutoMigrate(&models.BusinessAddressType{})

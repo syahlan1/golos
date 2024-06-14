@@ -9,6 +9,7 @@ import (
 	"github.com/syahlan1/golos/controllers/approvalController"
 	"github.com/syahlan1/golos/controllers/authController"
 	"github.com/syahlan1/golos/controllers/businessController"
+	"github.com/syahlan1/golos/controllers/generalInformationController"
 	"github.com/syahlan1/golos/controllers/masterCodeController"
 	"github.com/syahlan1/golos/controllers/masterColumnController"
 	"github.com/syahlan1/golos/controllers/masterParameterController"
@@ -102,6 +103,12 @@ func Setup(app *fiber.App) {
 	api.Get("/applicant/show-hubungan-keluarga", aplicantController.ShowHubunganKeluarga)
 	api.Get("/applicant/show-lokasi-pabrik", aplicantController.ShowLokasiPabrik)
 	api.Get("/applicant/marital-status", aplicantController.ShowMaritalStatus)
+
+	api.Get("/cabang-pencairan", generalInformationController.ShowCabangPencairan)
+	api.Get("/cabang-admin", generalInformationController.ShowCabangAdmin)
+	api.Get("/segment", generalInformationController.ShowSegment)
+	api.Get("/program", generalInformationController.ShowProgram)
+	api.Get("/application-number/:id", generalInformationController.GenerateApplicationNumber)
 
 	//zipcode
 	api.Get("/provinces", businessController.GetProvinces)

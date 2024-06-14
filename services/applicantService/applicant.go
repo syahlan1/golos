@@ -11,6 +11,7 @@ import (
 	"github.com/oklog/ulid"
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
+	"github.com/syahlan1/golos/services/generalInformationService"
 	"github.com/syahlan1/golos/utils"
 )
 
@@ -45,7 +46,7 @@ func ApplicantShow() (result []models.ApplicantDetail, err error) {
 
 		// Load related GeneralInformation
 		if applicant.GeneralInformationId != 0 {
-			connection.DB.First(&applicantDetail.GeneralInformation, "id = ?", applicant.GeneralInformationId)
+			applicantDetail.GeneralInformation, _ = generalInformationService.ShowGeneralInformationById(applicant.GeneralInformationId)
 		}
 
 		result = append(result, applicantDetail)
@@ -90,9 +91,14 @@ func ApplicantShowDetail(applicantID string) (result models.ApplicantDetail, err
 
 	// Load related GeneralInformation
 	if applicant.GeneralInformationId != 0 {
-		if err := connection.DB.First(&applicantDetail.GeneralInformation, "id = ?", applicant.GeneralInformationId).Error; err != nil {
+
+		applicantDetail.GeneralInformation, err = generalInformationService.ShowGeneralInformationById(applicant.GeneralInformationId)
+		if err != nil {
 			return result, errors.New("general Information Not Found")
 		}
+		// if err := connection.DB.First(&applicantDetail.GeneralInformation, "id = ?", applicant.GeneralInformationId).Error; err != nil {
+		// 	return result, errors.New("general Information Not Found")
+		// }
 	}
 
 	return applicantDetail, nil
@@ -104,7 +110,7 @@ func ApplicantCreate(data models.CreateApplicant, username string) (err error) {
 	idCard := data.IdCard
 	document := data.Document
 	generalInformation := data.GeneralInformation
-	generalInformation.Status = "L"
+	// generalInformation.Status = "L"
 
 	if err = connection.DB.Create(&spouse).Error; err != nil {
 		return err
@@ -112,9 +118,13 @@ func ApplicantCreate(data models.CreateApplicant, username string) (err error) {
 	if err = connection.DB.Create(&idCard).Error; err != nil {
 		return err
 	}
-	if err = connection.DB.Create(&generalInformation).Error; err != nil {
+
+	if err = generalInformationService.CreateGeneralInformation(&generalInformation); err != nil{
 		return err
 	}
+	// if err = connection.DB.Create(&generalInformation).Error; err != nil {
+	// 	return err
+	// }
 	if err = connection.DB.Create(&document).Error; err != nil {
 		return err
 	}
@@ -125,6 +135,8 @@ func ApplicantCreate(data models.CreateApplicant, username string) (err error) {
 	applicant.SpouseId = spouse.Id
 	applicant.GeneralInformationId = generalInformation.Id
 	applicant.Status = "L"
+
+	showGeneralInformation, _ := generalInformationService.ShowGeneralInformationById(generalInformation.Id) 
 
 	// Buat data appplicant ke database
 	if err := connection.DB.Create(&applicant).Error; err != nil {
@@ -139,7 +151,7 @@ func ApplicantCreate(data models.CreateApplicant, username string) (err error) {
 	approval := models.Approval{
 		Id:                id.String(),
 		DisplayData:       "Data " + applicant.CustomerName,
-		Data:              ApplicantToJson(applicant, spouse, idCard, document, generalInformation),
+		Data:              ApplicantToJson(applicant, spouse, idCard, document, showGeneralInformation),
 		ApprovalSettingID: 1,
 		CurrentProcess:    7,
 		ApprovalStatus:    "draft",
@@ -161,7 +173,7 @@ func ApplicantCreate(data models.CreateApplicant, username string) (err error) {
 		UserID:         approval.CreatedBy,
 		Status:         approval.ApprovalStatus,
 		CurrentProcess: approval.CurrentProcess,
-		Data:           ApplicantToJson(applicant, spouse, idCard, document, generalInformation),
+		Data:           ApplicantToJson(applicant, spouse, idCard, document, showGeneralInformation),
 	}
 	if err := connection.DB.Create(&history).Error; err != nil {
 		return err
@@ -198,12 +210,16 @@ func ApplicantUpdate(applicantID string, data models.CreateApplicant) (applicant
 	}
 	updatedDocument := data.Document
 
-	generalInformationId := applicant.GeneralInformationId
-	var generalInformation models.GeneralInformation
-	if err := connection.DB.First(&generalInformation, generalInformationId).Error; err != nil {
-		return applicant, errors.New("general Information not found")
+	if err = generalInformationService.UpdateGeneralInformation(applicant.GeneralInformationId,data.GeneralInformation); err != nil {
+		return applicant, err
 	}
-	updatedGeneralInformation := data.GeneralInformation
+
+	// generalInformationId := applicant.GeneralInformationId
+	// var generalInformation models.GeneralInformation
+	// if err := connection.DB.First(&generalInformation, generalInformationId).Error; err != nil {
+	// 	return applicant, errors.New("general Information not found")
+	// }
+	// updatedGeneralInformation := data.GeneralInformation
 
 	applicant.TitleBeforeName = updatedApplicant.TitleBeforeName
 	applicant.CustomerName = updatedApplicant.CustomerName
@@ -269,18 +285,18 @@ func ApplicantUpdate(applicantID string, data models.CreateApplicant) (applicant
 	document.DateOfLetter = updatedDocument.DateOfLetter
 	document.DateOfReceipt = updatedDocument.DateOfReceipt
 
-	generalInformation.BankName = updatedGeneralInformation.BankName
-	generalInformation.KCP = updatedGeneralInformation.KCP
-	generalInformation.SubProgram = updatedGeneralInformation.SubProgram
-	generalInformation.Analisis = updatedGeneralInformation.Analisis
-	generalInformation.CabangPencairan = updatedGeneralInformation.CabangPencairan
-	generalInformation.CabangAdmin = updatedGeneralInformation.CabangAdmin
-	generalInformation.TglAplikasi = updatedGeneralInformation.TglAplikasi
-	generalInformation.TglPenerusan = updatedGeneralInformation.TglPenerusan
-	generalInformation.Segmen = updatedGeneralInformation.Segmen
-	generalInformation.NoAplikasi = updatedGeneralInformation.NoAplikasi
-	generalInformation.MarketInterestRate = updatedGeneralInformation.MarketInterestRate
-	generalInformation.RequestedInterestRate = updatedGeneralInformation.RequestedInterestRate
+	// generalInformation.BankName = updatedGeneralInformation.BankName
+	// generalInformation.KCP = updatedGeneralInformation.KCP
+	// generalInformation.SubProgramId = updatedGeneralInformation.SubProgramId
+	// generalInformation.Analisis = updatedGeneralInformation.Analisis
+	// generalInformation.CabangPencairanId = updatedGeneralInformation.CabangPencairanId
+	// generalInformation.CabangAdminId = updatedGeneralInformation.CabangAdminId
+	// generalInformation.TglAplikasi = updatedGeneralInformation.TglAplikasi
+	// generalInformation.TglPenerusan = updatedGeneralInformation.TglPenerusan
+	// generalInformation.SegmenId = updatedGeneralInformation.SegmenId
+	// generalInformation.NoAplikasi = updatedGeneralInformation.NoAplikasi
+	// generalInformation.MarketInterestRate = updatedGeneralInformation.MarketInterestRate
+	// generalInformation.RequestedInterestRate = updatedGeneralInformation.RequestedInterestRate
 
 	if err := connection.DB.Save(&applicant).Error; err != nil {
 		return applicant, errors.New("failed to update the applicant data")
@@ -294,9 +310,9 @@ func ApplicantUpdate(applicantID string, data models.CreateApplicant) (applicant
 		return applicant, errors.New("failed to update the document data")
 	}
 
-	if err := connection.DB.Save(&generalInformation).Error; err != nil {
-		return applicant, errors.New("failed to update the general information data")
-	}
+	// if err := connection.DB.Save(&generalInformation).Error; err != nil {
+	// 	return applicant, errors.New("failed to update the general information data")
+	// }
 
 	if err := connection.DB.Save(&idCard).Error; err != nil {
 		return applicant, errors.New("failed to update the id card data")
@@ -354,6 +370,7 @@ func ApplicantShowFile(id string) (result models.Document, err error) {
 
 	return result, nil
 }
+
 
 func ShowHomeStatus() (result []string, err error) {
 	if err := connection.DB.Model(&models.HomeStatus{}).Pluck("name", &result).Error; err != nil {
@@ -451,7 +468,7 @@ func ShowMaritalStatus() (result []string, err error) {
 	return result, nil
 }
 
-func ApplicantToJson(applicant models.Applicant, spouse models.SpouseData, idCard models.IdCard, document models.Document, generalInformation models.GeneralInformation) string {
+func ApplicantToJson(applicant models.Applicant, spouse models.SpouseData, idCard models.IdCard, document models.Document, generalInformation any) string {
 	data := map[string]interface{}{
 		"applicant":          applicant,
 		"spouse":             spouse,
