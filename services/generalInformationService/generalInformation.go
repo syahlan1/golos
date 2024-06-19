@@ -12,7 +12,7 @@ import (
 
 func ShowCabangPencairan() (result []models.Dropdown) {
 	connection.DB.Select("id, CONCAT(branch_code, ' - ', name) AS name").
-		Table("cabangs").
+		Model(&models.Cabang{}).
 		Where("cabang_pencairan = ?", true).Find(&result)
 
 	result = utils.Prepend(result, models.Dropdown{Name: "- SELECT -"})
@@ -21,7 +21,7 @@ func ShowCabangPencairan() (result []models.Dropdown) {
 
 func ShowCabangAdmin() (result []models.Dropdown) {
 	connection.DB.Select("id, CONCAT(branch_code, ' - ', name) AS name").
-		Table("cabangs").
+		Model(&models.Cabang{}).
 		Find(&result)
 
 	result = utils.Prepend(result, models.Dropdown{Name: "- SELECT -"})
@@ -30,7 +30,7 @@ func ShowCabangAdmin() (result []models.Dropdown) {
 
 func ShowSegment() (result []models.Dropdown) {
 	connection.DB.Select("id, name").
-		Table("segments").
+		Model(&models.Segment{}).
 		Find(&result)
 
 	result = utils.Prepend(result, models.Dropdown{Name: "- SELECT -"})
@@ -39,7 +39,7 @@ func ShowSegment() (result []models.Dropdown) {
 
 func ShowProgram() (result []models.Dropdown) {
 	connection.DB.Select("id, name").
-		Table("programs").
+		Model(&models.Program{}).
 		Find(&result)
 
 	result = utils.Prepend(result, models.Dropdown{Name: "- SELECT -"})
@@ -64,24 +64,23 @@ func GenerateApplicationNumber(CabangAdmin string) (result string, err error) {
 func CreateGeneralInformation(data *models.GeneralInformation) (err error) {
 
 	data.NoReferensi, err = utils.GenerateApplicationNumber(data.CabangAdminId)
+	if err != nil {
+		return
+	}
 	data.NoReferensi += "C"
 
-	if err := connection.DB.Create(&data).Error; err != nil {
-		return err
-	}
-
-	return
+	return connection.DB.Create(&data).Error
 }
 
 func ShowGeneralInformationById(id int) (result models.ShowGeneralInformation, err error) {
 
-	if err = connection.DB.Select("gi.*, p.name AS sub_program, c1.name AS cabang_pencairan, c2.name AS cabang_admin, s.name AS segmen").
-		Table("general_informations gi").
-		Joins("JOIN programs p ON p.id = gi.sub_program_id").
-		Joins("JOIN cabangs c1 ON c1.id = gi.cabang_pencairan_id").
-		Joins("JOIN cabangs c2 ON c2.id = gi.cabang_admin_id").
-		Joins("JOIN segments s ON s.id = gi.segmen_id").
-		First(&result, "gi.id = ?", id).Error; !errors.Is(err, gorm.ErrRecordNotFound) && err != nil {
+	if err = connection.DB.Select("general_informations.*, p.name AS sub_program, c1.name AS cabang_pencairan, c2.name AS cabang_admin, s.name AS segmen").
+		Model(&models.GeneralInformation{}).
+		Joins("JOIN programs p ON p.id = general_informations.sub_program_id").
+		Joins("JOIN cabangs c1 ON c1.id = general_informations.cabang_pencairan_id").
+		Joins("JOIN cabangs c2 ON c2.id = general_informations.cabang_admin_id").
+		Joins("JOIN segments s ON s.id = general_informations.segmen_id").
+		First(&result, "general_informations.id = ?", id).Error; !errors.Is(err, gorm.ErrRecordNotFound) && err != nil {
 		return
 	}
 

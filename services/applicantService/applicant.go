@@ -11,7 +11,11 @@ import (
 	"github.com/oklog/ulid"
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
+	"github.com/syahlan1/golos/services/documentService"
 	"github.com/syahlan1/golos/services/generalInformationService"
+	"github.com/syahlan1/golos/services/idCardService"
+	"github.com/syahlan1/golos/services/sectorEconomyService"
+	"github.com/syahlan1/golos/services/spouseService"
 	"github.com/syahlan1/golos/utils"
 )
 
@@ -31,22 +35,27 @@ func ApplicantShow() (result []models.ApplicantDetail, err error) {
 
 		// Load related IdCard
 		if applicant.IdCard != 0 {
-			connection.DB.First(&applicantDetail.IdCard, "id = ?", applicant.IdCard)
+			applicantDetail.IdCard, _ = idCardService.ShowIdCardById(applicant.IdCard)
 		}
 
 		// Load related Document
 		if applicant.DocumentId != 0 {
-			connection.DB.First(&applicantDetail.Document, "id = ?", applicant.DocumentId)
+			applicantDetail.Document,_ = documentService.ShowDocumentById(applicant.DocumentId)
 		}
 
 		// Load related Spouse
 		if applicant.SpouseId != 0 {
-			connection.DB.First(&applicantDetail.SpouseData, "id = ?", applicant.SpouseId)
+			applicantDetail.SpouseData,_ = spouseService.ShowSpouseById(applicant.SpouseId)
 		}
 
 		// Load related GeneralInformation
 		if applicant.GeneralInformationId != 0 {
 			applicantDetail.GeneralInformation, _ = generalInformationService.ShowGeneralInformationById(applicant.GeneralInformationId)
+		}
+
+		// Load related SectorEconomy
+		if applicant.SectorEconomyId != 0 {
+			applicantDetail.SectorEconomy, _ = sectorEconomyService.ShowSectorEconomyById(applicant.SectorEconomyId)
 		}
 
 		result = append(result, applicantDetail)
@@ -70,35 +79,27 @@ func ApplicantShowDetail(applicantID string) (result models.ApplicantDetail, err
 
 	// Load related IdCard
 	if applicant.IdCard != 0 {
-		if err := connection.DB.First(&applicantDetail.IdCard, "id = ?", applicant.IdCard).Error; err != nil {
-			return result, errors.New("id Card Not Found")
-		}
+		applicantDetail.IdCard, _ = idCardService.ShowIdCardById(applicant.IdCard)
 	}
 
 	// Load related Document
 	if applicant.DocumentId != 0 {
-		if err := connection.DB.First(&applicantDetail.Document, "id = ?", applicant.DocumentId).Error; err != nil {
-			return result, errors.New("document Not Found")
-		}
+		applicantDetail.Document,_ = documentService.ShowDocumentById(applicant.DocumentId)
 	}
 
 	// Load related Spouse
 	if applicant.SpouseId != 0 {
-		if err := connection.DB.First(&applicantDetail.SpouseData, "id = ?", applicant.SpouseId).Error; err != nil {
-			return result, errors.New("spouse Not Found")
-		}
+		applicantDetail.SpouseData,_ = spouseService.ShowSpouseById(applicant.SpouseId)
 	}
 
 	// Load related GeneralInformation
 	if applicant.GeneralInformationId != 0 {
+		applicantDetail.GeneralInformation, _ = generalInformationService.ShowGeneralInformationById(applicant.GeneralInformationId)
+	}
 
-		applicantDetail.GeneralInformation, err = generalInformationService.ShowGeneralInformationById(applicant.GeneralInformationId)
-		if err != nil {
-			return result, errors.New("general Information Not Found")
-		}
-		// if err := connection.DB.First(&applicantDetail.GeneralInformation, "id = ?", applicant.GeneralInformationId).Error; err != nil {
-		// 	return result, errors.New("general Information Not Found")
-		// }
+	// Load related SectorEconomy
+	if applicant.SectorEconomyId != 0 {
+		applicantDetail.SectorEconomy, _ = sectorEconomyService.ShowSectorEconomyById(applicant.SectorEconomyId)
 	}
 
 	return applicantDetail, nil
@@ -110,22 +111,25 @@ func ApplicantCreate(data models.CreateApplicant, username string) (err error) {
 	idCard := data.IdCard
 	document := data.Document
 	generalInformation := data.GeneralInformation
-	// generalInformation.Status = "L"
+	sectorEconomy := data.SectorEconomy
 
-	if err = connection.DB.Create(&spouse).Error; err != nil {
-		return err
-	}
-	if err = connection.DB.Create(&idCard).Error; err != nil {
+	if err = spouseService.CreateSpouse(&spouse); err != nil {
 		return err
 	}
 
-	if err = generalInformationService.CreateGeneralInformation(&generalInformation); err != nil{
+	if err = idCardService.CreateIdCard(&idCard); err != nil {
 		return err
 	}
-	// if err = connection.DB.Create(&generalInformation).Error; err != nil {
-	// 	return err
-	// }
-	if err = connection.DB.Create(&document).Error; err != nil {
+
+	if err = generalInformationService.CreateGeneralInformation(&generalInformation); err != nil {
+		return err
+	}
+
+	if err = documentService.CreateDocument(&document); err != nil {
+		return err
+	}
+
+	if err = sectorEconomyService.CreateSectorEconomy(&sectorEconomy); err != nil {
 		return err
 	}
 
@@ -134,14 +138,16 @@ func ApplicantCreate(data models.CreateApplicant, username string) (err error) {
 	applicant.DocumentId = document.Id
 	applicant.SpouseId = spouse.Id
 	applicant.GeneralInformationId = generalInformation.Id
+	applicant.SectorEconomyId = sectorEconomy.Id
 	applicant.Status = "L"
-
-	showGeneralInformation, _ := generalInformationService.ShowGeneralInformationById(generalInformation.Id) 
 
 	// Buat data appplicant ke database
 	if err := connection.DB.Create(&applicant).Error; err != nil {
 		return err
 	}
+
+	showGeneralInformation, _ := generalInformationService.ShowGeneralInformationById(generalInformation.Id)
+	showSectorEconomy, _ := sectorEconomyService.ShowSectorEconomyById(sectorEconomy.Id)
 
 	//generate id
 	t := time.Now().UTC()
@@ -151,7 +157,7 @@ func ApplicantCreate(data models.CreateApplicant, username string) (err error) {
 	approval := models.Approval{
 		Id:                id.String(),
 		DisplayData:       "Data " + applicant.CustomerName,
-		Data:              ApplicantToJson(applicant, spouse, idCard, document, showGeneralInformation),
+		Data:              ApplicantToJson(applicant, spouse, idCard, document, showGeneralInformation, showSectorEconomy),
 		ApprovalSettingID: 1,
 		CurrentProcess:    7,
 		ApprovalStatus:    "draft",
@@ -173,7 +179,7 @@ func ApplicantCreate(data models.CreateApplicant, username string) (err error) {
 		UserID:         approval.CreatedBy,
 		Status:         approval.ApprovalStatus,
 		CurrentProcess: approval.CurrentProcess,
-		Data:           ApplicantToJson(applicant, spouse, idCard, document, showGeneralInformation),
+		Data:           ApplicantToJson(applicant, spouse, idCard, document, showGeneralInformation, showSectorEconomy),
 	}
 	if err := connection.DB.Create(&history).Error; err != nil {
 		return err
@@ -189,37 +195,21 @@ func ApplicantUpdate(applicantID string, data models.CreateApplicant) (applicant
 	}
 	updatedApplicant := data.Applicant
 
-	idCardId := applicant.IdCard
-	var idCard models.IdCard
-	if err := connection.DB.First(&idCard, idCardId).Error; err != nil {
-		return applicant, errors.New("id card not found")
-	}
-	updatedIdCard := data.IdCard
-
-	spouseId := applicant.SpouseId
-	var spouse models.SpouseData
-	if err := connection.DB.First(&spouse, spouseId).Error; err != nil {
-		return applicant, errors.New("spouse not found")
-	}
-	updatedSpouse := data.Spouse
-
-	documentId := applicant.DocumentId
-	var document models.Document
-	if err := connection.DB.First(&document, documentId).Error; err != nil {
-		return applicant, errors.New("document not found")
-	}
-	updatedDocument := data.Document
-
-	if err = generalInformationService.UpdateGeneralInformation(applicant.GeneralInformationId,data.GeneralInformation); err != nil {
+	if err = idCardService.UpdateIdCard(applicant.IdCard, data.IdCard); err != nil {
 		return applicant, err
 	}
 
-	// generalInformationId := applicant.GeneralInformationId
-	// var generalInformation models.GeneralInformation
-	// if err := connection.DB.First(&generalInformation, generalInformationId).Error; err != nil {
-	// 	return applicant, errors.New("general Information not found")
-	// }
-	// updatedGeneralInformation := data.GeneralInformation
+	if err = spouseService.UpdateSpouse(applicant.SpouseId, data.Spouse); err != nil {
+		return applicant, err
+	}
+
+	if err = documentService.UpdateDocument(applicant.DocumentId, data.Document); err != nil {
+		return applicant, err
+	}
+
+	if err = generalInformationService.UpdateGeneralInformation(applicant.GeneralInformationId, data.GeneralInformation); err != nil {
+		return applicant, err
+	}
 
 	applicant.TitleBeforeName = updatedApplicant.TitleBeforeName
 	applicant.CustomerName = updatedApplicant.CustomerName
@@ -254,68 +244,8 @@ func ApplicantUpdate(applicantID string, data models.CreateApplicant) (applicant
 	applicant.KodeInstansi = updatedApplicant.KodeInstansi
 	applicant.NoPegawai = updatedApplicant.NoPegawai
 
-	spouse.SpouseName = updatedSpouse.SpouseName
-	spouse.SpouseIdCard = updatedSpouse.SpouseIdCard
-	spouse.SpouseAddress = updatedSpouse.SpouseAddress
-	spouse.GroupNasabah = updatedSpouse.GroupNasabah
-	spouse.SektorEkonomi1 = updatedSpouse.SektorEkonomi1
-	spouse.SektorEkonomi2 = updatedSpouse.SektorEkonomi2
-	spouse.SektorEkonomi3 = updatedSpouse.SektorEkonomi3
-	spouse.SektorEkonomiOjk = updatedSpouse.SektorEkonomiOjk
-	spouse.NetIncome = updatedSpouse.NetIncome
-	spouse.LokasiPabrik = updatedSpouse.LokasiPabrik
-	spouse.KeyPerson = updatedSpouse.KeyPerson
-	spouse.LokasiDati2 = updatedSpouse.LokasiDati2
-	spouse.HubunganNasabahBank = updatedSpouse.HubunganNasabahBank
-	spouse.HubunganKeluarga = updatedSpouse.HubunganKeluarga
-
-	idCard.IdCardIssuedDate = updatedIdCard.IdCardIssuedDate
-	idCard.IdCard = updatedIdCard.IdCard
-	idCard.IdCardExpireDate = updatedIdCard.IdCardExpireDate
-	idCard.IdCardAddress = updatedIdCard.IdCardAddress
-	idCard.IdCardDistrict = updatedIdCard.IdCardDistrict
-	idCard.IdCardCity = updatedIdCard.IdCardCity
-	idCard.IdCardZipCode = updatedIdCard.IdCardZipCode
-	idCard.AddressType = updatedIdCard.AddressType
-
-	document.DocumentFile = updatedDocument.DocumentFile
-	document.DocumentPath = updatedDocument.DocumentPath
-	document.Status = updatedDocument.Status
-	document.NoCreditSalesForm = updatedDocument.NoCreditSalesForm
-	document.DateOfLetter = updatedDocument.DateOfLetter
-	document.DateOfReceipt = updatedDocument.DateOfReceipt
-
-	// generalInformation.BankName = updatedGeneralInformation.BankName
-	// generalInformation.KCP = updatedGeneralInformation.KCP
-	// generalInformation.SubProgramId = updatedGeneralInformation.SubProgramId
-	// generalInformation.Analisis = updatedGeneralInformation.Analisis
-	// generalInformation.CabangPencairanId = updatedGeneralInformation.CabangPencairanId
-	// generalInformation.CabangAdminId = updatedGeneralInformation.CabangAdminId
-	// generalInformation.TglAplikasi = updatedGeneralInformation.TglAplikasi
-	// generalInformation.TglPenerusan = updatedGeneralInformation.TglPenerusan
-	// generalInformation.SegmenId = updatedGeneralInformation.SegmenId
-	// generalInformation.NoAplikasi = updatedGeneralInformation.NoAplikasi
-	// generalInformation.MarketInterestRate = updatedGeneralInformation.MarketInterestRate
-	// generalInformation.RequestedInterestRate = updatedGeneralInformation.RequestedInterestRate
-
 	if err := connection.DB.Save(&applicant).Error; err != nil {
 		return applicant, errors.New("failed to update the applicant data")
-	}
-
-	if err := connection.DB.Save(&spouse).Error; err != nil {
-		return applicant, errors.New("failed to update the spouse data")
-	}
-
-	if err := connection.DB.Save(&document).Error; err != nil {
-		return applicant, errors.New("failed to update the document data")
-	}
-
-	// if err := connection.DB.Save(&generalInformation).Error; err != nil {
-	// 	return applicant, errors.New("failed to update the general information data")
-	// }
-
-	if err := connection.DB.Save(&idCard).Error; err != nil {
-		return applicant, errors.New("failed to update the id card data")
 	}
 
 	return applicant, nil
@@ -370,7 +300,6 @@ func ApplicantShowFile(id string) (result models.Document, err error) {
 
 	return result, nil
 }
-
 
 func ShowHomeStatus() (result []string, err error) {
 	if err := connection.DB.Model(&models.HomeStatus{}).Pluck("name", &result).Error; err != nil {
@@ -437,25 +366,25 @@ func ShowSektorEkonomi() (result []string, err error) {
 }
 
 func ShowHubunganNasabah() (result []string, err error) {
-	if err := connection.DB.Model(&models.HubunganNasabah{}).Pluck("name", &result).Error; err != nil {
-		return nil, errors.New("failed to get Hubungan Nasabah Data")
-	}
+	// if err := connection.DB.Model(&models.HubunganNasabah{}).Pluck("name", &result).Error; err != nil {
+	// 	return nil, errors.New("failed to get Hubungan Nasabah Data")
+	// }
 
 	return result, nil
 }
 
 func ShowHubunganKeluarga() (result []string, err error) {
-	if err := connection.DB.Model(&models.HubunganKeluarga{}).Pluck("name", &result).Error; err != nil {
-		return nil, errors.New("failed to get Hubungan Keluarga Data")
-	}
+	// if err := connection.DB.Model(&models.HubunganKeluarga{}).Pluck("name", &result).Error; err != nil {
+	// 	return nil, errors.New("failed to get Hubungan Keluarga Data")
+	// }
 
 	return result, nil
 }
 
 func ShowLokasiPabrik() (result []string, err error) {
-	if err := connection.DB.Model(&models.LokasiPabrik{}).Pluck("name", &result).Error; err != nil {
-		return nil, errors.New("failed to get Lokasi Pabrik Data")
-	}
+	// if err := connection.DB.Model(&models.LokasiPabrik{}).Pluck("name", &result).Error; err != nil {
+	// 	return nil, errors.New("failed to get Lokasi Pabrik Data")
+	// }
 
 	return result, nil
 }
@@ -468,13 +397,14 @@ func ShowMaritalStatus() (result []string, err error) {
 	return result, nil
 }
 
-func ApplicantToJson(applicant models.Applicant, spouse models.SpouseData, idCard models.IdCard, document models.Document, generalInformation any) string {
+func ApplicantToJson(applicant models.Applicant, spouse models.SpouseData, idCard models.IdCard, document models.Document, generalInformation any, sectorEconomy any) string {
 	data := map[string]interface{}{
 		"applicant":          applicant,
 		"spouse":             spouse,
 		"idCard":             idCard,
 		"document":           document,
 		"generalInformation": generalInformation,
+		"sectorEconomy":      sectorEconomy,
 	}
 
 	jsonData, err := json.Marshal(data)

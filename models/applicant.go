@@ -40,23 +40,24 @@ type Applicant struct {
 	GeneralInformationId int    `json:"general_information_id"`
 	DocumentId           int    `json:"document_id"`
 	SpouseId             int    `json:"spouse_id"`
+	SectorEconomyId      int    `json:"sector_economy_id"`
 }
-
 
 type CreateApplicant struct {
 	Applicant          Applicant          `json:"applicant"`
 	Spouse             SpouseData         `json:"spouse"`
+	SectorEconomy      SectorEconomy      `json:"sector_economy"`
 	IdCard             IdCard             `json:"id_card"`
 	Document           Document           `json:"document"`
 	GeneralInformation GeneralInformation `json:"general_information"`
 }
 
-
 type ApplicantDetail struct {
 	Applicant
-	SpouseData         SpouseData         `json:"spouse"`
-	IdCard             IdCard             `json:"id_card"`
-	Document           Document           `json:"document"`
+	SpouseData         SpouseData             `json:"spouse"`
+	SectorEconomy      ShowSectorEconomy      `json:"sector_economy"`
+	IdCard             IdCard                 `json:"id_card"`
+	Document           Document               `json:"document"`
 	GeneralInformation ShowGeneralInformation `json:"general_information"`
 }
 
@@ -100,20 +101,20 @@ type SektorEkonomi struct {
 	Name string `json: "name"`
 }
 
-type HubunganNasabah struct {
-	Id   int    `json: "id" gorm:"primaryKey"`
-	Name string `json: "name"`
-}
+// type HubunganNasabah struct {
+// 	Id   int    `json: "id" gorm:"primaryKey"`
+// 	Name string `json: "name"`
+// }
 
-type HubunganKeluarga struct {
-	Id   int    `json: "id" gorm:"primaryKey"`
-	Name string `json: "name"`
-}
+// type HubunganKeluarga struct {
+// 	Id   int    `json: "id" gorm:"primaryKey"`
+// 	Name string `json: "name"`
+// }
 
-type LokasiPabrik struct {
-	Id   int    `json: "id" gorm:"primaryKey"`
-	Name string `json: "name"`
-}
+// type LokasiPabrik struct {
+// 	Id   int    `json: "id" gorm:"primaryKey"`
+// 	Name string `json: "name"`
+// }
 
 type MaritalStatus struct {
 	Id   int    `json: "id" gorm:"primaryKey"`

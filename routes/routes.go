@@ -15,6 +15,7 @@ import (
 	"github.com/syahlan1/golos/controllers/masterParameterController"
 	"github.com/syahlan1/golos/controllers/masterTableController"
 	"github.com/syahlan1/golos/controllers/ownershipDataController"
+	"github.com/syahlan1/golos/controllers/sectorEconomyController"
 	"github.com/syahlan1/golos/controllers/validationController"
 	"github.com/syahlan1/golos/middleware"
 )
@@ -103,6 +104,15 @@ func Setup(app *fiber.App) {
 	api.Get("/applicant/show-hubungan-keluarga", aplicantController.ShowHubunganKeluarga)
 	api.Get("/applicant/show-lokasi-pabrik", aplicantController.ShowLokasiPabrik)
 	api.Get("/applicant/marital-status", aplicantController.ShowMaritalStatus)
+	
+	api.Get("/sektor-ekonomi-1", sectorEconomyController.ShowSektorEkonomi1)
+	api.Get("/sektor-ekonomi-2", sectorEconomyController.ShowSektorEkonomi2)
+	api.Get("/sektor-ekonomi-3", sectorEconomyController.ShowSektorEkonomi3)
+	api.Get("/sektor-ekonomi-ojk", sectorEconomyController.ShowSektorEkonomiOjk)
+	api.Get("/lokasi-pabrik", sectorEconomyController.ShowLokasiPabrik)
+	api.Get("/lokasi-dati2", sectorEconomyController.ShowLokasiDati2)
+	api.Get("/hubungan-nasabah", sectorEconomyController.ShowHubunganNasabahBank)
+	api.Get("/hubungan-keluarga", sectorEconomyController.ShowHubunganKeluarga)
 
 	api.Get("/cabang-pencairan", generalInformationController.ShowCabangPencairan)
 	api.Get("/cabang-admin", generalInformationController.ShowCabangAdmin)

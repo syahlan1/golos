@@ -38,6 +38,17 @@ func Connect() {
 	connection.AutoMigrate(&models.SpouseData{})
 	connection.AutoMigrate(&models.Document{})
 	connection.AutoMigrate(&models.GeneralInformation{})
+	connection.AutoMigrate(&models.SectorEconomy{})
+
+	connection.AutoMigrate(&models.SectorEconomy1{})
+	connection.AutoMigrate(&models.SectorEconomy2{})
+	connection.AutoMigrate(&models.SectorEconomy3{})
+	connection.AutoMigrate(&models.SectorEconomyOjk{})
+	connection.AutoMigrate(&models.LokasiPabrik{})
+	connection.AutoMigrate(&models.LokasiDati2{})
+	connection.AutoMigrate(&models.HubunganNasabahBank{})
+	connection.AutoMigrate(&models.HubunganKeluarga{})
+
 
 	connection.AutoMigrate(&models.Cabang{})
 	connection.AutoMigrate(&models.Program{})
