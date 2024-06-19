@@ -160,13 +160,7 @@ func ApplicantShowFile(c *fiber.Ctx) error {
 
 func ShowHomeStatus(c *fiber.Ctx) error {
 
-	result, err := applicantService.ShowHomeStatus()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: err.Error(),
-		})
-	}
+	result := applicantService.ShowHomeStatus()
 
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
@@ -194,13 +188,7 @@ func ShowApplicantAddressType(c *fiber.Ctx) error {
 
 func ShowEducation(c *fiber.Ctx) error {
 
-	result, err := applicantService.ShowEducation()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: err.Error(),
-		})
-	}
+	result := applicantService.ShowEducation()
 
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
@@ -211,13 +199,7 @@ func ShowEducation(c *fiber.Ctx) error {
 
 func ShowJobPosition(c *fiber.Ctx) error {
 
-	result, err := applicantService.ShowJobPosition()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: err.Error(),
-		})
-	}
+	result := applicantService.ShowJobPosition()
 
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
@@ -228,13 +210,7 @@ func ShowJobPosition(c *fiber.Ctx) error {
 
 func ShowBusinessSector(c *fiber.Ctx) error {
 
-	result, err := applicantService.ShowBusinessSector()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: err.Error(),
-		})
-	}
+	result := applicantService.ShowBusinessSector()
 
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
@@ -261,13 +237,7 @@ func ShowKodeInstansi(c *fiber.Ctx) error {
 
 func ShowNegara(c *fiber.Ctx) error {
 
-	result, err := applicantService.ShowNegara()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: err.Error(),
-		})
-	}
+	result := applicantService.ShowNegara()
 
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
@@ -293,66 +263,31 @@ func ShowSektorEkonomi(c *fiber.Ctx) error {
 	})
 }
 
-func ShowHubunganNasabah(c *fiber.Ctx) error {
-
-	result, err := applicantService.ShowHubunganNasabah()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: err.Error(),
-		})
-	}
-
-	return c.JSON(models.Response{
-		Code:    fiber.StatusOK,
-		Message: "Success",
-		Data:    result,
-	})
-}
-
-func ShowHubunganKeluarga(c *fiber.Ctx) error {
-
-	result, err := applicantService.ShowHubunganKeluarga()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: err.Error(),
-		})
-	}
-
-	return c.JSON(models.Response{
-		Code:    fiber.StatusOK,
-		Message: "Success",
-		Data:    result,
-	})
-}
-
-func ShowLokasiPabrik(c *fiber.Ctx) error {
-
-	result, err := applicantService.ShowLokasiPabrik()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: err.Error(),
-		})
-	}
-
-	return c.JSON(models.Response{
-		Code:    fiber.StatusOK,
-		Message: "Success",
-		Data:    result,
-	})
-}
-
 func ShowMaritalStatus(c *fiber.Ctx) error {
 
-	result, err := applicantService.ShowMaritalStatus()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: err.Error(),
-		})
-	}
+	result := applicantService.ShowMaritalStatus()
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func ShowNationality(c *fiber.Ctx) error {
+
+	result := applicantService.ShowNationality()
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func ShowGender(c *fiber.Ctx) error {
+
+	result := applicantService.ShowGender()
 
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,

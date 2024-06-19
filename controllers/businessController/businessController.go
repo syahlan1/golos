@@ -119,7 +119,7 @@ func BusinessUpdate(c *fiber.Ctx) error {
 func BusinessDelete(c *fiber.Ctx) error {
 	businessID := c.Params("id")
 
-	result, err := businessService.BusinessDelete(businessID)
+	err := businessService.BusinessDelete(businessID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
 			Code:    fiber.StatusInternalServerError,
@@ -129,8 +129,7 @@ func BusinessDelete(c *fiber.Ctx) error {
 
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
-		Message: "Success",
-		Data:    result,
+		Message: "Deleted!",
 	})
 }
 

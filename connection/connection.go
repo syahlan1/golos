@@ -40,6 +40,17 @@ func Connect() {
 	connection.AutoMigrate(&models.GeneralInformation{})
 	connection.AutoMigrate(&models.SectorEconomy{})
 
+	connection.AutoMigrate(&models.AddressType{})
+
+	connection.AutoMigrate(&models.HomeStatus{})
+	connection.AutoMigrate(&models.Education{})
+	connection.AutoMigrate(&models.JobPosition{})
+	connection.AutoMigrate(&models.BusinessSector{})
+	connection.AutoMigrate(&models.Negara{})
+	connection.AutoMigrate(&models.MaritalStatus{})
+	connection.AutoMigrate(&models.Nationality{})
+	connection.AutoMigrate(&models.Gender{})
+
 	connection.AutoMigrate(&models.SectorEconomy1{})
 	connection.AutoMigrate(&models.SectorEconomy2{})
 	connection.AutoMigrate(&models.SectorEconomy3{})

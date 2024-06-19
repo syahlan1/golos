@@ -39,8 +39,6 @@ type ShowGeneralInformation struct {
 	NoReferensi           string `json:"no_referensi"`
 	MarketInterestRate    int    `json:"market_interest_rate"`
 	RequestedInterestRate int    `json:"requested_interest_rate"`
-	DocumentFile          string `json:"document_file"`
-	Status                string `json:"status"`
 }
 
 type Cabang struct {

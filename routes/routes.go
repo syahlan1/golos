@@ -10,6 +10,7 @@ import (
 	"github.com/syahlan1/golos/controllers/authController"
 	"github.com/syahlan1/golos/controllers/businessController"
 	"github.com/syahlan1/golos/controllers/generalInformationController"
+	"github.com/syahlan1/golos/controllers/idCardController"
 	"github.com/syahlan1/golos/controllers/masterCodeController"
 	"github.com/syahlan1/golos/controllers/masterColumnController"
 	"github.com/syahlan1/golos/controllers/masterParameterController"
@@ -99,11 +100,12 @@ func Setup(app *fiber.App) {
 	api.Get("/applicant/show-business-sector", aplicantController.ShowBusinessSector)
 	api.Get("/applicant/show-kode-instansi", aplicantController.ShowKodeInstansi)
 	api.Get("/applicant/show-negara", aplicantController.ShowNegara)
+	api.Get("/applicant/show-nationality", aplicantController.ShowNationality)
+	api.Get("/applicant/show-gender", aplicantController.ShowGender)
 	api.Get("/applicant/show-sektor-ekonomi", aplicantController.ShowSektorEkonomi)
-	api.Get("/applicant/show-hubungan-nasabah", aplicantController.ShowHubunganNasabah)
-	api.Get("/applicant/show-hubungan-keluarga", aplicantController.ShowHubunganKeluarga)
-	api.Get("/applicant/show-lokasi-pabrik", aplicantController.ShowLokasiPabrik)
 	api.Get("/applicant/marital-status", aplicantController.ShowMaritalStatus)
+
+	api.Get("/address-type", idCardController.ShowAddressType)
 	
 	api.Get("/sektor-ekonomi-1", sectorEconomyController.ShowSektorEkonomi1)
 	api.Get("/sektor-ekonomi-2", sectorEconomyController.ShowSektorEkonomi2)

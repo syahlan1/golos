@@ -36,23 +36,23 @@ func BusinessShowDetail(id string) (result models.Business) {
 func BusinessCreate(username string, data models.CreateBusiness) (err error) {
 
 	business := data.Business
-	business.Status = "L"
+	// business.Status = "L"
 
 	document := data.Document
 
 	generalInformation := data.GeneralInformation
-	generalInformation.BankName = business.BankName
-	generalInformation.KCP = business.KCP
-	generalInformation.SubProgramId = business.SubProgramId
-	generalInformation.Analisis = business.Analisis
-	generalInformation.CabangPencairanId = business.CabangPencairanId
-	generalInformation.CabangAdminId = business.CabangAdminId
-	generalInformation.TglAplikasi = business.TglAplikasi
-	generalInformation.TglPenerusan = business.TglPenerusan
-	generalInformation.SegmenId = business.SegmenId
-	generalInformation.NoAplikasi = business.NoAplikasi
-	generalInformation.MarketInterestRate = business.MarketInterestRate
-	generalInformation.RequestedInterestRate = business.RequestedInterestRate
+	// generalInformation.BankName = data.GeneralInformation.BankName
+	// generalInformation.KCP = data.GeneralInformation.KCP
+	// generalInformation.SubProgramId = data.GeneralInformation.SubProgramId
+	// generalInformation.Analisis = data.GeneralInformation.Analisis
+	// generalInformation.CabangPencairanId = data.GeneralInformation.CabangPencairanId
+	// generalInformation.CabangAdminId = data.GeneralInformation.CabangAdminId
+	// generalInformation.TglAplikasi = data.GeneralInformation.TglAplikasi
+	// generalInformation.TglPenerusan = data.GeneralInformation.TglPenerusan
+	// generalInformation.SegmenId = data.GeneralInformation.SegmenId
+	// generalInformation.NoAplikasi = data.GeneralInformation.NoAplikasi
+	// generalInformation.MarketInterestRate = data.GeneralInformation.MarketInterestRate
+	// generalInformation.RequestedInterestRate = data.GeneralInformation.RequestedInterestRate
 	// generalInformation.DocumentFile = business.DocumentFile
 	// generalInformation.Status = business.Status
 
@@ -64,7 +64,7 @@ func BusinessCreate(username string, data models.CreateBusiness) (err error) {
 	}
 
 	// business := data.Business
-	business.CustomerName = business.CompanyFirstName + ". " + business.CompanyName
+	//        					business.CustomerName = business.CompanyFirstName + ". " + business.CompanyName
 	// business.Status = "L"
 	business.DocumentId = document.Id
 	business.GeneralInformationId = generalInformation.Id
@@ -120,22 +120,22 @@ func BusinessUpdate(businessID string, updatedBusiness models.Business) (result 
 	}
 
 	businesses.Cif = updatedBusiness.Cif
-	businesses.CompanyFirstName = updatedBusiness.CompanyFirstName
+	businesses.CompanyFirstNameId = updatedBusiness.CompanyFirstNameId
 	businesses.CompanyName = updatedBusiness.CompanyName
-	businesses.CompanyType = updatedBusiness.CompanyType
+	businesses.CompanyTypeId = updatedBusiness.CompanyTypeId
 	businesses.EstablishDate = updatedBusiness.EstablishDate
 	businesses.EstablishPlace = updatedBusiness.EstablishPlace
 	businesses.CompanyAddress = updatedBusiness.CompanyAddress
 	businesses.District = updatedBusiness.District
 	businesses.City = updatedBusiness.City
 	businesses.ZipCode = updatedBusiness.ZipCode
-	businesses.AddressType = updatedBusiness.AddressType
-	businesses.EternalRatingCompany = updatedBusiness.EternalRatingCompany
-	businesses.RatingClass = updatedBusiness.RatingClass
+	businesses.AddressTypeId = updatedBusiness.AddressTypeId
+	businesses.ExternalRatingCompanyId = updatedBusiness.ExternalRatingCompanyId
+	businesses.RatingClassId = updatedBusiness.RatingClassId
 	businesses.RatingDate = updatedBusiness.RatingDate
-	businesses.ListingBursaCode = updatedBusiness.ListingBursaCode
+	businesses.ListingBursaCodeId = updatedBusiness.ListingBursaCodeId
 	businesses.ListingBursaDate = updatedBusiness.ListingBursaDate
-	businesses.BusinessType = updatedBusiness.BusinessType
+	businesses.BusinessTypeId = updatedBusiness.BusinessTypeId
 	businesses.AktaPendirian = updatedBusiness.AktaPendirian
 	businesses.TglTerbit = updatedBusiness.TglTerbit
 	businesses.AktaLastChange = updatedBusiness.AktaLastChange
@@ -149,19 +149,19 @@ func BusinessUpdate(businessID string, updatedBusiness models.Business) (result 
 	businesses.TglPenerbitan = updatedBusiness.TglPenerbitan
 	businesses.TglJatuhTempo = updatedBusiness.TglJatuhTempo
 	businesses.ContactPerson = updatedBusiness.ContactPerson
-	businesses.BankName = updatedBusiness.BankName
-	businesses.KCP = updatedBusiness.KCP
-	businesses.SubProgramId = updatedBusiness.SubProgramId
-	businesses.Analisis = updatedBusiness.Analisis
-	businesses.CabangPencairanId = updatedBusiness.CabangPencairanId
-	businesses.CabangAdminId = updatedBusiness.CabangAdminId
-	businesses.TglAplikasi = updatedBusiness.TglAplikasi
-	businesses.TglPenerusan = updatedBusiness.TglPenerusan
-	businesses.SegmenId = updatedBusiness.SegmenId
-	businesses.NoAplikasi = updatedBusiness.NoAplikasi
-	businesses.MarketInterestRate = updatedBusiness.MarketInterestRate
-	businesses.RequestedInterestRate = updatedBusiness.RequestedInterestRate
-	businesses.DocumentFile = updatedBusiness.DocumentFile
+	// businesses.BankName = updatedBusiness.BankName
+	// businesses.KCP = updatedBusiness.KCP
+	// businesses.SubProgramId = updatedBusiness.SubProgramId
+	// businesses.Analisis = updatedBusiness.Analisis
+	// businesses.CabangPencairanId = updatedBusiness.CabangPencairanId
+	// businesses.CabangAdminId = updatedBusiness.CabangAdminId
+	// businesses.TglAplikasi = updatedBusiness.TglAplikasi
+	// businesses.TglPenerusan = updatedBusiness.TglPenerusan
+	// businesses.SegmenId = updatedBusiness.SegmenId
+	// businesses.NoAplikasi = updatedBusiness.NoAplikasi
+	// businesses.MarketInterestRate = updatedBusiness.MarketInterestRate
+	// businesses.RequestedInterestRate = updatedBusiness.RequestedInterestRate
+	// businesses.DocumentFile = updatedBusiness.DocumentFile
 
 	if err := connection.DB.Save(&businesses).Error; err != nil {
 		return result, errors.New("failed to update the business data")
@@ -170,19 +170,19 @@ func BusinessUpdate(businessID string, updatedBusiness models.Business) (result 
 	return businesses, nil
 }
 
-func BusinessDelete(businessID string) (result models.Business, err error) {
-	var businesses models.Business
-	if err := connection.DB.First(&businesses, businessID).Error; err != nil {
-		return result, errors.New("business not found")
-	}
+func BusinessDelete(businessID string) (err error) {
+	// var businesses models.Business
+	// if err := connection.DB.First(&businesses, businessID).Error; err != nil {
+	// 	return result, errors.New("business not found")
+	// }
 
-	businesses.Status = "D"
+	// businesses.Status = "D"
 
-	if err := connection.DB.Save(&businesses).Error; err != nil {
-		return result, errors.New("failed to delete the business data")
-	}
+	// if err := connection.DB.Save(&businesses).Error; err != nil {
+	// 	return result, errors.New("failed to delete the business data")
+	// }
 
-	return businesses, nil
+	return connection.DB.Delete(&models.GeneralInformation{}, businessID).Error
 }
 
 func BusinessUploadFile(file *multipart.FileHeader) (result models.Document, err error) {

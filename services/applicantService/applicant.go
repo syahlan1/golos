@@ -20,17 +20,29 @@ import (
 )
 
 func ApplicantShow() (result []models.ApplicantDetail, err error) {
-	var applicants []models.Applicant
+	var applicants []models.ShowApplicant
 
 	// Find all applicants with status "L"
-	if err = connection.DB.Where("status = ?", "L").Find(&applicants).Error; err != nil {
+	if err = connection.DB.
+		Select("applicants.*, hs.name AS home_status, ms.name AS marital_status, n.name AS nationality",
+			"e.name AS education, j.name AS job_position, bs.name AS business_sector, nd.name AS negara_domisili, g.name AS gender").
+		Joins("JOIN home_statuses hs ON hs.id = applicants.home_status_id").
+		Joins("JOIN marital_statuses ms ON ms.id = applicants.marital_status_id").
+		Joins("JOIN nationalities n ON n.id = applicants.nationality_id").
+		Joins("JOIN educations e ON e.id = applicants.education_id").
+		Joins("JOIN job_positions j ON j.id = applicants.job_position_id").
+		Joins("JOIN business_sectors bs ON bs.id = applicants.business_sector_id").
+		Joins("JOIN negaras nd ON nd.id = applicants.negara_domisili_id").
+		Joins("JOIN genders g ON g.id = applicants.gender_id").
+		Model(models.Applicant{}).
+		Find(&applicants).Error; err != nil {
 		return nil, err
 	}
 
 	// Load related data for each applicant
 	for _, applicant := range applicants {
 		applicantDetail := models.ApplicantDetail{
-			Applicant: applicant,
+			ShowApplicant: applicant,
 		}
 
 		// Load related IdCard
@@ -40,12 +52,12 @@ func ApplicantShow() (result []models.ApplicantDetail, err error) {
 
 		// Load related Document
 		if applicant.DocumentId != 0 {
-			applicantDetail.Document,_ = documentService.ShowDocumentById(applicant.DocumentId)
+			applicantDetail.Document, _ = documentService.ShowDocumentById(applicant.DocumentId)
 		}
 
 		// Load related Spouse
 		if applicant.SpouseId != 0 {
-			applicantDetail.SpouseData,_ = spouseService.ShowSpouseById(applicant.SpouseId)
+			applicantDetail.SpouseData, _ = spouseService.ShowSpouseById(applicant.SpouseId)
 		}
 
 		// Load related GeneralInformation
@@ -64,17 +76,29 @@ func ApplicantShow() (result []models.ApplicantDetail, err error) {
 	return result, nil
 }
 
-func ApplicantShowDetail(applicantID string) (result models.ApplicantDetail, err error) {
+func ApplicantShowDetail(applicantID any) (result models.ApplicantDetail, err error) {
 
-	var applicant models.Applicant
+	var applicant models.ShowApplicant
 	// Find the applicant
-	if err = connection.DB.First(&applicant, "id = ? AND status = ?", applicantID, "L").Error; err != nil {
+	if err = connection.DB.
+		Select("applicants.*, hs.name AS home_status, ms.name AS marital_status, n.name AS nationality",
+			"e.name AS education, j.name AS job_position, bs.name AS business_sector, nd.name AS negara_domisili, g.name AS gender").
+		Joins("JOIN home_statuses hs ON hs.id = applicants.home_status_id").
+		Joins("JOIN marital_statuses ms ON ms.id = applicants.marital_status_id").
+		Joins("JOIN nationalities n ON n.id = applicants.nationality_id").
+		Joins("JOIN educations e ON e.id = applicants.education_id").
+		Joins("JOIN job_positions j ON j.id = applicants.job_position_id").
+		Joins("JOIN business_sectors bs ON bs.id = applicants.business_sector_id").
+		Joins("JOIN negaras nd ON nd.id = applicants.negara_domisili_id").
+		Joins("JOIN genders g ON g.id = applicants.gender_id").
+		Model(models.Applicant{}).
+		First(&applicant, "applicant.id = ?", applicantID).Error; err != nil {
 		return result, errors.New("applicant Not Found")
 	}
 
 	// Initialize the detail struct with applicant data
 	applicantDetail := models.ApplicantDetail{
-		Applicant: applicant,
+		ShowApplicant: applicant,
 	}
 
 	// Load related IdCard
@@ -84,12 +108,12 @@ func ApplicantShowDetail(applicantID string) (result models.ApplicantDetail, err
 
 	// Load related Document
 	if applicant.DocumentId != 0 {
-		applicantDetail.Document,_ = documentService.ShowDocumentById(applicant.DocumentId)
+		applicantDetail.Document, _ = documentService.ShowDocumentById(applicant.DocumentId)
 	}
 
 	// Load related Spouse
 	if applicant.SpouseId != 0 {
-		applicantDetail.SpouseData,_ = spouseService.ShowSpouseById(applicant.SpouseId)
+		applicantDetail.SpouseData, _ = spouseService.ShowSpouseById(applicant.SpouseId)
 	}
 
 	// Load related GeneralInformation
@@ -139,7 +163,7 @@ func ApplicantCreate(data models.CreateApplicant, username string) (err error) {
 	applicant.SpouseId = spouse.Id
 	applicant.GeneralInformationId = generalInformation.Id
 	applicant.SectorEconomyId = sectorEconomy.Id
-	applicant.Status = "L"
+	// applicant.Status = "L"
 
 	// Buat data appplicant ke database
 	if err := connection.DB.Create(&applicant).Error; err != nil {
@@ -148,6 +172,8 @@ func ApplicantCreate(data models.CreateApplicant, username string) (err error) {
 
 	showGeneralInformation, _ := generalInformationService.ShowGeneralInformationById(generalInformation.Id)
 	showSectorEconomy, _ := sectorEconomyService.ShowSectorEconomyById(sectorEconomy.Id)
+	showIdCard, _ := idCardService.ShowIdCardById(idCard.Id)
+	showApplicant, _ := ApplicantShowDetail(applicant.Id)
 
 	//generate id
 	t := time.Now().UTC()
@@ -157,7 +183,7 @@ func ApplicantCreate(data models.CreateApplicant, username string) (err error) {
 	approval := models.Approval{
 		Id:                id.String(),
 		DisplayData:       "Data " + applicant.CustomerName,
-		Data:              ApplicantToJson(applicant, spouse, idCard, document, showGeneralInformation, showSectorEconomy),
+		Data:              ApplicantToJson(showApplicant, spouse, showIdCard, document, showGeneralInformation, showSectorEconomy),
 		ApprovalSettingID: 1,
 		CurrentProcess:    7,
 		ApprovalStatus:    "draft",
@@ -179,7 +205,7 @@ func ApplicantCreate(data models.CreateApplicant, username string) (err error) {
 		UserID:         approval.CreatedBy,
 		Status:         approval.ApprovalStatus,
 		CurrentProcess: approval.CurrentProcess,
-		Data:           ApplicantToJson(applicant, spouse, idCard, document, showGeneralInformation, showSectorEconomy),
+		Data:           ApplicantToJson(showApplicant, spouse, showIdCard, document, showGeneralInformation, showSectorEconomy),
 	}
 	if err := connection.DB.Create(&history).Error; err != nil {
 		return err
@@ -219,27 +245,27 @@ func ApplicantUpdate(applicantID string, data models.CreateApplicant) (applicant
 	applicant.District = updatedApplicant.District
 	applicant.City = updatedApplicant.City
 	applicant.ZipCode = updatedApplicant.ZipCode
-	applicant.HomeStatus = updatedApplicant.HomeStatus
+	applicant.HomeStatusId = updatedApplicant.HomeStatusId
 	applicant.StaySince = updatedApplicant.StaySince
 	applicant.NoTelp = updatedApplicant.NoTelp
 	applicant.NoFax = updatedApplicant.NoFax
 	applicant.BirthPlace = updatedApplicant.BirthPlace
 	applicant.BirthDate = updatedApplicant.BirthDate
-	applicant.MaritalStatus = updatedApplicant.MaritalStatus
-	applicant.Gender = updatedApplicant.Gender
-	applicant.Nationality = updatedApplicant.Nationality
+	applicant.MaritalStatusId = updatedApplicant.MaritalStatusId
+	applicant.GenderId = updatedApplicant.GenderId
+	applicant.NationalityId = updatedApplicant.NationalityId
 	applicant.NumberOfChildren = updatedApplicant.NumberOfChildren
 	applicant.NoKartuKeluarga = updatedApplicant.NoKartuKeluarga
-	applicant.Education = updatedApplicant.Education
-	applicant.JobPosition = updatedApplicant.JobPosition
-	applicant.BusinessSector = updatedApplicant.BusinessSector
+	applicant.EducationId = updatedApplicant.EducationId
+	applicant.JobPositionId = updatedApplicant.JobPositionId
+	applicant.BusinessSectorId = updatedApplicant.BusinessSectorId
 	applicant.EstablishDate = updatedApplicant.EstablishDate
 	applicant.NPWP = updatedApplicant.NPWP
 	applicant.GrossIncomePerMonth = updatedApplicant.GrossIncomePerMonth
 	applicant.NumberOfEmployees = updatedApplicant.NumberOfEmployees
 	applicant.MotherName = updatedApplicant.MotherName
 	applicant.NamaPelaporan = updatedApplicant.NamaPelaporan
-	applicant.NegaraDomisili = updatedApplicant.NegaraDomisili
+	applicant.NegaraDomisiliId = updatedApplicant.NegaraDomisiliId
 	applicant.NamaInstansi = updatedApplicant.NamaInstansi
 	applicant.KodeInstansi = updatedApplicant.KodeInstansi
 	applicant.NoPegawai = updatedApplicant.NoPegawai
@@ -253,18 +279,18 @@ func ApplicantUpdate(applicantID string, data models.CreateApplicant) (applicant
 
 func ApplicantDelete(applicantID string) (err error) {
 
-	var applicant models.Applicant
-	if err := connection.DB.First(&applicant, applicantID).Error; err != nil {
-		return errors.New("applicant not found")
-	}
+	// var applicant models.Applicant
+	// if err := connection.DB.First(&applicant, applicantID).Error; err != nil {
+	// 	return errors.New("applicant not found")
+	// }
 
-	applicant.Status = "D"
+	// applicant.Status = "D"
 
-	if err := connection.DB.Save(&applicant).Error; err != nil {
-		return errors.New("failed to delete the applicant data")
-	}
+	// if err := connection.DB.Save(&applicant).Error; err != nil {
+	// 	return errors.New("failed to delete the applicant data")
+	// }
 
-	return nil
+	return connection.DB.Delete(&models.GeneralInformation{}, applicantID).Error
 }
 
 func ApplicantUploadFile(file *multipart.FileHeader) (result models.Document, err error) {
@@ -301,12 +327,13 @@ func ApplicantShowFile(id string) (result models.Document, err error) {
 	return result, nil
 }
 
-func ShowHomeStatus() (result []string, err error) {
-	if err := connection.DB.Model(&models.HomeStatus{}).Pluck("name", &result).Error; err != nil {
-		return nil, errors.New("failed to get Home Status")
-	}
+func ShowHomeStatus() (result []models.Dropdown) {
+	connection.DB.Select("id, CONCAT(code, ' - ', name) AS name").
+		Model(&models.HomeStatus{}).
+		Find(&result)
 
-	return result, nil
+	result = utils.Prepend(result, models.Dropdown{Name: "- SELECT -"})
+	return
 }
 
 func ShowApplicantAddressType() (result []string, err error) {
@@ -317,28 +344,31 @@ func ShowApplicantAddressType() (result []string, err error) {
 	return result, nil
 }
 
-func ShowEducation() (result []string, err error) {
-	if err := connection.DB.Model(&models.Education{}).Pluck("name", &result).Error; err != nil {
-		return nil, errors.New("failed to get Education Data")
-	}
+func ShowEducation() (result []models.Dropdown) {
+	connection.DB.Select("id, name").
+		Model(&models.Education{}).
+		Find(&result)
 
-	return result, nil
+	result = utils.Prepend(result, models.Dropdown{Name: "- SELECT -"})
+	return
 }
 
-func ShowJobPosition() (result []string, err error) {
-	if err := connection.DB.Model(&models.JobPosition{}).Pluck("name", &result).Error; err != nil {
-		return nil, errors.New("failed to get Job Position Data")
-	}
+func ShowJobPosition() (result []models.Dropdown) {
+	connection.DB.Select("id, name").
+		Model(&models.JobPosition{}).
+		Find(&result)
 
-	return result, nil
+	result = utils.Prepend(result, models.Dropdown{Name: "- SELECT -"})
+	return
 }
 
-func ShowBusinessSector() (result []string, err error) {
-	if err := connection.DB.Model(&models.BusinessSector{}).Pluck("name", &result).Error; err != nil {
-		return nil, errors.New("failed to get Business Sector Data")
-	}
+func ShowBusinessSector() (result []models.Dropdown) {
+	connection.DB.Select("id, name").
+		Model(&models.BusinessSector{}).
+		Find(&result)
 
-	return result, nil
+	result = utils.Prepend(result, models.Dropdown{Name: "- SELECT -"})
+	return
 }
 
 func ShowKodeInstansi() (result []string, err error) {
@@ -349,12 +379,13 @@ func ShowKodeInstansi() (result []string, err error) {
 	return result, nil
 }
 
-func ShowNegara() (result []string, err error) {
-	if err := connection.DB.Model(&models.Negara{}).Pluck("name", &result).Error; err != nil {
-		return nil, errors.New("failed to get Negara Data")
-	}
+func ShowNegara() (result []models.Dropdown) {
+	connection.DB.Select("id, name").
+		Model(&models.Negara{}).
+		Find(&result)
 
-	return result, nil
+	result = utils.Prepend(result, models.Dropdown{Name: "- SELECT -"})
+	return
 }
 
 func ShowSektorEkonomi() (result []string, err error) {
@@ -365,39 +396,34 @@ func ShowSektorEkonomi() (result []string, err error) {
 	return result, nil
 }
 
-func ShowHubunganNasabah() (result []string, err error) {
-	// if err := connection.DB.Model(&models.HubunganNasabah{}).Pluck("name", &result).Error; err != nil {
-	// 	return nil, errors.New("failed to get Hubungan Nasabah Data")
-	// }
+func ShowMaritalStatus() (result []models.Dropdown) {
+	connection.DB.Select("id, name").
+		Model(&models.MaritalStatus{}).
+		Find(&result)
 
-	return result, nil
+	result = utils.Prepend(result, models.Dropdown{Name: "- SELECT -"})
+	return
 }
 
-func ShowHubunganKeluarga() (result []string, err error) {
-	// if err := connection.DB.Model(&models.HubunganKeluarga{}).Pluck("name", &result).Error; err != nil {
-	// 	return nil, errors.New("failed to get Hubungan Keluarga Data")
-	// }
+func ShowNationality() (result []models.Dropdown) {
+	connection.DB.Select("id, name").
+		Model(&models.Nationality{}).
+		Find(&result)
 
-	return result, nil
+	result = utils.Prepend(result, models.Dropdown{Name: "- SELECT -"})
+	return
 }
 
-func ShowLokasiPabrik() (result []string, err error) {
-	// if err := connection.DB.Model(&models.LokasiPabrik{}).Pluck("name", &result).Error; err != nil {
-	// 	return nil, errors.New("failed to get Lokasi Pabrik Data")
-	// }
+func ShowGender() (result []models.Dropdown) {
+	connection.DB.Select("id, name").
+		Model(&models.Gender{}).
+		Find(&result)
 
-	return result, nil
+	result = utils.Prepend(result, models.Dropdown{Name: "- SELECT -"})
+	return
 }
 
-func ShowMaritalStatus() (result []string, err error) {
-	if err := connection.DB.Model(&models.MaritalStatus{}).Pluck("name", &result).Error; err != nil {
-		return nil, errors.New("failed to get Marital Status Data")
-	}
-
-	return result, nil
-}
-
-func ApplicantToJson(applicant models.Applicant, spouse models.SpouseData, idCard models.IdCard, document models.Document, generalInformation any, sectorEconomy any) string {
+func ApplicantToJson(applicant any, spouse models.SpouseData, idCard any, document models.Document, generalInformation any, sectorEconomy any) string {
 	data := map[string]interface{}{
 		"applicant":          applicant,
 		"spouse":             spouse,
