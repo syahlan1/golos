@@ -41,7 +41,7 @@ func UpdateIdCard(id int, data models.IdCard) (err error) {
 	updatedIdCard := data
 
 	idCard.IdCardIssuedDate = updatedIdCard.IdCardIssuedDate
-	idCard.IdCard = updatedIdCard.IdCard
+	idCard.IdCardNo = updatedIdCard.IdCardNo
 	idCard.IdCardExpireDate = updatedIdCard.IdCardExpireDate
 	idCard.IdCardAddress = updatedIdCard.IdCardAddress
 	idCard.IdCardDistrict = updatedIdCard.IdCardDistrict

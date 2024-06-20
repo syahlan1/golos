@@ -107,7 +107,7 @@ func Setup(app *fiber.App) {
 	api.Get("/applicant/marital-status", aplicantController.ShowMaritalStatus)
 
 	api.Get("/address-type", idCardController.ShowAddressType)
-	
+
 	api.Get("/sektor-ekonomi-1", sectorEconomyController.ShowSektorEkonomi1)
 	api.Get("/sektor-ekonomi-2", sectorEconomyController.ShowSektorEkonomi2)
 	api.Get("/sektor-ekonomi-3", sectorEconomyController.ShowSektorEkonomi3)

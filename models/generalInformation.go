@@ -18,6 +18,10 @@ type GeneralInformation struct {
 	DocumentFile          string `json:"document_file"`
 	Status                string `json:"status"`
 	Model                 `json:"-"`
+	SubProgram            Program `json:"-" gorm:"foreignKey:SubProgramId"`
+	CabangPencairan       Cabang  `json:"-" gorm:"foreignKey:CabangPencairanId"`
+	CabangAdmin           Cabang  `json:"-" gorm:"foreignKey:CabangAdminId"`
+	Segmen                Segment `json:"-" gorm:"foreignKey:SegmenId"`
 }
 
 type ShowGeneralInformation struct {

@@ -46,7 +46,7 @@ type Roles struct {
 	CreatedBy   string       `json:"created_by"`
 	UpdatedBy   string       `json:"updated_by"`
 	Permissions []Permission `gorm:"many2many:role_permissions;"`
-	Users       []Users      `gorm:"foreignKey:RoleId"`
+	Users       []Users      `json:"-" gorm:"foreignKey:RoleId"`
 	gorm.Model
 }
 

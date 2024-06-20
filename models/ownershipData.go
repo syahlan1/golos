@@ -3,31 +3,32 @@ package models
 import "github.com/syahlan1/golos/utils/formatTime"
 
 type OwnershipData struct {
-	Id                   int     `json:"id" gorm:"primaryKey"`
-	GeneralInformationId int     `json:"general_information_id"`
-	OwnershipType        int     `json:"ownership_type"`
-	Name                 string  `json:"name"`
-	NoIdentity           string  `json:"no_identity"`
-	IdCardAddress        string  `json:"id_card_address"`
-	City                 string  `json:"city"`
-	ZipCode              string  `json:"zip_code"`
-	HomeOwnership        string  `json:"home_ownership"`
-	Remark               string  `json:"remark"`
-	CifManager           string  `json:"cif_manager"`
-	BirthDate            string  `json:"birth_date"`
-	LastEducation        string  `json:"last_education"`
-	NPWP                 string  `json:"npwp"`
-	JobTitle             string  `json:"job_title"`
-	Experince            string  `json:"experience"`
-	OwnershipMarket      float64 `json:"ownership_market" gorm:"type:float"`
-	CitizenshipStatus    string  `json:"citizenship_status"`
-	Gender               string  `json:"gender"`
-	MaritalStatus        string  `json:"marital_status"`
-	NumberOfChildren     int     `json:"number_of_children"`
-	StartDate            string  `json:"start_date"`
-	KeyPerson            bool    `json:"key_person"`
-	Removed              bool    `json:"removed"`
-	Status               string  `json:"status"`
+	Id                   int                `json:"id" gorm:"primaryKey"`
+	GeneralInformationId int                `json:"general_information_id"`
+	OwnershipType        int                `json:"ownership_type"`
+	Name                 string             `json:"name"`
+	NoIdentity           string             `json:"no_identity"`
+	IdCardAddress        string             `json:"id_card_address"`
+	City                 string             `json:"city"`
+	ZipCode              string             `json:"zip_code"`
+	HomeOwnership        string             `json:"home_ownership"`
+	Remark               string             `json:"remark"`
+	CifManager           string             `json:"cif_manager"`
+	BirthDate            string             `json:"birth_date"`
+	LastEducation        string             `json:"last_education"`
+	NPWP                 string             `json:"npwp"`
+	JobTitle             string             `json:"job_title"`
+	Experince            string             `json:"experience"`
+	OwnershipMarket      float64            `json:"ownership_market" gorm:"type:float"`
+	CitizenshipStatus    string             `json:"citizenship_status"`
+	Gender               string             `json:"gender"`
+	MaritalStatus        string             `json:"marital_status"`
+	NumberOfChildren     int                `json:"number_of_children"`
+	StartDate            string             `json:"start_date"`
+	KeyPerson            bool               `json:"key_person"`
+	Removed              bool               `json:"removed"`
+	Status               string             `json:"status"`
+	GeneralInformation   GeneralInformation `json:"-" gorm:"foreignKey:GeneralInformationId"`
 }
 
 type CreateOwnershipData struct {
@@ -63,19 +64,21 @@ type RelationWithBank struct {
 	NoRekening           string              `json:"no_rekening"`
 	Debitur              formatTime.WrapDate `json:"debitur" gorm:"type:date"`
 	Status               string              `json:"status"`
+	GeneralInformation   GeneralInformation  `json:"-" gorm:"foreignKey:GeneralInformationId"`
 }
 
 type CustomerLoanInfo struct {
-	Id                   int    `json:"id" gorm:"primaryKey"`
-	GeneralInformationId int    `json:"general_information_id"`
-	AAStatus             int    `json:"-" gorm:"-"`
-	AANo                 string `json:"aa_no"`
-	FacilityId           int    `json:"facility_id"`
-	FacilitySequence     string `json:"facility_sequence"`
-	ChannelingFacilty    bool   `json:"channeling_facility"`
-	ProductId            int    `json:"product_id"`
-	NoRekening           string `json:"no_rekening"`
-	Status               string `json:"status"`
+	Id                   int                `json:"id" gorm:"primaryKey"`
+	GeneralInformationId int                `json:"general_information_id"`
+	AAStatus             int                `json:"-" gorm:"-"`
+	AANo                 string             `json:"aa_no"`
+	FacilityId           int                `json:"facility_id"`
+	FacilitySequence     string             `json:"facility_sequence"`
+	ChannelingFacilty    bool               `json:"channeling_facility"`
+	ProductId            int                `json:"product_id"`
+	NoRekening           string             `json:"no_rekening"`
+	Status               string             `json:"status"`
+	GeneralInformation   GeneralInformation `json:"-" gorm:"foreignKey:GeneralInformationId"`
 }
 
 type ShowCustomerLoanInfo struct {
@@ -93,30 +96,34 @@ type ShowCustomerLoanInfo struct {
 }
 
 type CustomerAA struct {
-	Id                   int    `json:"id"`
-	GeneralInformationId int    `json:"general_information_id"`
-	AANo                 string `json:"aa_no"`
+	Id                   int                `json:"id"`
+	GeneralInformationId int                `json:"general_information_id"`
+	AANo                 string             `json:"aa_no"`
+	GeneralInformation   GeneralInformation `json:"-" gorm:"foreignKey:GeneralInformationId"`
 }
 
 type DataRekeningDebitur struct {
-	Id                   int    `json:"id" gorm:"primaryKey"`
-	GeneralInformationId int    `json:"general_information_id"`
-	OwnershipDataId      int    `json:"ownership_data_id"`
-	NoRekening           string `json:"no_rekening"`
-	Remark               string `json:"remark"`
-	Status               string `json:"status"`
+	Id                   int                `json:"id" gorm:"primaryKey"`
+	GeneralInformationId int                `json:"general_information_id"`
+	OwnershipDataId      int                `json:"ownership_data_id"`
+	NoRekening           string             `json:"no_rekening"`
+	Remark               string             `json:"remark"`
+	Status               string             `json:"status"`
+	GeneralInformation   GeneralInformation `json:"-" gorm:"foreignKey:GeneralInformationId"`
+	OwnershipData        OwnershipData      `json:"-" gorm:"foreignKey:OwnershipDataId"`
 }
 
 type ShowRekeningDebitur struct {
 	Id int `json:"id" gorm:"primaryKey"`
 	// GeneralInformationId int    `json:"general_information_id"`
-	OwnershipDataId int    `json:"ownership_data_id"`
-	Name            string `json:"name"`
-	NoIdentity      string `json:"no_identity"`
-	NPWP            string `json:"npwp"`
-	KeyPerson       bool   `json:"key_person"`
-	Pemilik         string `json:"pemilik"`
-	NoRekening      string `json:"no_rekening"`
-	Remark          string `json:"remark"`
-	Status          string `json:"status"`
+	OwnershipDataId int           `json:"ownership_data_id"`
+	Name            string        `json:"name"`
+	NoIdentity      string        `json:"no_identity"`
+	NPWP            string        `json:"npwp"`
+	KeyPerson       bool          `json:"key_person"`
+	Pemilik         string        `json:"pemilik"`
+	NoRekening      string        `json:"no_rekening"`
+	Remark          string        `json:"remark"`
+	Status          string        `json:"status"`
+	OwnershipData   OwnershipData `json:"-" gorm:"foreignKey:OwnershipDataId"`
 }

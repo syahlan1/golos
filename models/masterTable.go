@@ -62,8 +62,8 @@ type MasterColumn struct {
 	IsNegative         int                  `json:"is_negative"`
 	SqlFunction        string               `json:"sql_function"`
 	OnblurScript       string               `json:"onblur_script"`
-	MasterMapperColumn []MasterMapperColumn `gorm:"foreignKey:ColumnId"`
-	MasterSourceColumn []MasterSourceColumn `gorm:"foreignKey:ColumnId"`
+	MasterMapperColumn []MasterMapperColumn `json:"-" gorm:"foreignKey:ColumnId"`
+	MasterSourceColumn []MasterSourceColumn `json:"-" gorm:"foreignKey:ColumnId"`
 }
 
 type CreateMasterColumn struct {
@@ -118,5 +118,5 @@ type MasterMapperTable struct {
 	MethodType         string               `json:"method_type"`
 	TableId            int                  `json:"table_id"`
 	ProcessId          int                  `json:"process_id"`
-	MasterMapperColumn []MasterMapperColumn `gorm:"foreignKey:MapperTableId"`
+	MasterMapperColumn []MasterMapperColumn `json:"-" gorm:"foreignKey:MapperTableId"`
 }

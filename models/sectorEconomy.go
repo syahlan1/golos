@@ -17,6 +17,14 @@ type SectorEconomy struct {
 	PelakasanaId          int    `json:"pelakasana_id"`
 	TglTerakhirCek        string `json:"tgl_terakhir_cek"`
 	Model
+	SektorEkonomi1      SectorEconomy1      `json:"-" gorm:"foreignKey:SektorEkonomi1Id"`
+	SektorEkonomi2      SectorEconomy2      `json:"-" gorm:"foreignKey:SektorEkonomi2Id"`
+	SektorEkonomi3      SectorEconomy3      `json:"-" gorm:"foreignKey:SektorEkonomi3Id"`
+	SektorEkonomiOjk    SectorEconomyOjk    `json:"-" gorm:"foreignKey:SektorEkonomiOjkId"`
+	LokasiPabrik        LokasiPabrik        `json:"-" gorm:"foreignKey:LokasiPabrikId"`
+	LokasiDati2         LokasiDati2         `json:"-" gorm:"foreignKey:LokasiDati2Id"`
+	HubunganNasabahBank HubunganNasabahBank `json:"-" gorm:"foreignKey:HubunganNasabahBankId"`
+	HubunganKeluarga    HubunganKeluarga    `json:"-" gorm:"foreignKey:HubunganKeluargaId"`
 }
 
 type ShowSectorEconomy struct {
@@ -59,6 +67,7 @@ type SectorEconomy2 struct {
 	Code             string `json:"code" gorm:"type:varchar(10)"`
 	Name             string `json:"name" gorm:"type:varchar(250)"`
 	Model
+	SectorEconomy1 SectorEconomy1 `json:"-" gorm:"foreignKey:SectorEconomy1Id"`
 }
 
 type SectorEconomy3 struct {
@@ -68,6 +77,7 @@ type SectorEconomy3 struct {
 	Name             string `json:"name" gorm:"type:varchar(250)"`
 	Seq              string `json:"seq" gorm:"type:varchar(10)"`
 	Model
+	SectorEconomy2 SectorEconomy2 `json:"-" gorm:"foreignKey:SectorEconomy2Id"`
 }
 
 type SectorEconomyOjk struct {
@@ -76,6 +86,7 @@ type SectorEconomyOjk struct {
 	Code             string `json:"code" gorm:"type:varchar(10)"`
 	Name             string `json:"name" gorm:"type:varchar(250)"`
 	Model
+	SectorEconomy3 SectorEconomy3 `json:"-" gorm:"foreignKey:SectorEconomy3Id"`
 }
 
 type LokasiPabrik struct {

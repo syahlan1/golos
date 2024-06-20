@@ -29,7 +29,7 @@ func CreateMasterTable(claims string, data models.CreateMasterTable) (err error)
 	newMasterCode := models.MasterTable{
 		CreatedBy:          user.Username,
 		CreatedDate:        timeNow,
-		ModuleName:         "LOS",
+		ModuleName:         "LOSLES",
 		TableName:          data.TableName,
 		Status:             "L",
 		Description:        data.Description,

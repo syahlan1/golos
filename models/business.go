@@ -36,10 +36,19 @@ type Business struct {
 	ContactPerson           string `json:"contact_person"`
 	ApproveStatus           string `json:"approve_status"`
 	// Status                  string `json:"status"`
-	DocumentId           int `json:"document_id"`
-	GeneralInformationId int `json:"general_information_id"`
-	SectorEconomyId      int `json:"sector_economy_id"`
-	Model                `json:"-"`
+	DocumentId            int `json:"document_id"`
+	GeneralInformationId  int `json:"general_information_id"`
+	SectorEconomyId       int `json:"sector_economy_id"`
+	Model                 `json:"-"`
+	CompanyFirstName      CompanyFirstName      `json:"-" gorm:"foreignKey:CompanyFirstNameId"`
+	CompanyType           CompanyType           `json:"-" gorm:"foreignKey:CompanyTypeId"`
+	ExternalRatingCompany ExternalRatingCompany `json:"-" gorm:"foreignKey:ExternalRatingCompanyId"`
+	RatingClass           RatingClass           `json:"-" gorm:"foreignKey:RatingClassId"`
+	ListingBursaCode      KodeBursa             `json:"-" gorm:"foreignKey:ListingBursaCodeId"`
+	BusinessType          BusinessType          `json:"-" gorm:"foreignKey:BusinessTypeId"`
+	Document              Document              `json:"-" gorm:"foreignKey:DocumentId"`
+	GeneralInformation    GeneralInformation    `json:"-" gorm:"foreignKey:GeneralInformationId"`
+	SectorEconomy         SectorEconomy         `json:"-" gorm:"foreignKey:SectorEconomyId"`
 }
 
 type ShowBusiness struct {
