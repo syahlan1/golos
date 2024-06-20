@@ -21,7 +21,13 @@ func ShowBusinessApplicant(c *fiber.Ctx) error {
 }
 
 func BusinessShow(c *fiber.Ctx) error {
-	result := businessService.BusinessShow()
+	result, err := businessService.BusinessShow()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
 
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
@@ -33,7 +39,13 @@ func BusinessShow(c *fiber.Ctx) error {
 func BusinessShowDetail(c *fiber.Ctx) error {
 	id := c.Params("id")
 
-	result := businessService.BusinessShowDetail(id)
+	result, err := businessService.BusinessShowDetail(id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
 
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
@@ -74,25 +86,10 @@ func BusinessCreate(c *fiber.Ctx) error {
 	})
 }
 
-// func BusinessToJson(business models.Business, document models.Document, generalInformation models.GeneralInformation) string {
-// 	data := map[string]interface{}{
-// 		"business":           business,
-// 		"document":           document,
-// 		"generalInformation": generalInformation,
-// 	}
-
-// 	jsonData, err := json.Marshal(data)
-// 	if err != nil {
-// 		log.Println("Error converting business data to JSON:", err)
-// 		return "{}"
-// 	}
-// 	return string(jsonData)
-// }
-
 func BusinessUpdate(c *fiber.Ctx) error {
 	businessID := c.Params("id")
 
-	var updatedBusiness models.Business
+	var updatedBusiness models.CreateBusiness
 	if err := c.BodyParser(&updatedBusiness); err != nil {
 		log.Println("Error parsing request payload:", err)
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
@@ -192,13 +189,7 @@ func BusinessApproveUpdate(c *fiber.Ctx) error {
 }
 
 func ShowCompanyFirstName(c *fiber.Ctx) error {
-	result, err := businessService.ShowCompanyFirstName()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: err.Error(),
-		})
-	}
+	result := businessService.ShowCompanyFirstName()
 
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
@@ -208,13 +199,8 @@ func ShowCompanyFirstName(c *fiber.Ctx) error {
 }
 
 func ShowCompanyType(c *fiber.Ctx) error {
-	result, err := businessService.ShowCompanyType()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: err.Error(),
-		})
-	}
+	result := businessService.ShowCompanyType()
+
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
 		Message: "Success",
@@ -238,14 +224,8 @@ func ShowBusinessAddressType(c *fiber.Ctx) error {
 	})
 }
 
-func ShowEternalRatingCompany(c *fiber.Ctx) error {
-	result, err := businessService.ShowEternalRatingCompany()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: err.Error(),
-		})
-	}
+func ShowExternalRatingCompany(c *fiber.Ctx) error {
+	result:= businessService.ShowExternalRatingCompany()
 
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
@@ -255,13 +235,8 @@ func ShowEternalRatingCompany(c *fiber.Ctx) error {
 }
 
 func ShowRatingClass(c *fiber.Ctx) error {
-	result, err := businessService.ShowRatingClass()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: err.Error(),
-		})
-	}
+	externalRatingId := c.Query("external_rating_id")
+	result:= businessService.ShowRatingClass(externalRatingId)
 
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
@@ -271,13 +246,7 @@ func ShowRatingClass(c *fiber.Ctx) error {
 }
 
 func ShowKodeBursa(c *fiber.Ctx) error {
-	result, err := businessService.ShowKodeBursa()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: err.Error(),
-		})
-	}
+	result:= businessService.ShowKodeBursa()
 
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
@@ -287,13 +256,7 @@ func ShowKodeBursa(c *fiber.Ctx) error {
 }
 
 func ShowBusinessType(c *fiber.Ctx) error {
-	result, err := businessService.ShowBusinessType()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-			Code:    fiber.StatusInternalServerError,
-			Message: err.Error(),
-		})
-	}
+	result := businessService.ShowBusinessType()
 
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,

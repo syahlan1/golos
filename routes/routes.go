@@ -49,12 +49,13 @@ func Setup(app *fiber.App) {
 	api.Post("/business/upload", businessController.BusinessUploadFile)
 	api.Get("/business/file/:id", businessController.BusinessShowFile)
 	api.Get("/business/show/:id", businessController.BusinessShowDetail)
-	api.Get("/business/showcompanyfirstname", businessController.ShowCompanyFirstName)
-	api.Get("/business/showcompanytype", businessController.ShowCompanyType)
+	api.Get("/business/show-company-first-name", businessController.ShowCompanyFirstName)
+	api.Get("/business/show-company-type", businessController.ShowCompanyType)
 	api.Get("/business/showbusinessaddresstype", businessController.ShowBusinessAddressType)
-	api.Get("/business/showratingclass", businessController.ShowRatingClass)
-	api.Get("/business/showkodebursa", businessController.ShowKodeBursa)
-	api.Get("/business/showbusinesstype", businessController.ShowBusinessType)
+	api.Get("/business/show-external-rating-company", businessController.ShowExternalRatingCompany)
+	api.Get("/business/show-rating-class", businessController.ShowRatingClass)
+	api.Get("/business/show-kode-bursa", businessController.ShowKodeBursa)
+	api.Get("/business/show-business-type", businessController.ShowBusinessType)
 
 	//ownership
 	api.Get("/ownership/show", ownershipDataController.ShowOwnershipData)

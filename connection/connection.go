@@ -65,13 +65,14 @@ func Connect() {
 	connection.AutoMigrate(&models.Program{})
 	connection.AutoMigrate(&models.Segment{})
 
-	// connection.AutoMigrate(&models.CompanyFirstName{})
-	// connection.AutoMigrate(&models.CompanyType{})
+	connection.AutoMigrate(&models.CompanyFirstName{})
+	connection.AutoMigrate(&models.CompanyType{})
+	connection.AutoMigrate(&models.ExternalRatingCompany{})
+	connection.AutoMigrate(&models.RatingClass{})
+	connection.AutoMigrate(&models.KodeBursa{})
+	connection.AutoMigrate(&models.BusinessType{})
+
 	// connection.AutoMigrate(&models.BusinessAddressType{})
-	// connection.AutoMigrate(&models.EternalRatingCompany{})
-	// connection.AutoMigrate(&models.RatingClass{})
-	// connection.AutoMigrate(&models.KodeBursa{})
-	// connection.AutoMigrate(&models.BusinessType{})
 
 	// connection.AutoMigrate(&models.HomeStatus{})
 	// connection.AutoMigrate(&models.ApplicantAddressType{})

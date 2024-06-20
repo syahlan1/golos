@@ -237,6 +237,10 @@ func ApplicantUpdate(applicantID string, data models.CreateApplicant) (applicant
 		return applicant, err
 	}
 
+	if err = sectorEconomyService.UpdateSectorEconomy(applicant.SectorEconomyId, data.SectorEconomy); err != nil {
+		return applicant, err
+	}
+
 	applicant.TitleBeforeName = updatedApplicant.TitleBeforeName
 	applicant.CustomerName = updatedApplicant.CustomerName
 	applicant.TitleAfterName = updatedApplicant.TitleAfterName
@@ -290,7 +294,7 @@ func ApplicantDelete(applicantID string) (err error) {
 	// 	return errors.New("failed to delete the applicant data")
 	// }
 
-	return connection.DB.Delete(&models.GeneralInformation{}, applicantID).Error
+	return connection.DB.Delete(&models.Applicant{}, applicantID).Error
 }
 
 func ApplicantUploadFile(file *multipart.FileHeader) (result models.Document, err error) {

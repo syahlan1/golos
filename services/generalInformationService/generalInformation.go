@@ -103,7 +103,7 @@ func UpdateGeneralInformation(id any, data models.GeneralInformation) (err error
 	generalInformation.TglAplikasi = data.TglAplikasi
 	generalInformation.TglPenerusan = data.TglPenerusan
 	generalInformation.SegmenId = data.SegmenId
-	generalInformation.NoAplikasi = data.NoAplikasi
+	// generalInformation.NoAplikasi = data.NoAplikasi
 	generalInformation.MarketInterestRate = data.MarketInterestRate
 	generalInformation.RequestedInterestRate = data.RequestedInterestRate
 

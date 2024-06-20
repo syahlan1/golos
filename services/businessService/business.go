@@ -11,6 +11,9 @@ import (
 	"github.com/oklog/ulid"
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
+	"github.com/syahlan1/golos/services/documentService"
+	"github.com/syahlan1/golos/services/generalInformationService"
+	"github.com/syahlan1/golos/services/sectorEconomyService"
 	"github.com/syahlan1/golos/utils"
 )
 
@@ -21,58 +24,119 @@ func ShowBusinessApplicant() (result models.BusinessApplicant) {
 	return result
 }
 
-func BusinessShow() (result []models.Business) {
-	connection.DB.Where("status != ?", "D").Find(&result)
+func BusinessShow() (result []models.BusinessDetail, err error) {
+	var businesses []models.ShowBusiness
+	if err = connection.DB.Select("businesses.*, cfn.name AS company_name, ct.name AS company_type, at.name AS address_type",
+		"erc.name AS external_rating_company, rc.name AS rating_class, kb.name AS listing_bursa_code, bt.name AS business_type").
+		Joins("JOIN company_first_names cfn ON cfn.id = businesses.company_first_name_id").
+		Joins("JOIN company_types ct ON ct.id = businesses.company_type_id").
+		Joins("JOIN address_types at ON at.id = businesses.address_type_id").
+		Joins("JOIN external_rating_companies erc ON erc.id = businesses.external_rating_company_id").
+		Joins("JOIN rating_classes rc ON rc.id = businesses.rating_class_id").
+		Joins("JOIN kode_bursas kb ON kb.id = businesses.listing_bursa_code_id").
+		Joins("JOIN business_types bt ON bt.id = businesses.business_type_id").
+		Model(models.Business{}).
+		Find(&businesses).Error; err != nil {
+		return nil, err
+	}
 
-	return result
+	for _, business := range businesses {
+		businessDetail := models.BusinessDetail{
+			ShowBusiness: business,
+		}
+
+		if business.DocumentId != 0 {
+			businessDetail.Document, _ = documentService.ShowDocumentById(business.DocumentId)
+		}
+
+		if business.GeneralInformationId != 0 {
+			businessDetail.GeneralInformation, _ = generalInformationService.ShowGeneralInformationById(business.GeneralInformationId)
+		}
+
+		if business.SectorEconomyId != 0 {
+			businessDetail.SectorEconomy, _ = sectorEconomyService.ShowSectorEconomyById(business.SectorEconomyId)
+		}
+
+		result = append(result, businessDetail)
+	}
+
+	return result, nil
 }
 
-func BusinessShowDetail(id string) (result models.Business) {
-	connection.DB.Where("id = ? AND status != ?", id, "D").Find(&result)
+func BusinessShowDetail(id any) (result models.BusinessDetail, err error) {
+	var business models.ShowBusiness
+	if err = connection.DB.Select("businesses.*, cfn.name AS company_name, ct.name AS company_type, at.name AS address_type",
+		"erc.name AS external_rating_company, rc.name AS rating_class, kb.name AS listing_bursa_code, bt.name AS business_type").
+		Joins("JOIN company_first_names cfn ON cfn.id = businesses.company_first_name_id").
+		Joins("JOIN company_types ct ON ct.id = businesses.company_type_id").
+		Joins("JOIN address_types at ON at.id = businesses.address_type_id").
+		Joins("JOIN external_rating_companies erc ON erc.id = businesses.external_rating_company_id").
+		Joins("JOIN rating_classes rc ON rc.id = businesses.rating_class_id").
+		Joins("JOIN kode_bursas kb ON kb.id = businesses.listing_bursa_code_id").
+		Joins("JOIN business_types bt ON bt.id = businesses.business_type_id").
+		Model(models.Business{}).
+		First(&business, "businesses.id = ?", id).Error; err != nil {
+		return result, err
+	}
 
-	return result
+	businessDetail := models.BusinessDetail{
+		ShowBusiness: business,
+	}
+
+	if business.DocumentId != 0 {
+		businessDetail.Document, _ = documentService.ShowDocumentById(business.DocumentId)
+	}
+
+	if business.GeneralInformationId != 0 {
+		businessDetail.GeneralInformation, _ = generalInformationService.ShowGeneralInformationById(business.GeneralInformationId)
+	}
+
+	if business.SectorEconomyId != 0 {
+		businessDetail.SectorEconomy, _ = sectorEconomyService.ShowSectorEconomyById(business.SectorEconomyId)
+	}
+
+	return businessDetail, nil
 }
 
 func BusinessCreate(username string, data models.CreateBusiness) (err error) {
 
 	business := data.Business
-	// business.Status = "L"
-
 	document := data.Document
-
 	generalInformation := data.GeneralInformation
-	// generalInformation.BankName = data.GeneralInformation.BankName
-	// generalInformation.KCP = data.GeneralInformation.KCP
-	// generalInformation.SubProgramId = data.GeneralInformation.SubProgramId
-	// generalInformation.Analisis = data.GeneralInformation.Analisis
-	// generalInformation.CabangPencairanId = data.GeneralInformation.CabangPencairanId
-	// generalInformation.CabangAdminId = data.GeneralInformation.CabangAdminId
-	// generalInformation.TglAplikasi = data.GeneralInformation.TglAplikasi
-	// generalInformation.TglPenerusan = data.GeneralInformation.TglPenerusan
-	// generalInformation.SegmenId = data.GeneralInformation.SegmenId
-	// generalInformation.NoAplikasi = data.GeneralInformation.NoAplikasi
-	// generalInformation.MarketInterestRate = data.GeneralInformation.MarketInterestRate
-	// generalInformation.RequestedInterestRate = data.GeneralInformation.RequestedInterestRate
-	// generalInformation.DocumentFile = business.DocumentFile
-	// generalInformation.Status = business.Status
+	sectorEcomony := data.SectorEconomy
 
-	if err := connection.DB.Create(&generalInformation).Error; err != nil {
-		return err
-	}
-	if err := connection.DB.Create(&document).Error; err != nil {
+	if err = generalInformationService.CreateGeneralInformation(&generalInformation); err != nil {
 		return err
 	}
 
-	// business := data.Business
-	//        					business.CustomerName = business.CompanyFirstName + ". " + business.CompanyName
-	// business.Status = "L"
+	if err = documentService.CreateDocument(&document); err != nil {
+		return err
+	}
+
+	if err = sectorEconomyService.CreateSectorEconomy(&sectorEcomony); err != nil {
+		return err
+	}
+
+	// get company first name
+	var companyFirstName string
+	if err = connection.DB.Select("name").Model(models.CompanyFirstName{}).First(&companyFirstName, "id = ?", business.CompanyFirstNameId).
+		Error; err != nil {
+		return err
+	}
+
+	business.CustomerName = companyFirstName + ". " + business.CompanyName
 	business.DocumentId = document.Id
 	business.GeneralInformationId = generalInformation.Id
+	business.SectorEconomyId = sectorEcomony.Id
 
 	// Buat data bisnis ke database
 	if err := connection.DB.Create(&business).Error; err != nil {
 		return err
 	}
+
+	showGeneralinformation, _ := generalInformationService.ShowGeneralInformationById(generalInformation.Id)
+	showSectorEcomony, _ := sectorEconomyService.ShowSectorEconomyById(sectorEcomony.Id)
+	showBusiness, _ := BusinessShowDetail(business.Id)
 
 	//generate id
 	t := time.Now().UTC()
@@ -82,7 +146,7 @@ func BusinessCreate(username string, data models.CreateBusiness) (err error) {
 	approval := models.Approval{
 		Id:                id.String(),
 		DisplayData:       "Data badan usaha " + business.CompanyName,
-		Data:              BusinessToJson(business, document, generalInformation),
+		Data:              BusinessToJson(showBusiness, document, showGeneralinformation, showSectorEcomony),
 		ApprovalSettingID: 1,
 		CurrentProcess:    7,
 		ApprovalStatus:    "draft",
@@ -104,7 +168,7 @@ func BusinessCreate(username string, data models.CreateBusiness) (err error) {
 		UserID:         approval.CreatedBy,
 		Status:         approval.ApprovalStatus,
 		CurrentProcess: approval.CurrentProcess,
-		Data:           BusinessToJson(business, document, generalInformation),
+		Data:           BusinessToJson(showBusiness, document, showGeneralinformation, showSectorEcomony),
 	}
 	if err := connection.DB.Create(&history).Error; err != nil {
 		return err
@@ -113,10 +177,24 @@ func BusinessCreate(username string, data models.CreateBusiness) (err error) {
 	return nil
 }
 
-func BusinessUpdate(businessID string, updatedBusiness models.Business) (result models.Business, err error) {
+func BusinessUpdate(businessID string, data models.CreateBusiness) (result models.Business, err error) {
 	var businesses models.Business
 	if err := connection.DB.First(&businesses, businessID).Error; err != nil {
 		return result, errors.New("business not found")
+	}
+
+	updatedBusiness := data.Business
+
+	if err = documentService.UpdateDocument(businesses.DocumentId, data.Document); err != nil {
+		return businesses, err
+	}
+
+	if err = generalInformationService.UpdateGeneralInformation(businesses.GeneralInformationId, data.GeneralInformation); err != nil {
+		return businesses, err
+	}
+
+	if err = sectorEconomyService.UpdateSectorEconomy(businesses.SectorEconomyId, data.SectorEconomy); err != nil {
+		return businesses, err
 	}
 
 	businesses.Cif = updatedBusiness.Cif
@@ -149,19 +227,6 @@ func BusinessUpdate(businessID string, updatedBusiness models.Business) (result 
 	businesses.TglPenerbitan = updatedBusiness.TglPenerbitan
 	businesses.TglJatuhTempo = updatedBusiness.TglJatuhTempo
 	businesses.ContactPerson = updatedBusiness.ContactPerson
-	// businesses.BankName = updatedBusiness.BankName
-	// businesses.KCP = updatedBusiness.KCP
-	// businesses.SubProgramId = updatedBusiness.SubProgramId
-	// businesses.Analisis = updatedBusiness.Analisis
-	// businesses.CabangPencairanId = updatedBusiness.CabangPencairanId
-	// businesses.CabangAdminId = updatedBusiness.CabangAdminId
-	// businesses.TglAplikasi = updatedBusiness.TglAplikasi
-	// businesses.TglPenerusan = updatedBusiness.TglPenerusan
-	// businesses.SegmenId = updatedBusiness.SegmenId
-	// businesses.NoAplikasi = updatedBusiness.NoAplikasi
-	// businesses.MarketInterestRate = updatedBusiness.MarketInterestRate
-	// businesses.RequestedInterestRate = updatedBusiness.RequestedInterestRate
-	// businesses.DocumentFile = updatedBusiness.DocumentFile
 
 	if err := connection.DB.Save(&businesses).Error; err != nil {
 		return result, errors.New("failed to update the business data")
@@ -182,13 +247,13 @@ func BusinessDelete(businessID string) (err error) {
 	// 	return result, errors.New("failed to delete the business data")
 	// }
 
-	return connection.DB.Delete(&models.GeneralInformation{}, businessID).Error
+	return connection.DB.Delete(&models.Business{}, businessID).Error
 }
 
 func BusinessUploadFile(file *multipart.FileHeader) (result models.Document, err error) {
 
 	var paramPath models.MasterParameter
-	connection.DB.Where("param_key = ?", "DOC_PATH_BSNS").First(&paramPath)
+	err = connection.DB.Where("param_key = ?", "DOC_PATH_BSNS").First(&paramPath).Error
 
 	if err != nil {
 		return result, errors.New("invalid DOC_PATH_BSNS value")
@@ -232,24 +297,22 @@ func BusinessApproveUpdate(businessID string) (result models.Business, err error
 	return business, nil
 }
 
-func ShowCompanyFirstName() (result []string, err error) {
-	var companyFirstNames []string
+func ShowCompanyFirstName() (result []models.Dropdown) {
+	connection.DB.Select("id, name").
+		Model(&models.CompanyFirstName{}).
+		Find(&result)
 
-	if err := connection.DB.Model(&models.CompanyFirstName{}).Pluck("name", &companyFirstNames).Error; err != nil {
-		return result, err
-	}
-
-	return companyFirstNames, nil
+	result = utils.Prepend(result, models.Dropdown{Name: "- SELECT -"})
+	return
 }
 
-func ShowCompanyType() (result []string, err error) {
-	var companyType []string
+func ShowCompanyType() (result []models.Dropdown) {
+	connection.DB.Select("id, CONCAT(code, ' - ', name) AS name").
+		Model(&models.CompanyType{}).
+		Find(&result)
 
-	if err := connection.DB.Model(&models.CompanyType{}).Pluck("name", &companyType).Error; err != nil {
-		return result, err
-	}
-
-	return companyType, nil
+	result = utils.Prepend(result, models.Dropdown{Name: "- SELECT -"})
+	return
 }
 
 func ShowBusinessAddressType() (result []string, err error) {
@@ -262,44 +325,41 @@ func ShowBusinessAddressType() (result []string, err error) {
 	return businessAddressType, nil
 }
 
-func ShowEternalRatingCompany() (result []string, err error) {
-	var eternalRatingCompany []string
+func ShowExternalRatingCompany() (result []models.Dropdown) {
+	connection.DB.Select("id, name").
+		Model(&models.ExternalRatingCompany{}).
+		Find(&result)
 
-	if err := connection.DB.Model(&models.EternalRatingCompany{}).Pluck("name", &eternalRatingCompany).Error; err != nil {
-		return result, err
-	}
-
-	return eternalRatingCompany, nil
+	result = utils.Prepend(result, models.Dropdown{Name: "- SELECT -"})
+	return
 }
 
-func ShowRatingClass() (result []string, err error) {
-	var ratingClass []string
+func ShowRatingClass(ExternalRatingId string) (result []models.Dropdown) {
+	connection.DB.Select("id, name").
+		Model(&models.RatingClass{}).
+		Where("external_rating_id = ?", ExternalRatingId).
+		Find(&result)
 
-	if err := connection.DB.Model(&models.RatingClass{}).Pluck("name", &ratingClass).Error; err != nil {
-		return result, err
-	}
-
-	return ratingClass, nil
+	result = utils.Prepend(result, models.Dropdown{Name: "- SELECT -"})
+	return
 }
 
-func ShowKodeBursa() (result []string, err error) {
-	var kodeBursa []string
+func ShowKodeBursa() (result []models.Dropdown) {
+	connection.DB.Select("id, name").
+		Model(&models.KodeBursa{}).
+		Find(&result)
 
-	if err := connection.DB.Model(&models.KodeBursa{}).Pluck("name", &kodeBursa).Error; err != nil {
-		return result, err
-	}
-
-	return kodeBursa, nil
+	result = utils.Prepend(result, models.Dropdown{Name: "- SELECT -"})
+	return
 }
 
-func ShowBusinessType() (result []string, err error) {
-	var businessType []string
+func ShowBusinessType() (result []models.Dropdown) {
+	connection.DB.Select("id, CONCAT(code, ' - ', name) AS name").
+		Model(&models.BusinessType{}).
+		Find(&result)
 
-	if err := connection.DB.Model(&models.BusinessType{}).Pluck("name", &businessType).Error; err != nil {
-		return result, err
-	}
-
-	return businessType, nil
+	result = utils.Prepend(result, models.Dropdown{Name: "- SELECT -"})
+	return
 }
 
 func GetProvinces() (result []string, err error) {
@@ -347,11 +407,12 @@ func GetZipCodesBySubdistrict(subdistrict string) (result []string, err error) {
 	return zipCodes, nil
 }
 
-func BusinessToJson(business models.Business, document models.Document, generalInformation models.GeneralInformation) string {
+func BusinessToJson(business any, document models.Document, generalInformation any, sectorEconomy any) string {
 	data := map[string]interface{}{
 		"business":           business,
 		"document":           document,
 		"generalInformation": generalInformation,
+		"sectorEconomy":      sectorEconomy,
 	}
 
 	jsonData, err := json.Marshal(data)

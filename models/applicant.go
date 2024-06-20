@@ -107,7 +107,7 @@ type CreateApplicant struct {
 }
 
 type ApplicantDetail struct {
-	ShowApplicant
+	ShowApplicant 
 	SpouseData         SpouseData             `json:"spouse"`
 	SectorEconomy      ShowSectorEconomy      `json:"sector_economy"`
 	IdCard             ShowIdCard             `json:"id_card"`

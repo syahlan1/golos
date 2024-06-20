@@ -88,1767 +88,1767 @@ func UserSeed() {
 }
 
 func ApplicantSeed() {
-	// var homeStatus = []models.HomeStatus{
-	// 	{
-	// 		Code: "1",
-	// 		Name : "Credit.",
-	// 		Sibs : "KANTR",
-	// 	},
-	// 	{
-	// 		Code: "2",
-	// 		Name : "Institution",
-	// 		Sibs : "DINAS",
-	// 	},
-	// 	{
-	// 		Code: "3",
-	// 		Name : "Others",
-	// 		Sibs : "LAIN",
-	// 	},
-	// 	{
-	// 		Code: "4",
-	// 		Name : "Own",
-	// 		Sibs : "MILIK",
-	// 	},
-	// 	{
-	// 		Code: "5",
-	// 		Name : "Parents",
-	// 		Sibs : "KLRGA",
-	// 	},
-	// 	{
-	// 		Code: "6",
-	// 		Name : "Rented",
-	// 		Sibs : "SEWA",
-	// 	},
-	// }
-
-	// var maritalStatus = []models.MaritalStatus{
-	// 	{
-	// 		Code : "A",
-	// 		Name : "Kawin",
-	// 	},
-	// 	{
-	// 		Code : "B",
-	// 		Name : "Belum Kawin",
-	// 	},
-	// 	{
-	// 		Code : "C",
-	// 		Name : "Janda",
-	// 	},
-	// 	{
-	// 		Code : "D",
-	// 		Name : "Duda",
-	// 	},
-	// 	{
-	// 		Code : "E",
-	// 		Name : "Tidak Diketahui",
-	// 	},
-	// }
-
-
-	// var nationality = []models.Nationality{
-	// 	{
-	// 		Code: "WNI",
-	// 		Name: "Indonesia",
-	// 	},
-	// 	{
-	// 		Code: "WNA",
-	// 		Name: "Asing",
-	// 	},
-	// }
-
-	// var education = []models.Education{
-	// 	{
-	// 		Code : "A",
-	// 		Name : "Tanpa Gelar",
-	// 	},
-	// 	{
-	// 		Code : "B",
-	// 		Name : "Diploma 1",
-	// 	},
-	// 	{
-	// 		Code : "C",
-	// 		Name : "Diploma 2",
-	// 	},
-	// 	{
-	// 		Code : "D",
-	// 		Name : "Diploma 3",
-	// 	},
-	// 	{
-	// 		Code : "E",
-	// 		Name : "S - 1",
-	// 	},
-	// 	{
-	// 		Code : "F",
-	// 		Name : "S - 2",
-	// 	},
-	// 	{
-	// 		Code : "G",
-	// 		Name : "S - 3",
-	// 	},
-	// 	{
-	// 		Code : "Z",
-	// 		Name : "Lainnya",
-	// 	},
-	// }
-
-	// var jobPosition = []models.JobPosition{
-	// 	{
-	// 		Code : "001",
-	// 		Name : "Accounting/finance officer",
-	// 	},
-	// 	{
-	// 		Code : "002",
-	// 		Name : "Customer service",
-	// 	},
-	// 	{
-	// 		Code : "003",
-	// 		Name : "Engineering",
-	// 	},
-	// 	{
-	// 		Code : "004",
-	// 		Name : "Eksekutif",
-	// 	},
-	// 	{
-	// 		Code : "005",
-	// 		Name : "Administrasi umum",
-	// 	},
-	// 	{
-	// 		Code : "006",
-	// 		Name : "Teknologi informasi",
-	// 	},
-	// 	{
-	// 		Code : "007",
-	// 		Name : "Konsultan/Analis",
-	// 	},
-	// 	{
-	// 		Code : "008",
-	// 		Name : "Marketing",
-	// 	},
-	// 	{
-	// 		Code : "009",
-	// 		Name : "Pengajar (Guru, Dosen)",
-	// 	},
-	// 	{
-	// 		Code : "01",
-	// 		Name : "PEMILIK-Direktur Utama",
-	// 	},
-	// 	{
-	// 		Code : "010",
-	// 		Name : "Militer",
-	// 	},
-	// 	{
-	// 		Code : "011",
-	// 		Name : "Pensiunan",
-	// 	},
-	// 	{
-	// 		Code : "012",
-	// 		Name : "Pelajar/Mahasiswa",
-	// 	},
-	// 	{
-	// 		Code : "013",
-	// 		Name : "Wiraswasta",
-	// 	},
-	// 	{
-	// 		Code : "014",
-	// 		Name : "Polisi",
-	// 	},
-	// 	{
-	// 		Code : "015",
-	// 		Name : "Petani",
-	// 	},
-	// 	{
-	// 		Code : "016",
-	// 		Name : "Nelayan",
-	// 	},
-	// 	{
-	// 		Code : "017",
-	// 		Name : "Peternak",
-	// 	},
-	// 	{
-	// 		Code : "018",
-	// 		Name : "Dokter",
-	// 	},
-	// 	{
-	// 		Code : "019",
-	// 		Name : "Tenaga Medis",
-	// 	},
-	// 	{
-	// 		Code : "02",
-	// 		Name : "PEMILIK-Direktur",
-	// 	},
-	// 	{
-	// 		Code : "020",
-	// 		Name : "Pengacara/Notaris",
-	// 	},
-	// 	{
-	// 		Code : "021",
-	// 		Name : "Pekerja Hotel/Restoran",
-	// 	},
-	// 	{
-	// 		Code : "022",
-	// 		Name : "Peneliti",
-	// 	},
-	// 	{
-	// 		Code : "023",
-	// 		Name : "Desainer",
-	// 	},
-	// 	{
-	// 		Code : "024",
-	// 		Name : "Arsitek",
-	// 	},
-	// 	{
-	// 		Code : "025",
-	// 		Name : "Pekerja Seni",
-	// 	},
-	// 	{
-	// 		Code : "026",
-	// 		Name : "Pengamanan",
-	// 	},
-	// 	{
-	// 		Code : "027",
-	// 		Name : "Pialang/Broker",
-	// 	},
-	// 	{
-	// 		Code : "028",
-	// 		Name : "Distributor",
-	// 	},
-	// 	{
-	// 		Code : "029",
-	// 		Name : "Pilot/Awak Pesawat",
-	// 	},
-	// 	{
-	// 		Code : "03",
-	// 		Name : "PEMILIK-Komusaris Utama",
-	// 	},
-	// 	{
-	// 		Code : "030",
-	// 		Name : "Nahkoda/Awak Kapal",
-	// 	},
-	// 	{
-	// 		Code : "031",
-	// 		Name : "Masinis/Sopir/Kondektur",
-	// 	},
-	// 	{
-	// 		Code : "032",
-	// 		Name : "Buruh Pabrik/Bangunan/Tani",
-	// 	},
-	// 	{
-	// 		Code : "033",
-	// 		Name : "Tukang / Pengrajin",
-	// 	},
-	// 	{
-	// 		Code : "034",
-	// 		Name : "Ibu Rumah Tangga",
-	// 	},
-	// 	{
-	// 		Code : "035",
-	// 		Name : "Pekerja Informal",
-	// 	},
-	// 	{
-	// 		Code : "036",
-	// 		Name : "Pejabat Negara / Pemerintahan",
-	// 	},
-	// 	{
-	// 		Code : "037",
-	// 		Name : "Pegawai Negara/Pemerintahan",
-	// 	},
-	// 	{
-	// 		Code : "04",
-	// 		Name : "PEMILIK-Komusaris",
-	// 	},
-	// 	{
-	// 		Code : "05",
-	// 		Name : "PEMILIK-Kuasa Direksi",
-	// 	},
-	// 	{
-	// 		Code : "06",
-	// 		Name : "PEMILIK-Bukan Pengurus",
-	// 	},
-	// 	{
-	// 		Code : "07",
-	// 		Name : "PEMILIK-Masyarakat",
-	// 	},
-	// 	{
-	// 		Code : "08",
-	// 		Name : "PEMILIK-Ketua Umum",
-	// 	},
-	// 	{
-	// 		Code : "09",
-	// 		Name : "PEMILIK-Ketua",
-	// 	},
-	// 	{
-	// 		Code : "099",
-	// 		Name : "Lain-lain",
-	// 	},
-	// 	{
-	// 		Code : "10",
-	// 		Name : "PEMILIK-Sekretaris",
-	// 	},
-	// 	{
-	// 		Code : "11",
-	// 		Name : "PEMILIK-Bendahara",
-	// 	},
-	// 	{
-	// 		Code : "12",
-	// 		Name : "PEMILIK-Lainnya",
-	// 	},
-	// 	{
-	// 		Code : "13",
-	// 		Name : "BUKAN PEMILIK-Direktur Utama",
-	// 	},
-	// 	{
-	// 		Code : "14",
-	// 		Name : "BUKAN PEMILIK-Direktur",
-	// 	},
-	// 	{
-	// 		Code : "15",
-	// 		Name : "BUKAN PEMILIK-Komisaris Utama",
-	// 	},
-	// 	{
-	// 		Code : "16",
-	// 		Name : "BUKAN PEMILIK-Komisaris",
-	// 	},
-	// 	{
-	// 		Code : "17",
-	// 		Name : "BUKAN PEMILIK-Kuasa Direksi",
-	// 	},
-	// 	{
-	// 		Code : "18",
-	// 		Name : "BUKAN PEMILIK-Ketua Umum",
-	// 	},
-	// 	{
-	// 		Code : "19",
-	// 		Name : "BUKAN PEMILIK-Ketua",
-	// 	},
-	// 	{
-	// 		Code : "20",
-	// 		Name : "BUKAN PEMILIK-Sekretaris",
-	// 	},
-	// 	{
-	// 		Code : "21",
-	// 		Name : "BUKAN PEMILIK-Bendahara",
-	// 	},
-	// 	{
-	// 		Code : "22",
-	// 		Name : "BUKAN PEMILIK-Lainnya",
-	// 	},
-	// 	{
-	// 		Code : "23",
-	// 		Name : "Notaris/Pengacara",
-	// 	},
-	// 	{
-	// 		Code : "24",
-	// 		Name : "Guru/Dosen",
-	// 	},
-	// 	{
-	// 		Code : "25",
-	// 		Name : "Mahasiswa/Pelajar",
-	// 	},
-	// 	{
-	// 		Code : "26",
-	// 		Name : "Akuntan",
-	// 	},
-	// 	{
-	// 		Code : "27",
-	// 		Name : "GM atau Kepala Biro",
-	// 	},
-	// 	{
-	// 		Code : "28",
-	// 		Name : "Staff",
-	// 	},
-	// 	{
-	// 		Code : "29",
-	// 		Name : "Bintara",
-	// 	},
-	// 	{
-	// 		Code : "30",
-	// 		Name : "Tamtama",
-	// 	},
-	// 	{
-	// 		Code : "31",
-	// 		Name : "Pengurus Koperasi/Yayasan/LSM",
-	// 	},
-	// 	{
-	// 		Code : "32",
-	// 		Name : "Anggota Koperasi/Yayasan/LSM",
-	// 	},
-	// 	{
-	// 		Code : "33",
-	// 		Name : "Kepala Pemerintahan",
-	// 	},
-	// 	{
-	// 		Code : "34",
-	// 		Name : "Anggota Lembaga Tinggi Negara",
-	// 	},
-	// 	{
-	// 		Code : "35",
-	// 		Name : "Menteri",
-	// 	},
-	// 	{
-	// 		Code : "36",
-	// 		Name : "Sekretaris",
-	// 	},
-	// 	{
-	// 		Code : "37",
-	// 		Name : "Risk Manager",
-	// 	},
-	// 	{
-	// 		Code : "38",
-	// 		Name : "Operational Manager",
-	// 	},
-	// }
-
-	// var businessSector = []models.BusinessSector{
-	// 	{
-	// 		Code : "01",
-	// 		Name : "Agriculture / Plantation",
-	// 	},
-	// 	{
-	// 		Code : "02",
-	// 		Name : "Fishery / Farm",
-	// 	},
-	// 	{
-	// 		Code : "03",
-	// 		Name : "Mining",
-	// 	},
-	// 	{
-	// 		Code : "04",
-	// 		Name : "Processing industry",
-	// 	},
-	// 	{
-	// 		Code : "05",
-	// 		Name : "Manufacture",
-	// 	},
-	// 	{
-	// 		Code : "06",
-	// 		Name : "Energy & Water",
-	// 	},
-	// 	{
-	// 		Code : "06001",
-	// 		Name : "Construction",
-	// 	},
-	// 	{
-	// 		Code : "06002",
-	// 		Name : "Automotive",
-	// 	},
-	// 	{
-	// 		Code : "06003",
-	// 		Name : "Retail/Wholesale trading",
-	// 	},
-	// 	{
-	// 		Code : "06004",
-	// 		Name : "Import/export/domestic trading",
-	// 	},
-	// 	{
-	// 		Code : "06005",
-	// 		Name : "Transportation",
-	// 	},
-	// 	{
-	// 		Code : "06006",
-	// 		Name : "Telecommunication",
-	// 	},
-	// 	{
-	// 		Code : "06007",
-	// 		Name : "Financial services",
-	// 	},
-	// 	{
-	// 		Code : "06008",
-	// 		Name : "Education Services",
-	// 	},
-	// 	{
-	// 		Code : "06009",
-	// 		Name : "Health Services",
-	// 	},
-	// 	{
-	// 		Code : "07",
-	// 		Name : "Non-financial services",
-	// 	},
-	// 	{
-	// 		Code : "07001",
-	// 		Name : "Hotels & Accommodation",
-	// 	},
-	// 	{
-	// 		Code : "08",
-	// 		Name : "Restaurant",
-	// 	},
-	// 	{
-	// 		Code : "08001",
-	// 		Name : "Real Estate",
-	// 	},
-	// 	{
-	// 		Code : "08002",
-	// 		Name : "Rental",
-	// 	},
-	// 	{
-	// 		Code : "09",
-	// 		Name : "Research and development",
-	// 	},
-	// 	{
-	// 		Code : "09001",
-	// 		Name : "Publish,Print&Advertising",
-	// 	},
-	// 	{
-	// 		Code : "10",
-	// 		Name : "Entertainment Activities",
-	// 	},
-	// 	{
-	// 		Code : "6001",
-	// 		Name : "Household",
-	// 	},
-	// }
-
-
-	// var NegaraDomisili = []models.Negara{
-	// 	{
-	// 		Code : "AE",
-	// 		Name : "UNITED ARAB EMIRATES",
-
-	// 	},
-	// 	{
-	// 		Code : "AF",
-	// 		Name : "AFGHANISTAN",
-
-	// 	},
-	// 	{
-	// 		Code : "AG",
-	// 		Name : "ANTIGUA AND BARBUDA",
-
-	// 	},
-	// 	{
-	// 		Code : "AI",
-	// 		Name : "ANGUILLA",
-
-	// 	},
-	// 	{
-	// 		Code : "AL",
-	// 		Name : "ALBANIA",
-
-	// 	},
-	// 	{
-	// 		Code : "AM",
-	// 		Name : "ARMENIA",
-
-	// 	},
-	// 	{
-	// 		Code : "AN",
-	// 		Name : "NETH. ANTILLES",
-
-	// 	},
-	// 	{
-	// 		Code : "AO",
-	// 		Name : "ANGOLA",
-
-	// 	},
-	// 	{
-	// 		Code : "AQ",
-	// 		Name : "ANTARCTICA",
-
-	// 	},
-	// 	{
-	// 		Code : "AR",
-	// 		Name : "ARGENTINA",
-
-	// 	},
-	// 	{
-	// 		Code : "AS",
-	// 		Name : "AMERICAN SAMOA",
-
-	// 	},
-	// 	{
-	// 		Code : "AT",
-	// 		Name : "AUSTRIA",
-
-	// 	},
-	// 	{
-	// 		Code : "AU",
-	// 		Name : "AUSTRALIA",
-
-	// 	},
-	// 	{
-	// 		Code : "AW",
-	// 		Name : "ARUBA",
-
-	// 	},
-	// 	{
-	// 		Code : "AZ",
-	// 		Name : "AZERBAIJAN",
-
-	// 	},
-	// 	{
-	// 		Code : "BA",
-	// 		Name : "BOSNIA AND HERZEGOVINA",
-
-	// 	},
-	// 	{
-	// 		Code : "BB",
-	// 		Name : "BARBADOS",
-
-	// 	},
-	// 	{
-	// 		Code : "BD",
-	// 		Name : "BANGLADESH",
-
-	// 	},
-	// 	{
-	// 		Code : "BE",
-	// 		Name : "BELGIUM",
-
-	// 	},
-	// 	{
-	// 		Code : "BF",
-	// 		Name : "BURKINA FASO",
-
-	// 	},
-	// 	{
-	// 		Code : "BG",
-	// 		Name : "BULGARIA",
-
-	// 	},
-	// 	{
-	// 		Code : "BH",
-	// 		Name : "BAHRAIN",
-
-	// 	},
-	// 	{
-	// 		Code : "BI",
-	// 		Name : "BURUNDI",
-
-	// 	},
-	// 	{
-	// 		Code : "BJ",
-	// 		Name : "BENIN",
-
-	// 	},
-	// 	{
-	// 		Code : "BM",
-	// 		Name : "BERMUDA",
-
-	// 	},
-	// 	{
-	// 		Code : "BN",
-	// 		Name : "BRUNEI DARUSSALAM",
-
-	// 	},
-	// 	{
-	// 		Code : "BO",
-	// 		Name : "BOLIVIA",
-
-	// 	},
-	// 	{
-	// 		Code : "BR",
-	// 		Name : "BRAZIL",
-
-	// 	},
-	// 	{
-	// 		Code : "BS",
-	// 		Name : "BAHAMAS",
-
-	// 	},
-	// 	{
-	// 		Code : "BT",
-	// 		Name : "BHUTAN",
-
-	// 	},
-	// 	{
-	// 		Code : "BUD",
-	// 		Name : "Budha",
-
-	// 	},
-	// 	{
-	// 		Code : "BV",
-	// 		Name : "BOUVET ISLAND",
-
-	// 	},
-	// 	{
-	// 		Code : "BW",
-	// 		Name : "BOTSWANA",
-
-	// 	},
-	// 	{
-	// 		Code : "BY",
-	// 		Name : "BELARUS",
-
-	// 	},
-	// 	{
-	// 		Code : "BZ",
-	// 		Name : "BELIZE",
-
-	// 	},
-	// 	{
-	// 		Code : "CA",
-	// 		Name : "CANADA",
-
-	// 	},
-	// 	{
-	// 		Code : "CC",
-	// 		Name : "COCOS (KEELING) ISLANDS",
-
-	// 	},
-	// 	{
-	// 		Code : "CD",
-	// 		Name : "CONGO, THE DEMOCRATIC REPUBLIC",
-
-	// 	},
-	// 	{
-	// 		Code : "CF",
-	// 		Name : "CENTRAL AFRICAN REPUBLIC",
-
-	// 	},
-	// 	{
-	// 		Code : "CG",
-	// 		Name : "CONGO",
-
-	// 	},
-	// 	{
-	// 		Code : "CH",
-	// 		Name : "SWITZERLAND",
-
-	// 	},
-	// 	{
-	// 		Code : "CI",
-	// 		Name : "COTE DIVOIRE",
-
-	// 	},
-	// 	{
-	// 		Code : "CK",
-	// 		Name : "COOK ISLANDS",
-
-	// 	},
-	// 	{
-	// 		Code : "CL",
-	// 		Name : "CHILE",
-
-	// 	},
-	// 	{
-	// 		Code : "CM",
-	// 		Name : "CAMEROON",
-
-	// 	},
-	// 	{
-	// 		Code : "CN",
-	// 		Name : "CHINA",
-
-	// 	},
-	// 	{
-	// 		Code : "CO",
-	// 		Name : "COLOMBIA",
-
-	// 	},
-	// 	{
-	// 		Code : "CR",
-	// 		Name : "COSTA RICA",
-
-	// 	},
-	// 	{
-	// 		Code : "CU",
-	// 		Name : "CUBA",
-
-	// 	},
-	// 	{
-	// 		Code : "CV",
-	// 		Name : "CAPE VERDE",
-
-	// 	},
-	// 	{
-	// 		Code : "CX",
-	// 		Name : "CHRISTMAS ISLAND",
-
-	// 	},
-	// 	{
-	// 		Code : "CY",
-	// 		Name : "CYPRUS",
-
-	// 	},
-	// 	{
-	// 		Code : "CZ",
-	// 		Name : "CZECH REPUBLIC",
-
-	// 	},
-	// 	{
-	// 		Code : "DE",
-	// 		Name : "GERMANY",
-
-	// 	},
-	// 	{
-	// 		Code : "DJ",
-	// 		Name : "DJIBOUTI",
-
-	// 	},
-	// 	{
-	// 		Code : "DK",
-	// 		Name : "DENMARK",
-
-	// 	},
-	// 	{
-	// 		Code : "DM",
-	// 		Name : "DOMINICA",
-
-	// 	},
-	// 	{
-	// 		Code : "DO",
-	// 		Name : "DOMINICAN REPUBLIC",
-
-	// 	},
-	// 	{
-	// 		Code : "DZ",
-	// 		Name : "ALGERIA",
-
-	// 	},
-	// 	{
-	// 		Code : "EC",
-	// 		Name : "ECUADOR",
-
-	// 	},
-	// 	{
-	// 		Code : "EE",
-	// 		Name : "ESTONIA",
-
-	// 	},
-	// 	{
-	// 		Code : "EG",
-	// 		Name : "EGYPT",
-
-	// 	},
-	// 	{
-	// 		Code : "EH",
-	// 		Name : "WESTERN SAHARA",
-
-	// 	},
-	// 	{
-	// 		Code : "ER",
-	// 		Name : "ERITREA",
-
-	// 	},
-	// 	{
-	// 		Code : "ES",
-	// 		Name : "SPAIN",
-
-	// 	},
-	// 	{
-	// 		Code : "ET",
-	// 		Name : "ETHIOPIA",
-
-	// 	},
-	// 	{
-	// 		Code : "FI",
-	// 		Name : "FINLAND",
-
-	// 	},
-	// 	{
-	// 		Code : "FJ",
-	// 		Name : "FIJI",
-
-	// 	},
-	// 	{
-	// 		Code : "FK",
-	// 		Name : "FALKLAND  ISLANDS (MALVINAS)",
-
-	// 	},
-	// 	{
-	// 		Code : "FM",
-	// 		Name : "MICRONESIA (FEDERATED STATES O",
-
-	// 	},
-	// 	{
-	// 		Code : "FO",
-	// 		Name : "FAEROE ISLANDS",
-
-	// 	},
-	// 	{
-	// 		Code : "FR",
-	// 		Name : "FRANCE",
-
-	// 	},
-	// 	{
-	// 		Code : "GA",
-	// 		Name : "GABON",
-
-	// 	},
-	// 	{
-	// 		Code : "GB",
-	// 		Name : "UNITED KINGDOM",
-
-	// 	},
-	// 	{
-	// 		Code : "GD",
-	// 		Name : "GRENADA",
-
-	// 	},
-	// 	{
-	// 		Code : "GE",
-	// 		Name : "GEORGIA",
-
-	// 	},
-	// 	{
-	// 		Code : "GF",
-	// 		Name : "FRENCH GUIANA",
-
-	// 	},
-	// 	{
-	// 		Code : "GG",
-	// 		Name : "GUERNSEY, C.I.",
-
-	// 	},
-	// 	{
-	// 		Code : "GH",
-	// 		Name : "GHANA",
-
-	// 	},
-	// 	{
-	// 		Code : "GI",
-	// 		Name : "GIBRALTAR",
-
-	// 	},
-	// 	{
-	// 		Code : "GL",
-	// 		Name : "GREENLAND",
-
-	// 	},
-	// 	{
-	// 		Code : "GM",
-	// 		Name : "GAMBIA",
-
-	// 	},
-	// 	{
-	// 		Code : "GN",
-	// 		Name : "GUINEA",
-
-	// 	},
-	// 	{
-	// 		Code : "GP",
-	// 		Name : "GUADELOUPE",
-
-	// 	},
-	// 	{
-	// 		Code : "GQ",
-	// 		Name : "EQUATORIAL GUINEA",
-
-	// 	},
-	// 	{
-	// 		Code : "GR",
-	// 		Name : "GREECE",
-
-	// 	},
-	// 	{
-	// 		Code : "GT",
-	// 		Name : "GUATEMALA",
-
-	// 	},
-	// 	{
-	// 		Code : "GU",
-	// 		Name : "GUAM",
-
-	// 	},
-	// 	{
-	// 		Code : "GW",
-	// 		Name : "GUINEA-BISSAU",
-
-	// 	},
-	// 	{
-	// 		Code : "GY",
-	// 		Name : "GUYANA",
-
-	// 	},
-	// 	{
-	// 		Code : "HIN",
-	// 		Name : "Hindu",
-
-	// 	},
-	// 	{
-	// 		Code : "HK",
-	// 		Name : "HONG KONG",
-
-	// 	},
-	// 	{
-	// 		Code : "HM",
-	// 		Name : "HEARD AND MCDONALD ISLANDS",
-
-	// 	},
-	// 	{
-	// 		Code : "HN",
-	// 		Name : "HONDURAS",
-
-	// 	},
-	// 	{
-	// 		Code : "HR",
-	// 		Name : "CROATIA",
-
-	// 	},
-	// 	{
-	// 		Code : "HT",
-	// 		Name : "HAITI",
-
-	// 	},
-	// 	{
-	// 		Code : "HU",
-	// 		Name : "HUNGARY",
-
-	// 	},
-	// 	{
-	// 		Code : "ID",
-	// 		Name : "INDONESIA",
-
-	// 	},
-	// 	{
-	// 		Code : "IE",
-	// 		Name : "IRELAND",
-
-	// 	},
-	// 	{
-	// 		Code : "IL",
-	// 		Name : "ISRAEL",
-
-	// 	},
-	// 	{
-	// 		Code : "IM",
-	// 		Name : "ISLE OF MAN",
-
-	// 	},
-	// 	{
-	// 		Code : "IN",
-	// 		Name : "INDIA",
-
-	// 	},
-	// 	{
-	// 		Code : "IO",
-	// 		Name : "BRITISH INDIAN OCEAN TERRITORY",
-
-	// 	},
-	// 	{
-	// 		Code : "IQ",
-	// 		Name : "IRAQ",
-
-	// 	},
-	// 	{
-	// 		Code : "IR",
-	// 		Name : "IRAN (ISLAMIC REPUBLIC OF)",
-
-	// 	},
-	// 	{
-	// 		Code : "IS",
-	// 		Name : "ICELAND",
-
-	// 	},
-	// 	{
-	// 		Code : "ISL",
-	// 		Name : "Islam",
-
-	// 	},
-	// 	{
-	// 		Code : "IT",
-	// 		Name : "ITALY",
-
-	// 	},
-	// 	{
-	// 		Code : "JE",
-	// 		Name : "JERSEY, C.I.",
-
-	// 	},
-	// 	{
-	// 		Code : "JM",
-	// 		Name : "JAMAICA",
-
-	// 	},
-	// 	{
-	// 		Code : "JO",
-	// 		Name : "JORDAN",
-
-	// 	},
-	// 	{
-	// 		Code : "JP",
-	// 		Name : "JAPAN",
-
-	// 	},
-	// 	{
-	// 		Code : "KAT",
-	// 		Name : "Kristen Katolik",
-
-	// 	},
-	// 	{
-	// 		Code : "KE",
-	// 		Name : "KENYA",
-
-	// 	},
-	// 	{
-	// 		Code : "KG",
-	// 		Name : "KYRGYZSTAN",
-
-	// 	},
-	// 	{
-	// 		Code : "KH",
-	// 		Name : "CAMBODIA",
-
-	// 	},
-	// 	{
-	// 		Code : "KHC",
-	// 		Name : "Kong Hu Chu",
-
-	// 	},
-	// 	{
-	// 		Code : "KI",
-	// 		Name : "KIRIBATI",
-
-	// 	},
-	// 	{
-	// 		Code : "KM",
-	// 		Name : "COMOROS",
-
-	// 	},
-	// 	{
-	// 		Code : "KN",
-	// 		Name : "SAINT KITTS AND NEVIS",
-
-	// 	},
-	// 	{
-	// 		Code : "KP",
-	// 		Name : "KOREA, DEMOCRATIC PEOPLES REP.",
-
-	// 	},
-	// 	{
-	// 		Code : "KR",
-	// 		Name : "KOREA, REPUBLIC OF",
-
-	// 	},
-	// 	{
-	// 		Code : "KW",
-	// 		Name : "KUWAIT",
-
-	// 	},
-	// 	{
-	// 		Code : "KY",
-	// 		Name : "CAYMAN ISLANDS",
-
-	// 	},
-	// 	{
-	// 		Code : "KZ",
-	// 		Name : "KAZAKHSTAN",
-
-	// 	},
-	// 	{
-	// 		Code : "LA",
-	// 		Name : "LAO PEOPLES DEMOCRATIC REPUBLI",
-
-	// 	},
-	// 	{
-	// 		Code : "LB",
-	// 		Name : "LEBANON",
-
-	// 	},
-	// 	{
-	// 		Code : "LC",
-	// 		Name : "SAINT LUCIA",
-
-	// 	},
-	// 	{
-	// 		Code : "LI",
-	// 		Name : "LIECHTENSTEIN",
-
-	// 	},
-	// 	{
-	// 		Code : "LK",
-	// 		Name : "SRI LANKA",
-
-	// 	},
-	// 	{
-	// 		Code : "LLN",
-	// 		Name : "Lainnya",
-
-	// 	},
-	// 	{
-	// 		Code : "LR",
-	// 		Name : "LIBERIA",
-
-	// 	},
-	// 	{
-	// 		Code : "LS",
-	// 		Name : "LESOTHO",
-
-	// 	},
-	// 	{
-	// 		Code : "LT",
-	// 		Name : "LITHUANIA",
-
-	// 	},
-	// 	{
-	// 		Code : "LU",
-	// 		Name : "LUXEMBOURG",
-
-	// 	},
-	// 	{
-	// 		Code : "LV",
-	// 		Name : "LATVIA",
-
-	// 	},
-	// 	{
-	// 		Code : "LY",
-	// 		Name : "LIBYAN ARAB JAMAHIRIYA",
-
-	// 	},
-	// 	{
-	// 		Code : "MA",
-	// 		Name : "MOROCCO",
-
-	// 	},
-	// 	{
-	// 		Code : "MC",
-	// 		Name : "MONACO",
-
-	// 	},
-	// 	{
-	// 		Code : "MD",
-	// 		Name : "MOLDOVA, REPUBLIC OF",
-
-	// 	},
-	// 	{
-	// 		Code : "MG",
-	// 		Name : "MADAGASCAR",
-
-	// 	},
-	// 	{
-	// 		Code : "MH",
-	// 		Name : "MARSHALL ISLANDS",
-
-	// 	},
-	// 	{
-	// 		Code : "MK",
-	// 		Name : "MACEDONIA,THE FORMER YUGOSLAV ",
-
-	// 	},
-	// 	{
-	// 		Code : "ML",
-	// 		Name : "MALI",
-
-	// 	},
-	// 	{
-	// 		Code : "MM",
-	// 		Name : "MYANMAR",
-
-	// 	},
-	// 	{
-	// 		Code : "MN",
-	// 		Name : "MONGOLIA",
-
-	// 	},
-	// 	{
-	// 		Code : "MO",
-	// 		Name : "MACAU",
-
-	// 	},
-	// 	{
-	// 		Code : "MP",
-	// 		Name : "NORTHERN MARIANA ISLANDS",
-
-	// 	},
-	// 	{
-	// 		Code : "MQ",
-	// 		Name : "MARTINIQUE",
-
-	// 	},
-	// 	{
-	// 		Code : "MR",
-	// 		Name : "MAURITANIA",
-
-	// 	},
-	// 	{
-	// 		Code : "MS",
-	// 		Name : "MONTSERRAT",
-
-	// 	},
-	// 	{
-	// 		Code : "MT",
-	// 		Name : "MALTA",
-
-	// 	},
-	// 	{
-	// 		Code : "MU",
-	// 		Name : "MAURITIUS",
-
-	// 	},
-	// 	{
-	// 		Code : "MV",
-	// 		Name : "MALDIVES",
-
-	// 	},
-	// 	{
-	// 		Code : "MW",
-	// 		Name : "MALAWI",
-
-	// 	},
-	// 	{
-	// 		Code : "MX",
-	// 		Name : "MEXICO",
-
-	// 	},
-	// 	{
-	// 		Code : "MY",
-	// 		Name : "MALAYSIA",
-
-	// 	},
-	// 	{
-	// 		Code : "MZ",
-	// 		Name : "MOZAMBIQUE",
-
-	// 	},
-	// 	{
-	// 		Code : "NA",
-	// 		Name : "NAMIBIA",
-
-	// 	},
-	// 	{
-	// 		Code : "NC",
-	// 		Name : "NEW CALEDONIA",
-
-	// 	},
-	// 	{
-	// 		Code : "NE",
-	// 		Name : "NIGER",
-
-	// 	},
-	// 	{
-	// 		Code : "NF",
-	// 		Name : "NORFOLK ISLAND",
-
-	// 	},
-	// 	{
-	// 		Code : "NG",
-	// 		Name : "NIGERIA",
-
-	// 	},
-	// 	{
-	// 		Code : "NI",
-	// 		Name : "NICARAGUA",
-
-	// 	},
-	// 	{
-	// 		Code : "NL",
-	// 		Name : "NETHERLANDS",
-
-	// 	},
-	// 	{
-	// 		Code : "NO",
-	// 		Name : "NORWAY",
-
-	// 	},
-	// 	{
-	// 		Code : "NP",
-	// 		Name : "NEPAL",
-
-	// 	},
-	// 	{
-	// 		Code : "NR",
-	// 		Name : "NAURU",
-
-	// 	},
-	// 	{
-	// 		Code : "NU",
-	// 		Name : "NIUE",
-
-	// 	},
-	// 	{
-	// 		Code : "NZ",
-	// 		Name : "NEW ZEALAND",
-
-	// 	},
-	// 	{
-	// 		Code : "OM",
-	// 		Name : "OMAN",
-
-	// 	},
-	// 	{
-	// 		Code : "PA",
-	// 		Name : "PANAMA",
-
-	// 	},
-	// 	{
-	// 		Code : "PE",
-	// 		Name : "PERU",
-
-	// 	},
-	// 	{
-	// 		Code : "PF",
-	// 		Name : "FRENCH POLYNESIA",
-
-	// 	},
-	// 	{
-	// 		Code : "PG",
-	// 		Name : "PAPUA NEW GUINEA",
-
-	// 	},
-	// 	{
-	// 		Code : "PH",
-	// 		Name : "PHILIPPINES",
-
-	// 	},
-	// 	{
-	// 		Code : "PK",
-	// 		Name : "PAKISTAN",
-
-	// 	},
-	// 	{
-	// 		Code : "PL",
-	// 		Name : "POLAND",
-
-	// 	},
-	// 	{
-	// 		Code : "PM",
-	// 		Name : "SAINT PIERRE AND MIQUELON",
-
-	// 	},
-	// 	{
-	// 		Code : "PN",
-	// 		Name : "PITCAIRN",
-
-	// 	},
-	// 	{
-	// 		Code : "PR",
-	// 		Name : "PUERTO RICO",
-
-	// 	},
-	// 	{
-	// 		Code : "PRO",
-	// 		Name : "Kristen Protestan",
-
-	// 	},
-	// 	{
-	// 		Code : "PS",
-	// 		Name : "PALESTINIAN TERRITORY, OCCUPIE",
-
-	// 	},
-	// 	{
-	// 		Code : "PT",
-	// 		Name : "PORTUGAL",
-
-	// 	},
-	// 	{
-	// 		Code : "PW",
-	// 		Name : "PALAU",
-
-	// 	},
-	// 	{
-	// 		Code : "PY",
-	// 		Name : "PARAGUAY",
-
-	// 	},
-	// 	{
-	// 		Code : "PZ",
-	// 		Name : "PANAMA CANAL ZONE",
-
-	// 	},
-	// 	{
-	// 		Code : "QA",
-	// 		Name : "QATAR",
-
-	// 	},
-	// 	{
-	// 		Code : "RE",
-	// 		Name : "REUNION",
-
-	// 	},
-	// 	{
-	// 		Code : "RO",
-	// 		Name : "ROMANIA",
-
-	// 	},
-	// 	{
-	// 		Code : "RU",
-	// 		Name : "RUSSIAN FEDERATION",
-
-	// 	},
-	// 	{
-	// 		Code : "RW",
-	// 		Name : "RWANDA",
-
-	// 	},
-	// 	{
-	// 		Code : "SA",
-	// 		Name : "SAUDI ARABIA",
-
-	// 	},
-	// 	{
-	// 		Code : "SB",
-	// 		Name : "SOLOMON ISLANDS",
-
-	// 	},
-	// 	{
-	// 		Code : "SC",
-	// 		Name : "SEYCHELLES",
-
-	// 	},
-	// 	{
-	// 		Code : "SD",
-	// 		Name : "SUDAN",
-
-	// 	},
-	// 	{
-	// 		Code : "SE",
-	// 		Name : "SWEDEN",
-
-	// 	},
-	// 	{
-	// 		Code : "SG",
-	// 		Name : "SINGAPORE",
-
-	// 	},
-	// 	{
-	// 		Code : "SH",
-	// 		Name : "SAINT HELENA",
-
-	// 	},
-	// 	{
-	// 		Code : "SI",
-	// 		Name : "SLOVENIA",
-
-	// 	},
-	// 	{
-	// 		Code : "SJ",
-	// 		Name : "SVALBARD AND JAN MAYEN ISLANDS",
-
-	// 	},
-	// 	{
-	// 		Code : "SK",
-	// 		Name : "SLOVAKIA",
-
-	// 	},
-	// 	{
-	// 		Code : "SL",
-	// 		Name : "SIERRA LEONE",
-
-	// 	},
-	// 	{
-	// 		Code : "SM",
-	// 		Name : "SAN MARINO",
-
-	// 	},
-	// 	{
-	// 		Code : "SN",
-	// 		Name : "SENEGAL",
-
-	// 	},
-	// 	{
-	// 		Code : "SO",
-	// 		Name : "SOMALIA",
-
-	// 	},
-	// 	{
-	// 		Code : "SR",
-	// 		Name : "SURINAME",
-
-	// 	},
-	// 	{
-	// 		Code : "ST",
-	// 		Name : "SAO TOME AND PRINCIPE",
-
-	// 	},
-	// 	{
-	// 		Code : "SV",
-	// 		Name : "EL SALVADOR",
-
-	// 	},
-	// 	{
-	// 		Code : "SY",
-	// 		Name : "SYRIAN ARAB REPUBLIC",
-
-	// 	},
-	// 	{
-	// 		Code : "SZ",
-	// 		Name : "SWAZILAND",
-
-	// 	},
-	// 	{
-	// 		Code : "TC",
-	// 		Name : "TURKS AND CAICOS ISLANDS",
-
-	// 	},
-	// 	{
-	// 		Code : "TD",
-	// 		Name : "CHAD",
-
-	// 	},
-	// 	{
-	// 		Code : "TF",
-	// 		Name : "FRENCH SOUTHERN TERRITORIES",
-
-	// 	},
-	// 	{
-	// 		Code : "TG",
-	// 		Name : "TOGO",
-
-	// 	},
-	// 	{
-	// 		Code : "TH",
-	// 		Name : "THAILAND",
-
-	// 	},
-	// 	{
-	// 		Code : "TJ",
-	// 		Name : "TAJIKISTAN",
-
-	// 	},
-	// 	{
-	// 		Code : "TK",
-	// 		Name : "TOKELAU",
-
-	// 	},
-	// 	{
-	// 		Code : "TM",
-	// 		Name : "TURKMENISTAN",
-
-	// 	},
-	// 	{
-	// 		Code : "TN",
-	// 		Name : "TUNISIA",
-
-	// 	},
-	// 	{
-	// 		Code : "TO",
-	// 		Name : "TONGA",
-
-	// 	},
-	// 	{
-	// 		Code : "TP",
-	// 		Name : "EAST TIMOR",
-
-	// 	},
-	// 	{
-	// 		Code : "TR",
-	// 		Name : "TURKEY",
-
-	// 	},
-	// 	{
-	// 		Code : "TT",
-	// 		Name : "TRINIDAD AND TOBAGO",
-
-	// 	},
-	// 	{
-	// 		Code : "TV",
-	// 		Name : "TUVALU",
-
-	// 	},
-	// 	{
-	// 		Code : "TW",
-	// 		Name : "TAIWAN",
-
-	// 	},
-	// 	{
-	// 		Code : "TZ",
-	// 		Name : "TANZANIA, UNITED REPUBLIC OF",
-
-	// 	},
-	// 	{
-	// 		Code : "UA",
-	// 		Name : "UKRAINE",
-
-	// 	},
-	// 	{
-	// 		Code : "UG",
-	// 		Name : "UGANDA",
-
-	// 	},
-	// 	{
-	// 		Code : "UM",
-	// 		Name : "UNITED STATES MINOR OUTLAYING ",
-
-	// 	},
-	// 	{
-	// 		Code : "US",
-	// 		Name : "UNITED STATES",
-
-	// 	},
-	// 	{
-	// 		Code : "UY",
-	// 		Name : "URUGUAY",
-
-	// 	},
-	// 	{
-	// 		Code : "UZ",
-	// 		Name : "UZBEKISTAN",
-
-	// 	},
-	// 	{
-	// 		Code : "VA",
-	// 		Name : "HOLY SEE (VATICAN CITY STATE)",
-
-	// 	},
-	// 	{
-	// 		Code : "VC",
-	// 		Name : "SAINT VINCENT AND THE GRENADIN",
-
-	// 	},
-	// 	{
-	// 		Code : "VE",
-	// 		Name : "VENEZUELA",
-
-	// 	},
-	// 	{
-	// 		Code : "VG",
-	// 		Name : "VIRGIN ISLANDS, BRITISH",
-
-	// 	},
-	// 	{
-	// 		Code : "VI",
-	// 		Name : "VIRGIN ISLANDS, U.S.",
-
-	// 	},
-	// 	{
-	// 		Code : "VN",
-	// 		Name : "VIET NAM",
-
-	// 	},
-	// 	{
-	// 		Code : "VU",
-	// 		Name : "VANUATU",
-
-	// 	},
-	// 	{
-	// 		Code : "WF",
-	// 		Name : "WALLIS AND FUTUNA ISLANDS",
-
-	// 	},
-	// 	{
-	// 		Code : "WS",
-	// 		Name : "SAMOA",
-
-	// 	},
-	// 	{
-	// 		Code : "YE",
-	// 		Name : "YEMEN",
-
-	// 	},
-	// 	{
-	// 		Code : "YT",
-	// 		Name : "MAYOTTE",
-
-	// 	},
-	// 	{
-	// 		Code : "YU",
-	// 		Name : "YUGOSLAVIA",
-
-	// 	},
-	// 	{
-	// 		Code : "ZA",
-	// 		Name : "SOUTH AFRICA",
-
-	// 	},
-	// 	{
-	// 		Code : "ZM",
-	// 		Name : "ZAMBIA",
-
-	// 	},
-	// 	{
-	// 		Code : "ZW",
-	// 		Name : "ZIMBABWE",
-
-	// 	},
-	// }
-
-	// var gender = []models.Gender{
-	// 	{
-	// 		Name: "Laki-laki",
-	// 	},
-	// 	{
-	// 		Name: "Perempuan",
-	// 	},
-	// }
+	var homeStatus = []models.HomeStatus{
+		{
+			Code: "1",
+			Name : "Credit.",
+			Sibs : "KANTR",
+		},
+		{
+			Code: "2",
+			Name : "Institution",
+			Sibs : "DINAS",
+		},
+		{
+			Code: "3",
+			Name : "Others",
+			Sibs : "LAIN",
+		},
+		{
+			Code: "4",
+			Name : "Own",
+			Sibs : "MILIK",
+		},
+		{
+			Code: "5",
+			Name : "Parents",
+			Sibs : "KLRGA",
+		},
+		{
+			Code: "6",
+			Name : "Rented",
+			Sibs : "SEWA",
+		},
+	}
+
+	var maritalStatus = []models.MaritalStatus{
+		{
+			Code : "A",
+			Name : "Kawin",
+		},
+		{
+			Code : "B",
+			Name : "Belum Kawin",
+		},
+		{
+			Code : "C",
+			Name : "Janda",
+		},
+		{
+			Code : "D",
+			Name : "Duda",
+		},
+		{
+			Code : "E",
+			Name : "Tidak Diketahui",
+		},
+	}
+
+
+	var nationality = []models.Nationality{
+		{
+			Code: "WNI",
+			Name: "Indonesia",
+		},
+		{
+			Code: "WNA",
+			Name: "Asing",
+		},
+	}
+
+	var education = []models.Education{
+		{
+			Code : "A",
+			Name : "Tanpa Gelar",
+		},
+		{
+			Code : "B",
+			Name : "Diploma 1",
+		},
+		{
+			Code : "C",
+			Name : "Diploma 2",
+		},
+		{
+			Code : "D",
+			Name : "Diploma 3",
+		},
+		{
+			Code : "E",
+			Name : "S - 1",
+		},
+		{
+			Code : "F",
+			Name : "S - 2",
+		},
+		{
+			Code : "G",
+			Name : "S - 3",
+		},
+		{
+			Code : "Z",
+			Name : "Lainnya",
+		},
+	}
+
+	var jobPosition = []models.JobPosition{
+		{
+			Code : "001",
+			Name : "Accounting/finance officer",
+		},
+		{
+			Code : "002",
+			Name : "Customer service",
+		},
+		{
+			Code : "003",
+			Name : "Engineering",
+		},
+		{
+			Code : "004",
+			Name : "Eksekutif",
+		},
+		{
+			Code : "005",
+			Name : "Administrasi umum",
+		},
+		{
+			Code : "006",
+			Name : "Teknologi informasi",
+		},
+		{
+			Code : "007",
+			Name : "Konsultan/Analis",
+		},
+		{
+			Code : "008",
+			Name : "Marketing",
+		},
+		{
+			Code : "009",
+			Name : "Pengajar (Guru, Dosen)",
+		},
+		{
+			Code : "01",
+			Name : "PEMILIK-Direktur Utama",
+		},
+		{
+			Code : "010",
+			Name : "Militer",
+		},
+		{
+			Code : "011",
+			Name : "Pensiunan",
+		},
+		{
+			Code : "012",
+			Name : "Pelajar/Mahasiswa",
+		},
+		{
+			Code : "013",
+			Name : "Wiraswasta",
+		},
+		{
+			Code : "014",
+			Name : "Polisi",
+		},
+		{
+			Code : "015",
+			Name : "Petani",
+		},
+		{
+			Code : "016",
+			Name : "Nelayan",
+		},
+		{
+			Code : "017",
+			Name : "Peternak",
+		},
+		{
+			Code : "018",
+			Name : "Dokter",
+		},
+		{
+			Code : "019",
+			Name : "Tenaga Medis",
+		},
+		{
+			Code : "02",
+			Name : "PEMILIK-Direktur",
+		},
+		{
+			Code : "020",
+			Name : "Pengacara/Notaris",
+		},
+		{
+			Code : "021",
+			Name : "Pekerja Hotel/Restoran",
+		},
+		{
+			Code : "022",
+			Name : "Peneliti",
+		},
+		{
+			Code : "023",
+			Name : "Desainer",
+		},
+		{
+			Code : "024",
+			Name : "Arsitek",
+		},
+		{
+			Code : "025",
+			Name : "Pekerja Seni",
+		},
+		{
+			Code : "026",
+			Name : "Pengamanan",
+		},
+		{
+			Code : "027",
+			Name : "Pialang/Broker",
+		},
+		{
+			Code : "028",
+			Name : "Distributor",
+		},
+		{
+			Code : "029",
+			Name : "Pilot/Awak Pesawat",
+		},
+		{
+			Code : "03",
+			Name : "PEMILIK-Komusaris Utama",
+		},
+		{
+			Code : "030",
+			Name : "Nahkoda/Awak Kapal",
+		},
+		{
+			Code : "031",
+			Name : "Masinis/Sopir/Kondektur",
+		},
+		{
+			Code : "032",
+			Name : "Buruh Pabrik/Bangunan/Tani",
+		},
+		{
+			Code : "033",
+			Name : "Tukang / Pengrajin",
+		},
+		{
+			Code : "034",
+			Name : "Ibu Rumah Tangga",
+		},
+		{
+			Code : "035",
+			Name : "Pekerja Informal",
+		},
+		{
+			Code : "036",
+			Name : "Pejabat Negara / Pemerintahan",
+		},
+		{
+			Code : "037",
+			Name : "Pegawai Negara/Pemerintahan",
+		},
+		{
+			Code : "04",
+			Name : "PEMILIK-Komusaris",
+		},
+		{
+			Code : "05",
+			Name : "PEMILIK-Kuasa Direksi",
+		},
+		{
+			Code : "06",
+			Name : "PEMILIK-Bukan Pengurus",
+		},
+		{
+			Code : "07",
+			Name : "PEMILIK-Masyarakat",
+		},
+		{
+			Code : "08",
+			Name : "PEMILIK-Ketua Umum",
+		},
+		{
+			Code : "09",
+			Name : "PEMILIK-Ketua",
+		},
+		{
+			Code : "099",
+			Name : "Lain-lain",
+		},
+		{
+			Code : "10",
+			Name : "PEMILIK-Sekretaris",
+		},
+		{
+			Code : "11",
+			Name : "PEMILIK-Bendahara",
+		},
+		{
+			Code : "12",
+			Name : "PEMILIK-Lainnya",
+		},
+		{
+			Code : "13",
+			Name : "BUKAN PEMILIK-Direktur Utama",
+		},
+		{
+			Code : "14",
+			Name : "BUKAN PEMILIK-Direktur",
+		},
+		{
+			Code : "15",
+			Name : "BUKAN PEMILIK-Komisaris Utama",
+		},
+		{
+			Code : "16",
+			Name : "BUKAN PEMILIK-Komisaris",
+		},
+		{
+			Code : "17",
+			Name : "BUKAN PEMILIK-Kuasa Direksi",
+		},
+		{
+			Code : "18",
+			Name : "BUKAN PEMILIK-Ketua Umum",
+		},
+		{
+			Code : "19",
+			Name : "BUKAN PEMILIK-Ketua",
+		},
+		{
+			Code : "20",
+			Name : "BUKAN PEMILIK-Sekretaris",
+		},
+		{
+			Code : "21",
+			Name : "BUKAN PEMILIK-Bendahara",
+		},
+		{
+			Code : "22",
+			Name : "BUKAN PEMILIK-Lainnya",
+		},
+		{
+			Code : "23",
+			Name : "Notaris/Pengacara",
+		},
+		{
+			Code : "24",
+			Name : "Guru/Dosen",
+		},
+		{
+			Code : "25",
+			Name : "Mahasiswa/Pelajar",
+		},
+		{
+			Code : "26",
+			Name : "Akuntan",
+		},
+		{
+			Code : "27",
+			Name : "GM atau Kepala Biro",
+		},
+		{
+			Code : "28",
+			Name : "Staff",
+		},
+		{
+			Code : "29",
+			Name : "Bintara",
+		},
+		{
+			Code : "30",
+			Name : "Tamtama",
+		},
+		{
+			Code : "31",
+			Name : "Pengurus Koperasi/Yayasan/LSM",
+		},
+		{
+			Code : "32",
+			Name : "Anggota Koperasi/Yayasan/LSM",
+		},
+		{
+			Code : "33",
+			Name : "Kepala Pemerintahan",
+		},
+		{
+			Code : "34",
+			Name : "Anggota Lembaga Tinggi Negara",
+		},
+		{
+			Code : "35",
+			Name : "Menteri",
+		},
+		{
+			Code : "36",
+			Name : "Sekretaris",
+		},
+		{
+			Code : "37",
+			Name : "Risk Manager",
+		},
+		{
+			Code : "38",
+			Name : "Operational Manager",
+		},
+	}
+
+	var businessSector = []models.BusinessSector{
+		{
+			Code : "01",
+			Name : "Agriculture / Plantation",
+		},
+		{
+			Code : "02",
+			Name : "Fishery / Farm",
+		},
+		{
+			Code : "03",
+			Name : "Mining",
+		},
+		{
+			Code : "04",
+			Name : "Processing industry",
+		},
+		{
+			Code : "05",
+			Name : "Manufacture",
+		},
+		{
+			Code : "06",
+			Name : "Energy & Water",
+		},
+		{
+			Code : "06001",
+			Name : "Construction",
+		},
+		{
+			Code : "06002",
+			Name : "Automotive",
+		},
+		{
+			Code : "06003",
+			Name : "Retail/Wholesale trading",
+		},
+		{
+			Code : "06004",
+			Name : "Import/export/domestic trading",
+		},
+		{
+			Code : "06005",
+			Name : "Transportation",
+		},
+		{
+			Code : "06006",
+			Name : "Telecommunication",
+		},
+		{
+			Code : "06007",
+			Name : "Financial services",
+		},
+		{
+			Code : "06008",
+			Name : "Education Services",
+		},
+		{
+			Code : "06009",
+			Name : "Health Services",
+		},
+		{
+			Code : "07",
+			Name : "Non-financial services",
+		},
+		{
+			Code : "07001",
+			Name : "Hotels & Accommodation",
+		},
+		{
+			Code : "08",
+			Name : "Restaurant",
+		},
+		{
+			Code : "08001",
+			Name : "Real Estate",
+		},
+		{
+			Code : "08002",
+			Name : "Rental",
+		},
+		{
+			Code : "09",
+			Name : "Research and development",
+		},
+		{
+			Code : "09001",
+			Name : "Publish,Print&Advertising",
+		},
+		{
+			Code : "10",
+			Name : "Entertainment Activities",
+		},
+		{
+			Code : "6001",
+			Name : "Household",
+		},
+	}
+
+
+	var NegaraDomisili = []models.Negara{
+		{
+			Code : "AE",
+			Name : "UNITED ARAB EMIRATES",
+
+		},
+		{
+			Code : "AF",
+			Name : "AFGHANISTAN",
+
+		},
+		{
+			Code : "AG",
+			Name : "ANTIGUA AND BARBUDA",
+
+		},
+		{
+			Code : "AI",
+			Name : "ANGUILLA",
+
+		},
+		{
+			Code : "AL",
+			Name : "ALBANIA",
+
+		},
+		{
+			Code : "AM",
+			Name : "ARMENIA",
+
+		},
+		{
+			Code : "AN",
+			Name : "NETH. ANTILLES",
+
+		},
+		{
+			Code : "AO",
+			Name : "ANGOLA",
+
+		},
+		{
+			Code : "AQ",
+			Name : "ANTARCTICA",
+
+		},
+		{
+			Code : "AR",
+			Name : "ARGENTINA",
+
+		},
+		{
+			Code : "AS",
+			Name : "AMERICAN SAMOA",
+
+		},
+		{
+			Code : "AT",
+			Name : "AUSTRIA",
+
+		},
+		{
+			Code : "AU",
+			Name : "AUSTRALIA",
+
+		},
+		{
+			Code : "AW",
+			Name : "ARUBA",
+
+		},
+		{
+			Code : "AZ",
+			Name : "AZERBAIJAN",
+
+		},
+		{
+			Code : "BA",
+			Name : "BOSNIA AND HERZEGOVINA",
+
+		},
+		{
+			Code : "BB",
+			Name : "BARBADOS",
+
+		},
+		{
+			Code : "BD",
+			Name : "BANGLADESH",
+
+		},
+		{
+			Code : "BE",
+			Name : "BELGIUM",
+
+		},
+		{
+			Code : "BF",
+			Name : "BURKINA FASO",
+
+		},
+		{
+			Code : "BG",
+			Name : "BULGARIA",
+
+		},
+		{
+			Code : "BH",
+			Name : "BAHRAIN",
+
+		},
+		{
+			Code : "BI",
+			Name : "BURUNDI",
+
+		},
+		{
+			Code : "BJ",
+			Name : "BENIN",
+
+		},
+		{
+			Code : "BM",
+			Name : "BERMUDA",
+
+		},
+		{
+			Code : "BN",
+			Name : "BRUNEI DARUSSALAM",
+
+		},
+		{
+			Code : "BO",
+			Name : "BOLIVIA",
+
+		},
+		{
+			Code : "BR",
+			Name : "BRAZIL",
+
+		},
+		{
+			Code : "BS",
+			Name : "BAHAMAS",
+
+		},
+		{
+			Code : "BT",
+			Name : "BHUTAN",
+
+		},
+		{
+			Code : "BUD",
+			Name : "Budha",
+
+		},
+		{
+			Code : "BV",
+			Name : "BOUVET ISLAND",
+
+		},
+		{
+			Code : "BW",
+			Name : "BOTSWANA",
+
+		},
+		{
+			Code : "BY",
+			Name : "BELARUS",
+
+		},
+		{
+			Code : "BZ",
+			Name : "BELIZE",
+
+		},
+		{
+			Code : "CA",
+			Name : "CANADA",
+
+		},
+		{
+			Code : "CC",
+			Name : "COCOS (KEELING) ISLANDS",
+
+		},
+		{
+			Code : "CD",
+			Name : "CONGO, THE DEMOCRATIC REPUBLIC",
+
+		},
+		{
+			Code : "CF",
+			Name : "CENTRAL AFRICAN REPUBLIC",
+
+		},
+		{
+			Code : "CG",
+			Name : "CONGO",
+
+		},
+		{
+			Code : "CH",
+			Name : "SWITZERLAND",
+
+		},
+		{
+			Code : "CI",
+			Name : "COTE DIVOIRE",
+
+		},
+		{
+			Code : "CK",
+			Name : "COOK ISLANDS",
+
+		},
+		{
+			Code : "CL",
+			Name : "CHILE",
+
+		},
+		{
+			Code : "CM",
+			Name : "CAMEROON",
+
+		},
+		{
+			Code : "CN",
+			Name : "CHINA",
+
+		},
+		{
+			Code : "CO",
+			Name : "COLOMBIA",
+
+		},
+		{
+			Code : "CR",
+			Name : "COSTA RICA",
+
+		},
+		{
+			Code : "CU",
+			Name : "CUBA",
+
+		},
+		{
+			Code : "CV",
+			Name : "CAPE VERDE",
+
+		},
+		{
+			Code : "CX",
+			Name : "CHRISTMAS ISLAND",
+
+		},
+		{
+			Code : "CY",
+			Name : "CYPRUS",
+
+		},
+		{
+			Code : "CZ",
+			Name : "CZECH REPUBLIC",
+
+		},
+		{
+			Code : "DE",
+			Name : "GERMANY",
+
+		},
+		{
+			Code : "DJ",
+			Name : "DJIBOUTI",
+
+		},
+		{
+			Code : "DK",
+			Name : "DENMARK",
+
+		},
+		{
+			Code : "DM",
+			Name : "DOMINICA",
+
+		},
+		{
+			Code : "DO",
+			Name : "DOMINICAN REPUBLIC",
+
+		},
+		{
+			Code : "DZ",
+			Name : "ALGERIA",
+
+		},
+		{
+			Code : "EC",
+			Name : "ECUADOR",
+
+		},
+		{
+			Code : "EE",
+			Name : "ESTONIA",
+
+		},
+		{
+			Code : "EG",
+			Name : "EGYPT",
+
+		},
+		{
+			Code : "EH",
+			Name : "WESTERN SAHARA",
+
+		},
+		{
+			Code : "ER",
+			Name : "ERITREA",
+
+		},
+		{
+			Code : "ES",
+			Name : "SPAIN",
+
+		},
+		{
+			Code : "ET",
+			Name : "ETHIOPIA",
+
+		},
+		{
+			Code : "FI",
+			Name : "FINLAND",
+
+		},
+		{
+			Code : "FJ",
+			Name : "FIJI",
+
+		},
+		{
+			Code : "FK",
+			Name : "FALKLAND  ISLANDS (MALVINAS)",
+
+		},
+		{
+			Code : "FM",
+			Name : "MICRONESIA (FEDERATED STATES O",
+
+		},
+		{
+			Code : "FO",
+			Name : "FAEROE ISLANDS",
+
+		},
+		{
+			Code : "FR",
+			Name : "FRANCE",
+
+		},
+		{
+			Code : "GA",
+			Name : "GABON",
+
+		},
+		{
+			Code : "GB",
+			Name : "UNITED KINGDOM",
+
+		},
+		{
+			Code : "GD",
+			Name : "GRENADA",
+
+		},
+		{
+			Code : "GE",
+			Name : "GEORGIA",
+
+		},
+		{
+			Code : "GF",
+			Name : "FRENCH GUIANA",
+
+		},
+		{
+			Code : "GG",
+			Name : "GUERNSEY, C.I.",
+
+		},
+		{
+			Code : "GH",
+			Name : "GHANA",
+
+		},
+		{
+			Code : "GI",
+			Name : "GIBRALTAR",
+
+		},
+		{
+			Code : "GL",
+			Name : "GREENLAND",
+
+		},
+		{
+			Code : "GM",
+			Name : "GAMBIA",
+
+		},
+		{
+			Code : "GN",
+			Name : "GUINEA",
+
+		},
+		{
+			Code : "GP",
+			Name : "GUADELOUPE",
+
+		},
+		{
+			Code : "GQ",
+			Name : "EQUATORIAL GUINEA",
+
+		},
+		{
+			Code : "GR",
+			Name : "GREECE",
+
+		},
+		{
+			Code : "GT",
+			Name : "GUATEMALA",
+
+		},
+		{
+			Code : "GU",
+			Name : "GUAM",
+
+		},
+		{
+			Code : "GW",
+			Name : "GUINEA-BISSAU",
+
+		},
+		{
+			Code : "GY",
+			Name : "GUYANA",
+
+		},
+		{
+			Code : "HIN",
+			Name : "Hindu",
+
+		},
+		{
+			Code : "HK",
+			Name : "HONG KONG",
+
+		},
+		{
+			Code : "HM",
+			Name : "HEARD AND MCDONALD ISLANDS",
+
+		},
+		{
+			Code : "HN",
+			Name : "HONDURAS",
+
+		},
+		{
+			Code : "HR",
+			Name : "CROATIA",
+
+		},
+		{
+			Code : "HT",
+			Name : "HAITI",
+
+		},
+		{
+			Code : "HU",
+			Name : "HUNGARY",
+
+		},
+		{
+			Code : "ID",
+			Name : "INDONESIA",
+
+		},
+		{
+			Code : "IE",
+			Name : "IRELAND",
+
+		},
+		{
+			Code : "IL",
+			Name : "ISRAEL",
+
+		},
+		{
+			Code : "IM",
+			Name : "ISLE OF MAN",
+
+		},
+		{
+			Code : "IN",
+			Name : "INDIA",
+
+		},
+		{
+			Code : "IO",
+			Name : "BRITISH INDIAN OCEAN TERRITORY",
+
+		},
+		{
+			Code : "IQ",
+			Name : "IRAQ",
+
+		},
+		{
+			Code : "IR",
+			Name : "IRAN (ISLAMIC REPUBLIC OF)",
+
+		},
+		{
+			Code : "IS",
+			Name : "ICELAND",
+
+		},
+		{
+			Code : "ISL",
+			Name : "Islam",
+
+		},
+		{
+			Code : "IT",
+			Name : "ITALY",
+
+		},
+		{
+			Code : "JE",
+			Name : "JERSEY, C.I.",
+
+		},
+		{
+			Code : "JM",
+			Name : "JAMAICA",
+
+		},
+		{
+			Code : "JO",
+			Name : "JORDAN",
+
+		},
+		{
+			Code : "JP",
+			Name : "JAPAN",
+
+		},
+		{
+			Code : "KAT",
+			Name : "Kristen Katolik",
+
+		},
+		{
+			Code : "KE",
+			Name : "KENYA",
+
+		},
+		{
+			Code : "KG",
+			Name : "KYRGYZSTAN",
+
+		},
+		{
+			Code : "KH",
+			Name : "CAMBODIA",
+
+		},
+		{
+			Code : "KHC",
+			Name : "Kong Hu Chu",
+
+		},
+		{
+			Code : "KI",
+			Name : "KIRIBATI",
+
+		},
+		{
+			Code : "KM",
+			Name : "COMOROS",
+
+		},
+		{
+			Code : "KN",
+			Name : "SAINT KITTS AND NEVIS",
+
+		},
+		{
+			Code : "KP",
+			Name : "KOREA, DEMOCRATIC PEOPLES REP.",
+
+		},
+		{
+			Code : "KR",
+			Name : "KOREA, REPUBLIC OF",
+
+		},
+		{
+			Code : "KW",
+			Name : "KUWAIT",
+
+		},
+		{
+			Code : "KY",
+			Name : "CAYMAN ISLANDS",
+
+		},
+		{
+			Code : "KZ",
+			Name : "KAZAKHSTAN",
+
+		},
+		{
+			Code : "LA",
+			Name : "LAO PEOPLES DEMOCRATIC REPUBLI",
+
+		},
+		{
+			Code : "LB",
+			Name : "LEBANON",
+
+		},
+		{
+			Code : "LC",
+			Name : "SAINT LUCIA",
+
+		},
+		{
+			Code : "LI",
+			Name : "LIECHTENSTEIN",
+
+		},
+		{
+			Code : "LK",
+			Name : "SRI LANKA",
+
+		},
+		{
+			Code : "LLN",
+			Name : "Lainnya",
+
+		},
+		{
+			Code : "LR",
+			Name : "LIBERIA",
+
+		},
+		{
+			Code : "LS",
+			Name : "LESOTHO",
+
+		},
+		{
+			Code : "LT",
+			Name : "LITHUANIA",
+
+		},
+		{
+			Code : "LU",
+			Name : "LUXEMBOURG",
+
+		},
+		{
+			Code : "LV",
+			Name : "LATVIA",
+
+		},
+		{
+			Code : "LY",
+			Name : "LIBYAN ARAB JAMAHIRIYA",
+
+		},
+		{
+			Code : "MA",
+			Name : "MOROCCO",
+
+		},
+		{
+			Code : "MC",
+			Name : "MONACO",
+
+		},
+		{
+			Code : "MD",
+			Name : "MOLDOVA, REPUBLIC OF",
+
+		},
+		{
+			Code : "MG",
+			Name : "MADAGASCAR",
+
+		},
+		{
+			Code : "MH",
+			Name : "MARSHALL ISLANDS",
+
+		},
+		{
+			Code : "MK",
+			Name : "MACEDONIA,THE FORMER YUGOSLAV ",
+
+		},
+		{
+			Code : "ML",
+			Name : "MALI",
+
+		},
+		{
+			Code : "MM",
+			Name : "MYANMAR",
+
+		},
+		{
+			Code : "MN",
+			Name : "MONGOLIA",
+
+		},
+		{
+			Code : "MO",
+			Name : "MACAU",
+
+		},
+		{
+			Code : "MP",
+			Name : "NORTHERN MARIANA ISLANDS",
+
+		},
+		{
+			Code : "MQ",
+			Name : "MARTINIQUE",
+
+		},
+		{
+			Code : "MR",
+			Name : "MAURITANIA",
+
+		},
+		{
+			Code : "MS",
+			Name : "MONTSERRAT",
+
+		},
+		{
+			Code : "MT",
+			Name : "MALTA",
+
+		},
+		{
+			Code : "MU",
+			Name : "MAURITIUS",
+
+		},
+		{
+			Code : "MV",
+			Name : "MALDIVES",
+
+		},
+		{
+			Code : "MW",
+			Name : "MALAWI",
+
+		},
+		{
+			Code : "MX",
+			Name : "MEXICO",
+
+		},
+		{
+			Code : "MY",
+			Name : "MALAYSIA",
+
+		},
+		{
+			Code : "MZ",
+			Name : "MOZAMBIQUE",
+
+		},
+		{
+			Code : "NA",
+			Name : "NAMIBIA",
+
+		},
+		{
+			Code : "NC",
+			Name : "NEW CALEDONIA",
+
+		},
+		{
+			Code : "NE",
+			Name : "NIGER",
+
+		},
+		{
+			Code : "NF",
+			Name : "NORFOLK ISLAND",
+
+		},
+		{
+			Code : "NG",
+			Name : "NIGERIA",
+
+		},
+		{
+			Code : "NI",
+			Name : "NICARAGUA",
+
+		},
+		{
+			Code : "NL",
+			Name : "NETHERLANDS",
+
+		},
+		{
+			Code : "NO",
+			Name : "NORWAY",
+
+		},
+		{
+			Code : "NP",
+			Name : "NEPAL",
+
+		},
+		{
+			Code : "NR",
+			Name : "NAURU",
+
+		},
+		{
+			Code : "NU",
+			Name : "NIUE",
+
+		},
+		{
+			Code : "NZ",
+			Name : "NEW ZEALAND",
+
+		},
+		{
+			Code : "OM",
+			Name : "OMAN",
+
+		},
+		{
+			Code : "PA",
+			Name : "PANAMA",
+
+		},
+		{
+			Code : "PE",
+			Name : "PERU",
+
+		},
+		{
+			Code : "PF",
+			Name : "FRENCH POLYNESIA",
+
+		},
+		{
+			Code : "PG",
+			Name : "PAPUA NEW GUINEA",
+
+		},
+		{
+			Code : "PH",
+			Name : "PHILIPPINES",
+
+		},
+		{
+			Code : "PK",
+			Name : "PAKISTAN",
+
+		},
+		{
+			Code : "PL",
+			Name : "POLAND",
+
+		},
+		{
+			Code : "PM",
+			Name : "SAINT PIERRE AND MIQUELON",
+
+		},
+		{
+			Code : "PN",
+			Name : "PITCAIRN",
+
+		},
+		{
+			Code : "PR",
+			Name : "PUERTO RICO",
+
+		},
+		{
+			Code : "PRO",
+			Name : "Kristen Protestan",
+
+		},
+		{
+			Code : "PS",
+			Name : "PALESTINIAN TERRITORY, OCCUPIE",
+
+		},
+		{
+			Code : "PT",
+			Name : "PORTUGAL",
+
+		},
+		{
+			Code : "PW",
+			Name : "PALAU",
+
+		},
+		{
+			Code : "PY",
+			Name : "PARAGUAY",
+
+		},
+		{
+			Code : "PZ",
+			Name : "PANAMA CANAL ZONE",
+
+		},
+		{
+			Code : "QA",
+			Name : "QATAR",
+
+		},
+		{
+			Code : "RE",
+			Name : "REUNION",
+
+		},
+		{
+			Code : "RO",
+			Name : "ROMANIA",
+
+		},
+		{
+			Code : "RU",
+			Name : "RUSSIAN FEDERATION",
+
+		},
+		{
+			Code : "RW",
+			Name : "RWANDA",
+
+		},
+		{
+			Code : "SA",
+			Name : "SAUDI ARABIA",
+
+		},
+		{
+			Code : "SB",
+			Name : "SOLOMON ISLANDS",
+
+		},
+		{
+			Code : "SC",
+			Name : "SEYCHELLES",
+
+		},
+		{
+			Code : "SD",
+			Name : "SUDAN",
+
+		},
+		{
+			Code : "SE",
+			Name : "SWEDEN",
+
+		},
+		{
+			Code : "SG",
+			Name : "SINGAPORE",
+
+		},
+		{
+			Code : "SH",
+			Name : "SAINT HELENA",
+
+		},
+		{
+			Code : "SI",
+			Name : "SLOVENIA",
+
+		},
+		{
+			Code : "SJ",
+			Name : "SVALBARD AND JAN MAYEN ISLANDS",
+
+		},
+		{
+			Code : "SK",
+			Name : "SLOVAKIA",
+
+		},
+		{
+			Code : "SL",
+			Name : "SIERRA LEONE",
+
+		},
+		{
+			Code : "SM",
+			Name : "SAN MARINO",
+
+		},
+		{
+			Code : "SN",
+			Name : "SENEGAL",
+
+		},
+		{
+			Code : "SO",
+			Name : "SOMALIA",
+
+		},
+		{
+			Code : "SR",
+			Name : "SURINAME",
+
+		},
+		{
+			Code : "ST",
+			Name : "SAO TOME AND PRINCIPE",
+
+		},
+		{
+			Code : "SV",
+			Name : "EL SALVADOR",
+
+		},
+		{
+			Code : "SY",
+			Name : "SYRIAN ARAB REPUBLIC",
+
+		},
+		{
+			Code : "SZ",
+			Name : "SWAZILAND",
+
+		},
+		{
+			Code : "TC",
+			Name : "TURKS AND CAICOS ISLANDS",
+
+		},
+		{
+			Code : "TD",
+			Name : "CHAD",
+
+		},
+		{
+			Code : "TF",
+			Name : "FRENCH SOUTHERN TERRITORIES",
+
+		},
+		{
+			Code : "TG",
+			Name : "TOGO",
+
+		},
+		{
+			Code : "TH",
+			Name : "THAILAND",
+
+		},
+		{
+			Code : "TJ",
+			Name : "TAJIKISTAN",
+
+		},
+		{
+			Code : "TK",
+			Name : "TOKELAU",
+
+		},
+		{
+			Code : "TM",
+			Name : "TURKMENISTAN",
+
+		},
+		{
+			Code : "TN",
+			Name : "TUNISIA",
+
+		},
+		{
+			Code : "TO",
+			Name : "TONGA",
+
+		},
+		{
+			Code : "TP",
+			Name : "EAST TIMOR",
+
+		},
+		{
+			Code : "TR",
+			Name : "TURKEY",
+
+		},
+		{
+			Code : "TT",
+			Name : "TRINIDAD AND TOBAGO",
+
+		},
+		{
+			Code : "TV",
+			Name : "TUVALU",
+
+		},
+		{
+			Code : "TW",
+			Name : "TAIWAN",
+
+		},
+		{
+			Code : "TZ",
+			Name : "TANZANIA, UNITED REPUBLIC OF",
+
+		},
+		{
+			Code : "UA",
+			Name : "UKRAINE",
+
+		},
+		{
+			Code : "UG",
+			Name : "UGANDA",
+
+		},
+		{
+			Code : "UM",
+			Name : "UNITED STATES MINOR OUTLAYING ",
+
+		},
+		{
+			Code : "US",
+			Name : "UNITED STATES",
+
+		},
+		{
+			Code : "UY",
+			Name : "URUGUAY",
+
+		},
+		{
+			Code : "UZ",
+			Name : "UZBEKISTAN",
+
+		},
+		{
+			Code : "VA",
+			Name : "HOLY SEE (VATICAN CITY STATE)",
+
+		},
+		{
+			Code : "VC",
+			Name : "SAINT VINCENT AND THE GRENADIN",
+
+		},
+		{
+			Code : "VE",
+			Name : "VENEZUELA",
+
+		},
+		{
+			Code : "VG",
+			Name : "VIRGIN ISLANDS, BRITISH",
+
+		},
+		{
+			Code : "VI",
+			Name : "VIRGIN ISLANDS, U.S.",
+
+		},
+		{
+			Code : "VN",
+			Name : "VIET NAM",
+
+		},
+		{
+			Code : "VU",
+			Name : "VANUATU",
+
+		},
+		{
+			Code : "WF",
+			Name : "WALLIS AND FUTUNA ISLANDS",
+
+		},
+		{
+			Code : "WS",
+			Name : "SAMOA",
+
+		},
+		{
+			Code : "YE",
+			Name : "YEMEN",
+
+		},
+		{
+			Code : "YT",
+			Name : "MAYOTTE",
+
+		},
+		{
+			Code : "YU",
+			Name : "YUGOSLAVIA",
+
+		},
+		{
+			Code : "ZA",
+			Name : "SOUTH AFRICA",
+
+		},
+		{
+			Code : "ZM",
+			Name : "ZAMBIA",
+
+		},
+		{
+			Code : "ZW",
+			Name : "ZIMBABWE",
+
+		},
+	}
+
+	var gender = []models.Gender{
+		{
+			Name: "Laki-laki",
+		},
+		{
+			Name: "Perempuan",
+		},
+	}
 
 	var addressType = []models.AddressType{
 		{
@@ -1897,16 +1897,861 @@ func ApplicantSeed() {
 		},
 	}
 
-	// connection.DB.Save(&homeStatus)
-	// connection.DB.Save(&maritalStatus)
-	// connection.DB.Save(&nationality)
-	// connection.DB.Save(&education)
-	// connection.DB.Save(&jobPosition)
-	// connection.DB.Save(&businessSector)
-	// connection.DB.Save(&NegaraDomisili)
-	// connection.DB.Save(&gender)
+	connection.DB.Save(&homeStatus)
+	connection.DB.Save(&maritalStatus)
+	connection.DB.Save(&nationality)
+	connection.DB.Save(&education)
+	connection.DB.Save(&jobPosition)
+	connection.DB.Save(&businessSector)
+	connection.DB.Save(&NegaraDomisili)
+	connection.DB.Save(&gender)
 	connection.DB.Save(&addressType)
 }
+
+func BusinessSeed() {
+
+	var companyFirstName = []models.CompanyFirstName{
+		{
+			Code : "01",
+			Name : "BUMDES",
+		},
+		{
+			Code : "02",
+			Name : "CV",
+		},
+		{
+			Code : "03",
+			Name : "Debitur Kelompok",
+		},
+		{
+			Code : "04",
+			Name : "EMKL",
+		},
+		{
+			Code : "05",
+			Name : "Firma",
+		},
+		{
+			Code : "06",
+			Name : "Gabungan Koperasi",
+		},
+		{
+			Code : "07",
+			Name : "Induk Koperasi",
+		},
+		{
+			Code : "08",
+			Name : "Koperasi",
+		},
+		{
+			Code : "09",
+			Name : "KUD",
+		},
+		{
+			Code : "10",
+			Name : "Limited",
+		},
+		{
+			Code : "11",
+			Name : "MAI",
+		},
+		{
+			Code : "12",
+			Name : "NV",
+		},
+		{
+			Code : "13",
+			Name : "PD",
+		},
+		{
+			Code : "14",
+			Name : "Persero",
+		},
+		{
+			Code : "15",
+			Name : "Persekutuan Perdata",
+		},
+		{
+			Code : "16",
+			Name : "PU",
+		},
+		{
+			Code : "17",
+			Name : "Primer Koperasi",
+		},
+		{
+			Code : "18",
+			Name : "PT",
+		},
+		{
+			Code : "19",
+			Name : "Pusat Koperasi",
+		},
+		{
+			Code : "20",
+			Name : "Pusat KUD",
+		},
+		{
+			Code : "21",
+			Name : "UD",
+		},
+		{
+			Code : "22",
+			Name : "UDKP",
+		},
+		{
+			Code : "23",
+			Name : "Yayasan",
+		},
+		{
+			Code : "24",
+			Name : "PP Daerah",
+		},
+		{
+			Code : "25",
+			Name : "PU Daerah",
+		},
+		{
+			Code : "99",
+			Name : "Lainnya",
+		},
+	}
+
+	var companyType = []models.CompanyType{
+		{
+			Code : "A",
+			Name : "Perorangan",
+		},
+		{
+			Code : "B",
+			Name : "Badan Usaha Sws",
+		},
+		{
+			Code : "C",
+			Name : "Bank",
+		},
+		{
+			Code : "D",
+			Name : "Lbg.Kg.Non Bank",
+		},
+		{
+			Code : "E",
+			Name : "Badan Sosial",
+		},
+		{
+			Code : "F",
+			Name : "Lbg.Pemrth.",
+		},
+		{
+			Code : "G",
+			Name : "Lbg.Intrnsl.",
+		},
+		{
+			Code : "H",
+			Name : "Pwkl.Neg.Asing",
+		},
+		{
+			Code : "I",
+			Name : "Koperasi",
+		},
+		{
+			Code : "J",
+			Name : "BUMN",
+		},
+		{
+			Code : "K",
+			Name : "BUMD",
+		},
+		{
+			Code : "L",
+			Name : "Pen.Modal Asing",
+		},
+		{
+			Code : "M",
+			Name : "BPR",
+		},
+		{
+			Code : "N",
+			Name : "Lembaga PEMDA",
+		},
+		{
+			Code : "O",
+			Name : "Yayasan",
+		},
+		{
+			Code : "P",
+			Name : "Prsh Securitas",
+		},
+		{
+			Code : "Q",
+			Name : "PMDN",
+		},
+		{
+			Code : "R",
+			Name : "Lembaga Nirlaba",
+		},
+	}
+
+	var externalRatingCompany = []models.ExternalRatingCompany{
+		{
+			Code : "CARD",
+			Name : "Credit Card Center",
+		},
+		{
+			Code : "FITCH",
+			Name : "Fitch Rating",
+		},
+		{
+			Code : "FITID",
+			Name : "Fitch Indonesia",
+		},
+		{
+			Code : "LAIN",
+			Name : "Lainnya",
+		},
+		{
+			Code : "LPINT",
+			Name : "Lembaga Pemeringkatan Internasional",
+		},
+		{
+			Code : "LPNAS",
+			Name : "Lembaga Pemeringkatan Nasional",
+		},
+		{
+			Code : "MARKT",
+			Name : "Marketing / Business Unit",
+		},
+		{
+			Code : "MDS",
+			Name : "Moody's",
+		},
+		{
+			Code : "MDSID",
+			Name : "Moodys Indonesia",
+		},
+		{
+			Code : "MEDIA",
+			Name : "Media Cetak dan Elektronik",
+		},
+		{
+			Code : "MODDY",
+			Name : "Quality",
+		},
+		{
+			Code : "PEFIN",
+			Name : "Pefindo",
+		},
+		{
+			Code : "S&P",
+			Name : "Standard & Poor's",
+		},
+		{
+			Code : "SCPIN",
+			Name : "Sucofindo",
+		},
+		{
+			Code : "SPI",
+			Name : "Satuan Pengawas Intern (SPI)",
+		},
+		{
+			Code : "SYR",
+			Name : "Surveyor",
+		},
+		{
+			Code : "TDK",
+			Name : "Tidak Ada",
+		},
+	}
+
+	var ratingClass = []models.RatingClass{
+		{
+			ExternalRatingId : 1,
+			Code : "AA",
+			Name : "Excellent",
+			Sibs : "AA",
+		},
+		{
+			ExternalRatingId : 1,
+			Code : "BB",
+			Name : "Good",
+			Sibs : "BB",
+		},
+		{
+			ExternalRatingId : 1,
+			Code : "CC",
+			Name : "Fair",
+			Sibs : "CC",
+		},
+		{
+			ExternalRatingId : 1,
+			Code : "DD",
+			Name : "Bad Card Holder",
+			Sibs : "DD",
+		},
+		{
+			ExternalRatingId : 1,
+			Code : "EE",
+			Name : "Black List",
+			Sibs : "EE",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "01",
+			Name : "AAA/ Highest Credit Quality",
+			Sibs : "01",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "02",
+			Name : "AA+",
+			Sibs : "02",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "03",
+			Name : "AA/ Very High Credit Quality",
+			Sibs : "03",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "04",
+			Name : "AA-",
+			Sibs : "04",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "05",
+			Name : "A+",
+			Sibs : "05",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "06",
+			Name : "A/ High Credit Quality",
+			Sibs : "06",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "07",
+			Name : "A-",
+			Sibs : "07",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "08",
+			Name : "BBB+",
+			Sibs : "08",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "09",
+			Name : "BBB/ Good Credit Quality",
+			Sibs : "09",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "10",
+			Name : "BBB-",
+			Sibs : "10",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "11",
+			Name : "BB+",
+			Sibs : "11",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "12",
+			Name : "BB/ Speculative",
+			Sibs : "12",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "13",
+			Name : "BB-",
+			Sibs : "13",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "14",
+			Name : "B+",
+			Sibs : "14",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "15",
+			Name : "B/ Highly Speculative",
+			Sibs : "15",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "16",
+			Name : "B-",
+			Sibs : "16",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "17",
+			Name : "CCC+",
+			Sibs : "17",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "18",
+			Name : "CCC/ High Default Risk",
+			Sibs : "18",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "19",
+			Name : "CCC-",
+			Sibs : "19",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "20",
+			Name : "CC/ High Default Risk",
+			Sibs : "20",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "21",
+			Name : "C/ High Default Risk",
+			Sibs : "21",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "22",
+			Name : "D",
+			Sibs : "22",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "61",
+			Name : "F1+",
+			Sibs : "61",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "A",
+			Name : "High Credit Quality",
+			Sibs : "A",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "AA",
+			Name : "Very High Credit Quality",
+			Sibs : "AA",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "AAA",
+			Name : "Highest Credit Quality",
+			Sibs : "AAA",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "B",
+			Name : "Highly Speculative",
+			Sibs : "B",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "BB",
+			Name : "Speculative",
+			Sibs : "BB",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "BBB",
+			Name : "Good Credit Quality",
+			Sibs : "BBB",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "C",
+			Name : "High Default Risk",
+			Sibs : "C",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "CC",
+			Name : "High Default Risk",
+			Sibs : "CC",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "CCC",
+			Name : "High Default Risk",
+			Sibs : "CCC",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "D",
+			Name : "Default and potential recovery < 50%",
+			Sibs : "D",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "DD",
+			Name : "Default and potential recovery 50%-90%",
+			Sibs : "DD",
+		},
+		{
+			ExternalRatingId : 2,
+			Code : "DDD",
+			Name : "Default",
+			Sibs : "DDD",
+		},
+		{
+			ExternalRatingId : 4,
+			Code : "ISO",
+			Name : "Memenuhi Standard ISO",
+			Sibs : "ISO",
+		},
+		{
+			ExternalRatingId : 8,
+			Code : "A",
+			Name : "Upper-Medium-Grade",
+			Sibs : "A",
+		},
+		{
+			ExternalRatingId : 8,
+			Code : "AA",
+			Name : "High Quality",
+			Sibs : "AA",
+		},
+		{
+			ExternalRatingId : 8,
+			Code : "AAA",
+			Name : "Best Quality",
+			Sibs : "AAA",
+		},
+		{
+			ExternalRatingId : 8,
+			Code : "B",
+			Name : "Lack Characteristics",
+			Sibs : "B",
+		},
+		{
+			ExternalRatingId : 8,
+			Code : "BA",
+			Name : "Hot Well Assured",
+			Sibs : "BA",
+		},
+		{
+			ExternalRatingId : 8,
+			Code : "BAA",
+			Name : "Medium Grade",
+			Sibs : "BAA",
+		},
+		{
+			ExternalRatingId : 8,
+			Code : "C",
+			Name : "Extreamly Poor",
+			Sibs : "C",
+		},
+		{
+			ExternalRatingId : 8,
+			Code : "CA",
+			Name : "Highly Speculative",
+			Sibs : "CA",
+		},
+		{
+			ExternalRatingId : 8,
+			Code : "CAA",
+			Name : "Poor",
+			Sibs : "CAA",
+		},
+		{
+			ExternalRatingId : 10,
+			Code : "AAA",
+			Name : "Excellent",
+			Sibs : "AAA",
+		},
+		{
+			ExternalRatingId : 10,
+			Code : "BBB",
+			Name : "Good",
+			Sibs : "BBB",
+		},
+		{
+			ExternalRatingId : 10,
+			Code : "CCC",
+			Name : "Average",
+			Sibs : "CCC",
+		},
+		{
+			ExternalRatingId : 10,
+			Code : "DDD",
+			Name : "Poor",
+			Sibs : "DDD",
+		},
+		{
+			ExternalRatingId : 11,
+			Code : "A",
+			Name : "High Credit Quality",
+			Sibs : "A",
+		},
+		{
+			ExternalRatingId : 11,
+			Code : "AA",
+			Name : "Very High Credit Quality",
+			Sibs : "AA",
+		},
+		{
+			ExternalRatingId : 11,
+			Code : "B",
+			Name : "Higly Speculative/Poor Credit Quality",
+			Sibs : "B",
+		},
+		{
+			ExternalRatingId : 11,
+			Code : "BA",
+			Name : "Speculation/Questionable Credit Quality",
+			Sibs : "BA",
+		},
+		{
+			ExternalRatingId : 11,
+			Code : "BAA",
+			Name : "Good Credit Quality",
+			Sibs : "BAA",
+		},
+		{
+			ExternalRatingId : 11,
+			Code : "C",
+			Name : "Imminent Default with recovery low",
+			Sibs : "C",
+		},
+		{
+			ExternalRatingId : 11,
+			Code : "CA",
+			Name : "Usually in Default",
+			Sibs : "CA",
+		},
+		{
+			ExternalRatingId : 11,
+			Code : "CAA",
+			Name : "Extremely Poor Credit Quality",
+			Sibs : "CAA",
+		},
+		{
+			ExternalRatingId : 13,
+			Code : "A",
+			Name : "High Credit Quality",
+			Sibs : "A",
+		},
+		{
+			ExternalRatingId : 13,
+			Code : "AA",
+			Name : "Very High Credit Quality",
+			Sibs : "AA",
+		},
+		{
+			ExternalRatingId : 13,
+			Code : "AAA",
+			Name : "Highest Credit Quality",
+			Sibs : "AAA",
+		},
+		{
+			ExternalRatingId : 13,
+			Code : "B",
+			Name : "Highly Default Risk",
+			Sibs : "B",
+		},
+		{
+			ExternalRatingId : 13,
+			Code : "BB",
+			Name : "Speculative",
+			Sibs : "BB",
+		},
+		{
+			ExternalRatingId : 13,
+			Code : "BBB",
+			Name : "Good Credit Quality",
+			Sibs : "BBB",
+		},
+		{
+			ExternalRatingId : 13,
+			Code : "C",
+			Name : "Highly Vulnerable",
+			Sibs : "C",
+		},
+		{
+			ExternalRatingId : 13,
+			Code : "CC",
+			Name : "Highly Vulnerable",
+			Sibs : "CC",
+		},
+		{
+			ExternalRatingId : 13,
+			Code : "CCC",
+			Name : "Vulnerable",
+			Sibs : "CCC",
+		},
+		{
+			ExternalRatingId : 13,
+			Code : "D",
+			Name : "Default",
+			Sibs : "D",
+		},
+		{
+			ExternalRatingId : 15,
+			Code : "AA",
+			Name : "Excellent",
+			Sibs : "AA",
+		},
+		{
+			ExternalRatingId : 15,
+			Code : "BB",
+			Name : "Good",
+			Sibs : "BB",
+		},
+		{
+			ExternalRatingId : 15,
+			Code : "CC",
+			Name : "Fair",
+			Sibs : "CC",
+		},
+		{
+			ExternalRatingId : 15,
+			Code : "DD",
+			Name : "Bad",
+			Sibs : "DD",
+		},
+		{
+			ExternalRatingId : 15,
+			Code : "EE",
+			Name : "Black List",
+			Sibs : "EE",
+		},
+		{
+			ExternalRatingId : 17,
+			Code : "TDK",
+			Name : "Tidak Ada",
+			Sibs : "TDK",
+		},
+	}
+
+	var kodeBursa = []models.KodeBursa{
+		{
+			Code : "01",
+			Name : "001",			
+		},
+		{
+			Code : "02",
+			Name : "002",
+		},
+	}
+
+	var businessType = []models.BusinessType{
+		{
+			Code : "01",
+			Name : "Agriculture / Plantation",
+		},
+		{
+			Code : "02",
+			Name : "Fishery / Farm",
+		},
+		{
+			Code : "03",
+			Name : "Mining",
+		},
+		{
+			Code : "04",
+			Name : "Processing industry",
+		},
+		{
+			Code : "05",
+			Name : "Manufacture",
+		},
+		{
+			Code : "06",
+			Name : "Energy & Water",
+		},
+		{
+			Code : "06001",
+			Name : "Construction",
+		},
+		{
+			Code : "06002",
+			Name : "Automotive",
+		},
+		{
+			Code : "06003",
+			Name : "Retail/Wholesale trading",
+		},
+		{
+			Code : "06004",
+			Name : "Import/export/domestic trading",
+		},
+		{
+			Code : "06005",
+			Name : "Transportation",
+		},
+		{
+			Code : "06006",
+			Name : "Telecommunication",
+		},
+		{
+			Code : "06007",
+			Name : "Financial services",
+		},
+		{
+			Code : "06008",
+			Name : "Education Services",
+		},
+		{
+			Code : "06009",
+			Name : "Health Services",
+		},
+		{
+			Code : "07",
+			Name : "Non-financial services",
+		},
+		{
+			Code : "07001",
+			Name : "Hotels & Accommodation",
+		},
+		{
+			Code : "08",
+			Name : "Restaurant",
+		},
+		{
+			Code : "08001",
+			Name : "Real Estate",
+		},
+		{
+			Code : "08002",
+			Name : "Rental",
+		},
+		{
+			Code : "09",
+			Name : "Research and development",
+		},
+		{
+			Code : "09001",
+			Name : "Publish,Print&Advertising",
+		},
+		{
+			Code : "10",
+			Name : "Entertainment Activities",
+		},
+		{
+			Code : "6001",
+			Name : "Household",
+		},
+	}
+
+	connection.DB.Save(&companyFirstName)
+	connection.DB.Save(&companyType)
+	connection.DB.Save(&externalRatingCompany)
+	connection.DB.Save(&ratingClass)
+	connection.DB.Save(&kodeBursa)
+	connection.DB.Save(&businessType)
+}
+
 func GeneralInformationSeed() {
 
 	var cabang = []models.Cabang{
