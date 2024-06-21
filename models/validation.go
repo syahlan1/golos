@@ -3,28 +3,30 @@ package models
 import "time"
 
 type MasterValidation struct {
-	Id                 int       `json:"id" gorm:"autoIncrement"`
-	CreatedDate        time.Time `json:"created_date"`
-	CreatedBy          string    `json:"created_by"`
-	UpdatedDate        time.Time `json:"updated_date"`
-	UpdatedBy          string    `json:"updated_by"`
-	Status             string    `json:"status"`
-	ColumnId           int       `json:"column_id"`
-	Description        string    `json:"description"`
-	EnglishDescription string    `json:"english_description"`
-	MasterCodeId       int       `json:"master_code_id"`
-	MessageType        string    `json:"message_type"`
-	ValidationFunction string    `json:"validation_function"`
-	IsActive           int       `json:"is_active"`
+	Id                 int          `json:"id" gorm:"autoIncrement"`
+	CreatedDate        time.Time    `json:"created_date"`
+	CreatedBy          string       `json:"created_by"`
+	UpdatedDate        time.Time    `json:"updated_date"`
+	UpdatedBy          string       `json:"updated_by"`
+	Status             string       `json:"status"`
+	ColumnId           int          `json:"column_id"`
+	Description        string       `json:"description"`
+	EnglishDescription string       `json:"english_description"`
+	MasterCodeId       int          `json:"master_code_id"`
+	MessageType        string       `json:"message_type"`
+	ValidationFunction string       `json:"validation_function"`
+	IsActive           int          `json:"is_active"`
+	MasterColumn       MasterColumn `json:"-" gorm:"foreignKey:ColumnId"`
+	MasterCode         MasterCode   `json:"-" gorm:"foreignKey:MasterCodeId"`
 }
 
 type CreateValidation struct {
-	Description        string    `json:"description"`
-	EnglishDescription string    `json:"english_description"`
-	MessageType        string    `json:"message_type"`
-	ValidationFunction string    `json:"validation_function"`
-	IsActive           int       `json:"is_active"`
-	MasterCodeId       int       `json:"master_code_id"`
+	Description        string `json:"description"`
+	EnglishDescription string `json:"english_description"`
+	MessageType        string `json:"message_type"`
+	ValidationFunction string `json:"validation_function"`
+	IsActive           int    `json:"is_active"`
+	MasterCodeId       int    `json:"master_code_id"`
 }
 
 type MasterValidationRelation struct {

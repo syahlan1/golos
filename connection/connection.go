@@ -100,6 +100,7 @@ func Connect() {
 	connection.AutoMigrate(&models.MasterCode{})
 	connection.AutoMigrate(&models.MasterCodeGroup{})
 
+	connection.AutoMigrate(&models.MasterModule{})
 	connection.AutoMigrate(&models.MasterTable{})
 	connection.AutoMigrate(&models.MasterColumn{})
 	connection.AutoMigrate(&models.MasterSourceColumn{})

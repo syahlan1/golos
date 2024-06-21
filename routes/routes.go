@@ -13,6 +13,7 @@ import (
 	"github.com/syahlan1/golos/controllers/idCardController"
 	"github.com/syahlan1/golos/controllers/masterCodeController"
 	"github.com/syahlan1/golos/controllers/masterColumnController"
+	"github.com/syahlan1/golos/controllers/masterModuleController"
 	"github.com/syahlan1/golos/controllers/masterParameterController"
 	"github.com/syahlan1/golos/controllers/masterTableController"
 	"github.com/syahlan1/golos/controllers/ownershipDataController"
@@ -149,7 +150,7 @@ func Setup(app *fiber.App) {
 	//Validation
 	api.Get("/validation/show", validationController.ShowAllValidations)
 	// api.Get("/validation/show/:group_id", controllers.ShowDetailValidation)
-	api.Put("/validation/delete/:id", validationController.DeleteValidation)
+	api.Delete("/validation/delete/:id", validationController.DeleteValidation)
 	api.Put("/validation/update/:id", validationController.UpdateValidation)
 	api.Post("/validation/create", validationController.CreateValidation)
 
@@ -158,18 +159,25 @@ func Setup(app *fiber.App) {
 	api.Get("/master-codes/show/by-name/:code_group", masterCodeController.ShowDetailMasterCode)
 	api.Get("/master-codes/show/by-id/:code_group_id", masterCodeController.ShowDetailMasterCode)
 	api.Post("/master-codes/create", masterCodeController.CreateMasterCode)
-	api.Put("/master-codes/edit/:id", masterCodeController.UpdateMasterCode)
-	api.Put("/master-codes/delete/:id", masterCodeController.DeleteMasterCode)
+	api.Put("/master-codes/update/:id", masterCodeController.UpdateMasterCode)
+	api.Delete("/master-codes/delete/:id", masterCodeController.DeleteMasterCode)
 	api.Get("/master-code-group/show", masterCodeController.ShowMasterCodeGroup)
 	api.Post("/master-code-group/create", masterCodeController.CreateMasterCodeGroup)
-	api.Put("/master-code-group/edit/:id", masterCodeController.UpdateMasterCodeGroup)
-	api.Put("/master-code-group/delete/:id", masterCodeController.DeleteMasterCodeGroup)
+	api.Put("/master-code-group/update/:id", masterCodeController.UpdateMasterCodeGroup)
+	api.Delete("/master-code-group/delete/:id", masterCodeController.DeleteMasterCodeGroup)
+
+	//Master Module
+	api.Get("/master-module/show", masterModuleController.ShowMasterModule)
+	api.Get("/master-module/show/:id", masterModuleController.ShowMasterModuleDetail)
+	api.Post("/master-module/create", masterModuleController.CreateMasterModule)
+	api.Put("/master-module/update/:id", masterModuleController.UpdateMasterModule)
+	api.Delete("/master-module/delete/:id", masterModuleController.DeleteMasterModule)
 
 	//Master Table
 	api.Get("/master-table/show", masterTableController.ShowMasterTable)
 	api.Get("/master-table/show/:id", masterTableController.ShowMasterTableDetail)
 	api.Post("/master-table/create", masterTableController.CreateMasterTable)
-	api.Put("/master-table/delete/:id", masterTableController.DeleteMasterTable)
+	api.Delete("/master-table/delete/:id", masterTableController.DeleteMasterTable)
 	api.Put("/master-table/update/:id", masterTableController.UpdateMasterTable)
 
 	// //Master Column
@@ -177,7 +185,7 @@ func Setup(app *fiber.App) {
 	api.Get("/master-column/show/:id", masterColumnController.ShowMasterColumnDetail)
 	api.Get("/master-column/by-table/:id", masterColumnController.ShowMasterColumnByTable)
 	api.Post("/master-column/create/:id", masterColumnController.CreateMasterColumn)
-	api.Put("/master-column/delete/:id", masterColumnController.DeleteMasterColumn)
+	api.Delete("/master-column/delete/:id", masterColumnController.DeleteMasterColumn)
 	api.Put("/master-column/:id", masterColumnController.UpdateColumnTable)
 
 	// //generate table
@@ -186,7 +194,7 @@ func Setup(app *fiber.App) {
 	// //master parameter
 	api.Post("/master-parameter/create", masterParameterController.CreateParameter)
 	api.Put("/master-parameter/update/:id", masterParameterController.UpdateMasterParameter)
-	api.Put("/master-parameter/delete/:id", masterParameterController.DeleteMasterParameter)
+	api.Delete("/master-parameter/delete/:id", masterParameterController.DeleteMasterParameter)
 	api.Get("/master-parameter/show", masterParameterController.ShowAllParameter)
 	api.Get("/master-parameter/show/:id", masterParameterController.ShowParameterDetail)
 }

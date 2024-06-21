@@ -11,3 +11,11 @@ type Model struct {
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
+
+type ModelMasterForm struct {
+	CreatedBy string
+	CreatedAt time.Time
+	UpdatedBy string
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
+}
