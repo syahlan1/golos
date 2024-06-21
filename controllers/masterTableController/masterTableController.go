@@ -8,7 +8,7 @@ import (
 )
 
 func CreateMasterTable(c *fiber.Ctx) error {
-	var data models.CreateMasterTable
+	var data models.MasterTable
 
 	if err := c.BodyParser(&data); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
@@ -35,12 +35,13 @@ func CreateMasterTable(c *fiber.Ctx) error {
 	// Return success response
 	return c.JSON(models.Response{
 		Code:    fiber.StatusCreated,
-		Message: "Master Code Created!",
+		Message: "Master Table Created!",
 	})
 }
 
 func ShowMasterTable(c *fiber.Ctx) error {
-	result := masterTableService.ShowMasterTable()
+	module_id := c.Query("module_id")
+	result := masterTableService.ShowMasterTable(module_id)
 
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
@@ -109,7 +110,7 @@ func DeleteMasterTable(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"message": "Unauthorized"})
 	}
 
-	result, err := masterTableService.DeleteMasterTable(claims, masterTableId)
+	err = masterTableService.DeleteMasterTable(claims, masterTableId)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
@@ -120,7 +121,6 @@ func DeleteMasterTable(c *fiber.Ctx) error {
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
 		Message: "Deleted!",
-		Data:    result,
 	})
 }
 

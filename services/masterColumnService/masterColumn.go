@@ -85,7 +85,7 @@ func UpdateColumnTable(claims, masterTableId string, updatedMasterTable models.M
 	}
 
 	masterTable.UpdatedBy = user.Username
-	masterTable.UpdatedDate = time.Now()
+	// masterTable.UpdatedDate = time.Now()
 	masterTable.ModuleName = updatedMasterTable.ModuleName
 	masterTable.Description = updatedMasterTable.Description
 	masterTable.EnglishDescription = updatedMasterTable.EnglishDescription
@@ -112,8 +112,8 @@ func DeleteMasterColumn(claims, masterTableId string) (result models.MasterTable
 	}
 
 	masterTable.UpdatedBy = user.Username
-	masterTable.UpdatedDate = time.Now()
-	masterTable.Status = "D"
+	// masterTable.UpdatedDate = time.Now()
+	// masterTable.Status = "D"
 
 	if err := connection.DB.Save(&masterTable).Error; err != nil {
 		return result, errors.New("Failed to delete Master Table")

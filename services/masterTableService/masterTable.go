@@ -17,33 +17,16 @@ import (
 	"github.com/syahlan1/golos/utils/templates"
 )
 
-func CreateMasterTable(claims string, data models.CreateMasterTable) (err error) {
+func CreateMasterTable(claims string, data models.MasterTable) (err error) {
 	var user models.Users
 	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("error retrieving user:", err)
 		return err
 	}
 
-	timeNow := time.Now()
+	data.CreatedBy = user.Username
 
-	newMasterCode := models.MasterTable{
-		CreatedBy:          user.Username,
-		CreatedDate:        timeNow,
-		ModuleName:         "LOSLES",
-		TableName:          data.TableName,
-		Status:             "L",
-		Description:        data.Description,
-		EnglishDescription: data.EnglishDescription,
-		OrderField:         data.OrderField,
-		FormType:           data.FormType,
-		PeriodType:         data.PeriodType,
-		UsePeriod:          data.UsePeriod,
-		UseWorkflow:        data.UseWorkflow,
-		UseBranch:          data.UseBranch,
-		UseDataLoader:      data.UseDataLoader,
-	}
-
-	if err := connection.DB.Create(&newMasterCode).Error; err != nil {
+	if err := connection.DB.Create(&data).Error; err != nil {
 		return errors.New("failed to create Master Code")
 	}
 
@@ -51,10 +34,12 @@ func CreateMasterTable(claims string, data models.CreateMasterTable) (err error)
 	return nil
 }
 
-func ShowMasterTable() (result []models.MasterTable) {
+func ShowMasterTable(moduleId string) (result []models.MasterTable) {
 	var masterCode []models.MasterTable
 
-	connection.DB.Where("status = ?", "L").Find(&masterCode)
+	connection.DB.Select("master_tables.*, md.module_name").
+		Joins("JOIN master_modules md ON md.id = master_tables.module_id").
+		Find(&masterCode, "module_id = ?", moduleId)
 
 	return masterCode
 }
@@ -63,7 +48,10 @@ func ShowMasterTableDetail(masterTableId string) (result models.MasterTable, err
 	var masterTable models.MasterTable
 
 	// Mencari detail MasterTable berdasarkan id
-	if err := connection.DB.Where("id = ?", masterTableId).First(&masterTable).Error; err != nil {
+	if err := connection.DB.Select("master_tables.*, md.module_name").
+		Joins("JOIN master_modules md ON md.id = master_tables.module_id").
+		Where("master_tables.id = ?", masterTableId).
+		First(&masterTable).Error; err != nil {
 		return result, errors.New("masterTable not found")
 	}
 
@@ -83,8 +71,7 @@ func UpdateMasterTable(claims, masterTableId string, updatedMasterTable models.M
 	}
 
 	masterTable.UpdatedBy = user.Username
-	masterTable.UpdatedDate = time.Now()
-	masterTable.ModuleName = updatedMasterTable.ModuleName
+	masterTable.UpdatedAt = time.Now()
 	masterTable.Description = updatedMasterTable.Description
 	masterTable.EnglishDescription = updatedMasterTable.EnglishDescription
 	masterTable.OrderField = updatedMasterTable.OrderField
@@ -102,27 +89,17 @@ func UpdateMasterTable(claims, masterTableId string, updatedMasterTable models.M
 	return masterTable, nil
 }
 
-func DeleteMasterTable(claims, masterTableId string) (result models.MasterTable, err error) {
+func DeleteMasterTable(claims, masterTableId string) (err error) {
 	var user models.Users
 	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
-		return result, err
+		return err
+	}
+	if err = connection.DB.Where("id = ?", masterTableId).Delete(&models.MasterTable{}).Error; err != nil {
+		return err
 	}
 
-	var masterTable models.MasterTable
-	if err := connection.DB.First(&masterTable, masterTableId).Error; err != nil {
-		return result, errors.New("Data Not Found")
-	}
-
-	masterTable.UpdatedBy = user.Username
-	masterTable.UpdatedDate = time.Now()
-	masterTable.Status = "D"
-
-	if err := connection.DB.Save(&masterTable).Error; err != nil {
-		return result, errors.New("Failed to delete Master Table")
-	}
-
-	return masterTable, nil
+	return nil
 }
 
 func GenerateTable(tableID string) (err error) {
