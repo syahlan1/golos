@@ -2,6 +2,7 @@ package masterModuleService
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -15,6 +16,14 @@ func CreateMasterModule(claims string, data models.MasterModule) (err error) {
 	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("error retrieving user:", err)
 		return err
+	}
+
+	var checkDatabaseName int64
+	connection.DB.Model(&models.MasterModule{}).
+		Where("database_name = ?", data.DatabaseName).
+		Count(&checkDatabaseName)
+	if checkDatabaseName != 0 {
+		return fmt.Errorf("database_name : %s already exist", data.DatabaseName)
 	}
 
 	data.CreatedBy = user.Username
@@ -70,7 +79,7 @@ func UpdateMasterModule(claims string, masterModuleId string, data models.Master
 func DeleteMasterModule(claims, masterModuleId string) (err error) {
 
 	if err := connection.DB.Where("id = ?", masterModuleId).Delete(&models.MasterModule{}).Error; err != nil {
-		return  err
+		return err
 	}
 
 	return

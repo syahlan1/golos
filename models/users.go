@@ -2,8 +2,6 @@ package models
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 type Users struct {
@@ -22,7 +20,15 @@ type Users struct {
 	LastLogin          time.Time `json:"last_login"`
 	RoleId             uint
 	Role               Roles
-	gorm.Model
+	ModelMasterForm    `json:"-"`
+}
+
+type UserPermission struct {
+	Id       uint      `json:"id"`
+	Username string    `json:"username"`
+	Email    string    `json:"email"`
+	RoleId   uint      `json:"-"`
+	Role     ShowRoles `json:"role"`
 }
 
 type Register struct {
@@ -37,32 +43,4 @@ type Register struct {
 type Login struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
-}
-
-type Roles struct {
-	Id          uint         `gorm:"primaryKey" json:"id"`
-	Name        string       `gorm:"unique"`
-	Description string       `json:"description"`
-	CreatedBy   string       `json:"created_by"`
-	UpdatedBy   string       `json:"updated_by"`
-	Permissions []Permission `gorm:"many2many:role_permissions;"`
-	Users       []Users      `json:"-" gorm:"foreignKey:RoleId"`
-	gorm.Model
-}
-
-type CreateRole struct {
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	Permissions []string `json:"permissions"`
-}
-
-type Permission struct {
-	Id   uint   `gorm:"primaryKey" json:"id"`
-	Name string `gorm:"unique"`
-	gorm.Model
-}
-
-type RolePermission struct {
-	RolesId      uint `json:"roles_id"`
-	PermissionId uint `json:"permission_id"`
 }

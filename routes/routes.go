@@ -16,7 +16,9 @@ import (
 	"github.com/syahlan1/golos/controllers/masterModuleController"
 	"github.com/syahlan1/golos/controllers/masterParameterController"
 	"github.com/syahlan1/golos/controllers/masterTableController"
+	"github.com/syahlan1/golos/controllers/menuController"
 	"github.com/syahlan1/golos/controllers/ownershipDataController"
+	"github.com/syahlan1/golos/controllers/roleController"
 	"github.com/syahlan1/golos/controllers/sectorEconomyController"
 	"github.com/syahlan1/golos/controllers/validationController"
 	"github.com/syahlan1/golos/middleware"
@@ -37,6 +39,7 @@ func Setup(app *fiber.App) {
 	api.Post("/register", authController.Register)
 	api.Post("/login", authController.Login)
 	api.Get("/user", authController.User)
+	api.Get("/user/permission", authController.UserPermission)
 	api.Post("/logout", authController.Logout)
 	api.Put("/user/update/:id", authController.UpdateUser)
 	api.Put("/user/delete/:id", authController.DeleteUser)
@@ -140,12 +143,19 @@ func Setup(app *fiber.App) {
 	api.Get("/approval/data/:id", approvalController.ApprovalDataDetail)
 
 	//role
-	api.Post("/role/create", middleware.Authorize("create_role"), authController.CreateRole)
-	api.Put("/role/update/:id", authController.UpdateRole)
-	api.Get("/role/show", authController.ShowRole)
-	api.Get("/role/:id/permissions", authController.ShowPermissions)
-	api.Get("/role/permissions", authController.ShowAllPermissions)
-	api.Delete("/role/delete/:id", authController.DeleteRole)
+	api.Post("/role/create", middleware.Authorize("create_role"), roleController.CreateRole)
+	api.Put("/role/update/:id", roleController.UpdateRole)
+	api.Get("/role/show", roleController.ShowRole)
+	api.Get("/role/:id/permissions", roleController.ShowPermissions)
+	api.Get("/role/permissions", roleController.ShowAllPermissions)
+	api.Delete("/role/delete/:id", roleController.DeleteRole)
+	api.Post("/role/modules", roleController.CreateRoleModules)
+
+	//menu 
+	api.Post("/menu/create", menuController.CreateMenu)
+	api.Get("/menu/show", menuController.ShowMenu)
+	api.Get("/menu/all-permission", menuController.ShowAllRoleMenu)
+	api.Post("/menu/permission/create", menuController.CreateRoleMenu)
 
 	//Validation
 	api.Get("/validation/show", validationController.ShowAllValidations)

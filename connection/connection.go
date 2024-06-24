@@ -32,6 +32,11 @@ func Connect() {
 	connection.AutoMigrate(&models.Permission{})
 	connection.AutoMigrate(&models.Roles{})
 	connection.AutoMigrate(&models.Users{})
+	connection.AutoMigrate(&models.RoleModules{})
+	connection.AutoMigrate(&models.RoleTables{})
+	connection.AutoMigrate(&models.Menu{})
+	connection.AutoMigrate(&models.RoleMenu{})
+
 	connection.AutoMigrate(&models.Business{})
 	connection.AutoMigrate(&models.Applicant{})
 	connection.AutoMigrate(&models.IdCard{})
