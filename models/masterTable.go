@@ -6,7 +6,7 @@ type MasterTable struct {
 	Id                 int    `json:"id"`
 	Description        string `json:"description"`
 	EnglishDescription string `json:"english_description"`
-	OrderField         string `json:"order_field"`
+	OrderField         int    `json:"order_field"`
 	TableName          string `json:"table_name"`
 	ModuleId           int    `json:"module_id"`
 	ModuleName         string `json:"module_name" gorm:"-:migration"`
@@ -61,25 +61,25 @@ type MasterColumn struct {
 	OnblurScript       string               `json:"onblur_script"`
 	MasterMapperColumn []MasterMapperColumn `json:"-" gorm:"foreignKey:ColumnId"`
 	MasterSourceColumn []MasterSourceColumn `json:"-" gorm:"foreignKey:ColumnId"`
-	MasterTable        MasterTable `json:"-" gorm:"foreignKey:TableId"`
-	MasterCodeGroup MasterCodeGroup `json:"-" gorm:"foreignKey:CodeGroupId"`
+	MasterTable        MasterTable          `json:"-" gorm:"foreignKey:TableId"`
+	MasterCodeGroup    MasterCodeGroup      `json:"-" gorm:"foreignKey:CodeGroupId"`
 }
 
 type CreateMasterColumn struct {
-	FieldName          string      `json:"field_name"`
-	FieldType          string      `json:"field_type"`
-	FieldLength        int         `json:"field_length"`
-	Description        string      `json:"description"`
-	EnglishDescription string      `json:"english_description"`
-	IsMandatory        bool        `json:"is_mandatory"`
-	Sequence           int         `json:"sequence"`
-	TableId            int         `json:"table_id"`
-	UiSourceQuery      string      `json:"ui_source_query"`
-	UiSourceType       string      `json:"ui_source_type"`
-	UiType             string      `json:"ui_type"`
-	IsExport           bool        `json:"es_export"`
-	SqlFunction        string      `json:"sql_function"`
-	OnblurScript       string      `json:"onblur_script"`
+	FieldName          string `json:"field_name"`
+	FieldType          string `json:"field_type"`
+	FieldLength        int    `json:"field_length"`
+	Description        string `json:"description"`
+	EnglishDescription string `json:"english_description"`
+	IsMandatory        bool   `json:"is_mandatory"`
+	Sequence           int    `json:"sequence"`
+	TableId            int    `json:"table_id"`
+	UiSourceQuery      string `json:"ui_source_query"`
+	UiSourceType       string `json:"ui_source_type"`
+	UiType             string `json:"ui_type"`
+	IsExport           bool   `json:"es_export"`
+	SqlFunction        string `json:"sql_function"`
+	OnblurScript       string `json:"onblur_script"`
 }
 type MasterSourceColumn struct {
 	Id           int       `json:"id"`

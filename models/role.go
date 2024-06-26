@@ -10,11 +10,11 @@ type Roles struct {
 }
 
 type ShowRoles struct {
-	Id          uint                       `json:"id"`
-	Name        string                     `json:"name"`
-	Description string                     `json:"description"`
-	Module      []MasterModule             `json:"module" gorm:"-"`
-	Menu        []ShowParentMenuPermission `json:"menu" gorm:"-"`
+	Id          uint                        `json:"id"`
+	Name        string                      `json:"name"`
+	Description string                      `json:"description"`
+	Module      []ShowMasterModuleWithTable `json:"module" gorm:"-"`
+	Menu        []ShowParentMenuPermission  `json:"menu" gorm:"-"`
 }
 
 type CreateRole struct {
@@ -57,13 +57,33 @@ type RoleTables struct {
 	Table           MasterTable `json:"-" gorm:"foreignKey:TableId"`
 }
 
+type CreateRoleModuleTables struct {
+	Id       uint `json:"id"`
+	ModuleId int  `json:"module_id"`
+	Tables   []RoleTables `json:"table"`
+}
+
+type ShowRoleTables struct {
+	Id       uint   `gorm:"primaryKey" json:"id"`
+	TableId  int    `json:"table_id"`
+	Table    string `json:"table"`
+	Read     bool   `json:"read"`
+	Delete   bool   `json:"delete"`
+	Update   bool   `json:"update"`
+	Download bool   `json:"download"`
+	Write    bool   `json:"write"`
+	Selected bool   `json:"selected"`
+}
+
 type CreateRoleModules struct {
 	RolesId  uint  `json:"roles_id"`
 	ModuleId []int `json:"module_id"`
 }
 
 type ShowRoleModules struct {
-	Id       uint   `json:"id"`
-	ModuleId int    `json:"module_id"`
-	Module   string `json:"module"`
+	Id            uint             `json:"id"`
+	ModuleId      int              `json:"module_id"`
+	Module        string           `json:"module"`
+	Table         []ShowRoleTables `json:"table" gorm:"-"`
+	TableSelected int              `json:"table_selected"`
 }

@@ -150,6 +150,8 @@ func Setup(app *fiber.App) {
 	api.Get("/role/permissions", roleController.ShowAllPermissions)
 	api.Delete("/role/delete/:id", roleController.DeleteRole)
 	api.Post("/role/modules", roleController.CreateRoleModules)
+	api.Get("/role/:id/modules", roleController.ShowRoleModules)
+	api.Post("/role/:id/module-tables", roleController.CreateRoleModuleTables)
 
 	//menu 
 	api.Post("/menu/create", menuController.CreateMenu)

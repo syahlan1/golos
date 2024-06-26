@@ -11,3 +11,11 @@ type MasterModule struct {
 	UsePeriod          bool   `json:"use_period"`
 	ModelMasterForm    `json:"-"`
 }
+
+type ShowMasterModuleWithTable struct {
+	Id          int              `json:"id" gorm:"primaryKey"`
+	ModuleName  string           `json:"module_name"`
+	Description string           `json:"description"`
+	Table       []ShowRoleTables `json:"table" gorm:"-"`
+	IsActive    bool             `json:"is_active"`
+}

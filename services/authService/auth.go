@@ -300,6 +300,30 @@ func UserPermission(userId string) (result models.UserPermission, err error) {
 		result.Role.Menu[i].Child = child
 	}
 
+	// Get Module
+	if err := connection.DB.Select("master_modules.*").
+		Joins("JOIN role_modules rm ON rm.module_id = master_modules.id").
+		Model(models.MasterModule{}).
+		Where("rm.roles_id = ?", result.RoleId).
+		Find(&result.Role.Module).Error; err != nil {
+		return result, err
+	}
+
+	for i, data := range result.Role.Module {
+
+		var table []models.ShowRoleTables
+
+		if err := connection.DB.Select("*, master_tables.table_name AS table").
+			Joins("JOIN role_tables rt ON rt.table_id = master_tables.id").
+			Model(models.MasterTable{}).
+			Where("master_tables.module_id = ?", data.Id).
+			Find(&table).Error; err != nil {
+			return result, err
+		}
+
+		result.Role.Module[i].Table = table
+	}
+
 	return
 }
 

@@ -3,6 +3,7 @@ package roleService
 import (
 	"errors"
 	"log"
+	"strconv"
 
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
@@ -198,7 +199,85 @@ func CreateRoleModules(userId string, data models.CreateRoleModules) (err error)
 	return
 }
 
-func ShowRoleModules(roleId string) (result []models.RoleModules, err error) {
-	
+func ShowRoleModules(roleId string) (result []models.ShowRoleModules, err error) {
+
+	if err := connection.DB.Select("rm.id, master_modules.id AS module_id, master_modules.module_name AS module").
+		Joins("left join role_modules rm on rm.module_id = master_modules.id AND rm.roles_id = ?", roleId).
+		Where("rm.deleted_at is null").
+		Model(models.MasterModule{}).
+		Find(&result).Error; err != nil {
+		return result, err
+	}
+
+	for i, value := range result {
+
+		rows, err := connection.DB.Select("COALESCE(rt.id, 0), master_tables.id as table_id , master_tables.table_name as table",
+			"COALESCE(rt.read, FALSE) as read, COALESCE(rt.delete, FALSE) as delete, COALESCE(rt.update, FALSE) as update",
+			"COALESCE(rt.download, FALSE) as download, COALESCE(rt.write, FALSE) as write ",
+			"(case when read is true or delete is true or update is true or write is true then true else false end) as selected").
+			Joins("left join role_tables rt on rt.table_id = master_tables.id AND rt.role_modules_id = ?", value.Id).
+			Model(models.MasterTable{}).
+			Where("master_tables.module_id = ? and rt.deleted_at is null", value.ModuleId).
+			Rows()
+
+		if err != nil {
+			return result, err
+		}
+		defer rows.Close()
+
+		var data models.ShowRoleTables
+		for rows.Next() {
+			if err := rows.Scan(&data.Id, &data.TableId, &data.Table, &data.Read, &data.Delete, &data.Update, &data.Download, &data.Write, &data.Selected); err != nil {
+				return result, err
+			}
+
+			if data.Selected {
+				result[i].TableSelected++
+			}
+
+			result[i].Table = append(result[i].Table, data)
+		}
+
+	}
+
+	return result, nil
+}
+
+func CreateRoleModuleTables(userId, roleId string, data []models.CreateRoleModuleTables) (err error) {
+
+	var user models.Users
+	if err := connection.DB.Where("id = ?", userId).First(&user).Error; err != nil {
+		log.Println("Error retrieving user:", err)
+		return err
+	}
+
+	roleIdInt, _ := strconv.Atoi(roleId)
+
+	err = connection.DB.Transaction(func(tx *gorm.DB) error {
+
+		for _, value := range data {
+			roleModule := models.RoleModules{
+				Id:              value.Id,
+				RolesId:         uint(roleIdInt),
+				ModuleId:        value.ModuleId,
+				ModelMasterForm: models.ModelMasterForm{CreatedBy: user.Username},
+			}
+
+			if err := tx.Save(&roleModule).Error; err != nil {
+				return err
+			}
+
+			for i := range value.Tables {
+				value.Tables[i].RoleModulesId = roleModule.Id
+				value.Tables[i].CreatedBy = user.Username
+			}
+
+			if err := tx.Save(&value.Tables).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
 	return
 }
