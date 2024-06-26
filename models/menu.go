@@ -58,10 +58,10 @@ type RoleMenu struct {
 	Menu            Menu  `json:"-" gorm:"foreignKey:MenuId"`
 }
 
-type CreateRoleMenu struct {
-	RoleId   int        `json:"role_id"`
-	RoleMenu []RoleMenu `json:"role_menu"`
-}
+// type CreateRoleMenu struct {
+// 	RoleId   int        `json:"role_id"`
+// 	RoleMenu []RoleMenu `json:"role_menu"`
+// }
 
 type ShowRoleMenu struct {
 	Id       int    `json:"id"`

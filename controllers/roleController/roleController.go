@@ -171,6 +171,55 @@ func CreateRoleModules(c *fiber.Ctx) error {
 	})
 }
 
+func ShowAllRoleMenu(c *fiber.Ctx) error {
+	roleId := c.Params("id")
+	result, err := roleService.ShowAllRoleMenu(roleId)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func CreateRoleMenu(c *fiber.Ctx) error {
+	var data []models.RoleMenu
+	if err := c.BodyParser(&data); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	roleId := c.Params("id")
+
+	// Get user ID
+	claims, err := utils.ExtractJWT(c)
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return errors.New("status unauthorized")
+	}
+
+	err = roleService.CreateRoleMenu(claims,roleId, data)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success Create Menu",
+	})
+}
+
 func ShowRoleModules(c *fiber.Ctx) error {
 	roleID := c.Params("id")
 	result, err := roleService.ShowRoleModules(roleID)

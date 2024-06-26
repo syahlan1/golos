@@ -199,6 +199,57 @@ func CreateRoleModules(userId string, data models.CreateRoleModules) (err error)
 	return
 }
 
+func ShowAllRoleMenu(roleId string) (result []models.ShowRoleMenu, err error) {
+
+	if err := connection.DB.
+		Select("rm.id, menus.id as menu_id, menus.menu_code as menu, COALESCE(rm.read, FALSE) as read",
+			"COALESCE(rm.delete, FALSE) as delete, COALESCE(rm.update, FALSE) as update",
+			"COALESCE(rm.download, FALSE) as download, COALESCE(rm.write, FALSE) as write").
+		Joins("left join role_menu rm on rm.menu_id = menus.id and rm.role_id = ?", roleId).
+		Where("menus.type = 'C' and rm.deleted_at is null").
+		Model(models.Menu{}).
+		Find(&result).Error; err != nil {
+		return result, err
+	}
+
+	return result, nil
+}
+
+func CreateRoleMenu(claims, roleId string, data []models.RoleMenu) (err error) {
+
+	var user models.Users
+	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
+		log.Println("Error retrieving user:", err)
+		return err
+	}
+
+	roleIdInt, _ := strconv.Atoi(roleId)
+
+	var RoleMenus []models.RoleMenu
+	for _, value := range data {
+
+		RoleMenu := models.RoleMenu{
+			Id:              value.Id,
+			RoleId:          roleIdInt,
+			MenuId:          value.MenuId,
+			Read:            value.Read,
+			Delete:          value.Delete,
+			Update:          value.Update,
+			Download:        value.Download,
+			Write:           value.Write,
+			ModelMasterForm: models.ModelMasterForm{CreatedBy: user.Username},
+		}
+
+		RoleMenus = append(RoleMenus, RoleMenu)
+	}
+
+	if err := connection.DB.Save(&RoleMenus).Error; err != nil {
+		return err
+	}
+
+	return
+}
+
 func ShowRoleModules(roleId string) (result []models.ShowRoleModules, err error) {
 
 	if err := connection.DB.Select("rm.id, master_modules.id AS module_id, master_modules.module_name AS module").

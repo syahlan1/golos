@@ -152,12 +152,12 @@ func Setup(app *fiber.App) {
 	api.Post("/role/modules", roleController.CreateRoleModules)
 	api.Get("/role/:id/modules", roleController.ShowRoleModules)
 	api.Post("/role/:id/module-tables", roleController.CreateRoleModuleTables)
+	api.Get("/role/:id/menu", roleController.ShowAllRoleMenu)
+	api.Post("/role/:id/menu", roleController.CreateRoleMenu)
 
 	//menu 
 	api.Post("/menu/create", menuController.CreateMenu)
 	api.Get("/menu/show", menuController.ShowMenu)
-	api.Get("/menu/all-permission", menuController.ShowAllRoleMenu)
-	api.Post("/menu/permission/create", menuController.CreateRoleMenu)
 
 	//Validation
 	api.Get("/validation/show", validationController.ShowAllValidations)
