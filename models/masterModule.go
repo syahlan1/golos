@@ -14,6 +14,7 @@ type MasterModule struct {
 
 type ShowMasterModuleWithTable struct {
 	Id          int              `json:"id" gorm:"primaryKey"`
+	ModuleId    int              `json:"module_id"`
 	ModuleName  string           `json:"module_name"`
 	Description string           `json:"description"`
 	Table       []ShowRoleTables `json:"table" gorm:"-"`

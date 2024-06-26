@@ -301,10 +301,12 @@ func UserPermission(userId string) (result models.UserPermission, err error) {
 	}
 
 	// Get Module
-	if err := connection.DB.Select("master_modules.*").
+	if err := connection.DB.
+		Select("rm.*, master_modules.id AS module_id, master_modules.module_name AS module_name",
+			"master_modules.description AS description, master_modules.is_active AS is_active").
 		Joins("JOIN role_modules rm ON rm.module_id = master_modules.id").
 		Model(models.MasterModule{}).
-		Where("rm.roles_id = ?", result.RoleId).
+		Where("rm.roles_id = ? and rm.deleted_at is null", result.RoleId).
 		Find(&result.Role.Module).Error; err != nil {
 		return result, err
 	}
@@ -313,10 +315,11 @@ func UserPermission(userId string) (result models.UserPermission, err error) {
 
 		var table []models.ShowRoleTables
 
-		if err := connection.DB.Select("*, master_tables.table_name AS table").
+		if err := connection.DB.
+			Select("*, master_tables.table_name AS table").
 			Joins("JOIN role_tables rt ON rt.table_id = master_tables.id").
 			Model(models.MasterTable{}).
-			Where("master_tables.module_id = ?", data.Id).
+			Where("rt.role_modules_id = ? and rt.deleted_at is null", data.Id).
 			Find(&table).Error; err != nil {
 			return result, err
 		}
