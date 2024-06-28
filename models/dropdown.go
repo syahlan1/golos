@@ -12,3 +12,10 @@ type OwnershipDataDropdown struct {
 	NPWP       string `json:"npwp"`
 	KeyPerson  bool   `json:"key_person"`
 }
+
+type RoleWorkflowDropdown struct {
+	Id         int    `json:"id"`
+	WorkflowId int    `json:"workflow_id"`
+	Name       string `json:"name"`
+	Selected   bool   `json:"selected"`
+}

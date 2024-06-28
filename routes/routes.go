@@ -155,6 +155,8 @@ func Setup(app *fiber.App) {
 	api.Post("/role/:id/module-tables", roleController.CreateRoleModuleTables)
 	api.Get("/role/:id/menu", roleController.ShowAllRoleMenu)
 	api.Post("/role/:id/menu", roleController.CreateRoleMenu)
+	api.Get("/role/:id/workflow", roleController.ShowRoleWorkflows)
+	api.Post("/role/:id/workflow", roleController.CreateRoleWorkflows)
 
 	//menu 
 	api.Post("/menu/create", menuController.CreateMenu)

@@ -61,6 +61,7 @@ type RoleWorkflow struct {
 	Id              uint `gorm:"primaryKey" json:"id"`
 	RolesId         uint `json:"roles_id"`
 	WorkflowId      int  `json:"workflow_id"`
+	Selected        bool `json:"selected"`
 	ModelMasterForm `json:"-"`
 	Roles           Roles          `json:"-" gorm:"foreignKey:RolesId"`
 	Workflow        MasterWorkflow `json:"-" gorm:"foreignKey:WorkflowId"`
@@ -96,3 +97,12 @@ type ShowRoleModules struct {
 	Table         []ShowRoleTables `json:"table" gorm:"-"`
 	TableSelected int              `json:"table_selected"`
 }
+
+type ShowRoleWorkflows struct {
+	Selected []RoleWorkflowDropdown `json:"selected"`
+	All      []RoleWorkflowDropdown `json:"all"`
+}
+
+// type CreateRoleWorkflows struct {
+// 	RoleWorkflows []RoleWorkflowDropdown `json:"role_workflows"`
+// }

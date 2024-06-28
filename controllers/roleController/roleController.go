@@ -267,3 +267,51 @@ func CreateRoleModuleTables(c *fiber.Ctx) error {
 		Message: "Success Create Role Modules & Tables",
 	})
 }
+
+func ShowRoleWorkflows(c *fiber.Ctx) error {
+	roleID := c.Params("id")
+	result, err := roleService.ShowRoleWorkflows(roleID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func CreateRoleWorkflows(c *fiber.Ctx) error {
+	var data []models.RoleWorkflowDropdown
+	roleID := c.Params("id")
+	if err := c.BodyParser(&data); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	// Get user role ID
+	claims, err := utils.ExtractJWT(c)
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return errors.New("status unauthorized")
+	}
+
+	err = roleService.CreateRoleWorkflows(claims, roleID, data)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success Create Role Workflows",
+	})
+}

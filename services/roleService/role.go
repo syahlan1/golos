@@ -332,3 +332,65 @@ func CreateRoleModuleTables(userId, roleId string, data []models.CreateRoleModul
 
 	return
 }
+
+func ShowRoleWorkflows(roleId string) (result models.ShowRoleWorkflows, err error) {
+
+	if err := connection.DB.Select("rw.id, master_workflows.id as workflow_id,CONCAT(master_workflows.status_name, ' - ', master_workflows.status_description) as name, COALESCE(rw.selected, FALSE) as selected").
+		Joins("left join role_workflows rw on rw.workflow_id = master_workflows.id AND rw.roles_id = ?", roleId).
+		Where("rw.deleted_at is null").
+		Model(models.MasterWorkflow{}).
+		Scan(&result.All).Error; err != nil {
+		return result, err
+	}
+
+	if err := connection.DB.Select("rw.id, master_workflows.id as workflow_id,CONCAT(master_workflows.status_name, ' - ', master_workflows.status_description) as name, COALESCE(rw.selected, FALSE) as selected").
+		Joins("left join role_workflows rw on rw.workflow_id = master_workflows.id AND rw.roles_id = ?", roleId).
+		Where("rw.deleted_at is null and rw.selected = true").
+		Model(models.MasterWorkflow{}).
+		Scan(&result.Selected).Error; err != nil {
+		return result, err
+	}
+
+	return
+}
+
+func CreateRoleWorkflows(userId, roleId string, data []models.RoleWorkflowDropdown) (err error) {
+
+	var user models.Users
+	if err := connection.DB.Where("id = ?", userId).First(&user).Error; err != nil {
+		log.Println("Error retrieving user:", err)
+		return err
+	}
+
+	roleIdInt, _ := strconv.Atoi(roleId)
+
+	err = connection.DB.Transaction(func(tx *gorm.DB) error {
+		log.Println("data", roleIdInt)
+		var roleWorkflows []models.RoleWorkflow
+		err = connection.DB.Model(&models.RoleWorkflow{}).
+			Where("roles_id = ?", roleIdInt).
+			Update("selected", false).Error
+		if err != nil {
+			return err
+		}
+
+		for _, value := range data {
+			roleWorkflow := models.RoleWorkflow{
+				Id:              uint(value.Id),
+				RolesId:         uint(roleIdInt),
+				WorkflowId:      value.WorkflowId,
+				Selected:        true,
+				ModelMasterForm: models.ModelMasterForm{CreatedBy: user.Username},
+			}
+
+			roleWorkflows = append(roleWorkflows, roleWorkflow)
+		}
+
+		if err := tx.Save(&roleWorkflows).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	return
+}
