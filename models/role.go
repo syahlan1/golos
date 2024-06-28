@@ -57,9 +57,18 @@ type RoleTables struct {
 	Table           MasterTable `json:"-" gorm:"foreignKey:TableId"`
 }
 
+type RoleWorkflow struct {
+	Id              uint `gorm:"primaryKey" json:"id"`
+	RolesId         uint `json:"roles_id"`
+	WorkflowId      int  `json:"workflow_id"`
+	ModelMasterForm `json:"-"`
+	Roles           Roles          `json:"-" gorm:"foreignKey:RolesId"`
+	Workflow        MasterWorkflow `json:"-" gorm:"foreignKey:WorkflowId"`
+}
+
 type CreateRoleModuleTables struct {
-	Id       uint `json:"id"`
-	ModuleId int  `json:"module_id"`
+	Id       uint         `json:"id"`
+	ModuleId int          `json:"module_id"`
 	Tables   []RoleTables `json:"table"`
 }
 

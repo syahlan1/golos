@@ -90,11 +90,11 @@ func UpdateMasterTable(claims, masterTableId string, updatedMasterTable models.M
 }
 
 func DeleteMasterTable(claims, masterTableId string) (err error) {
-	var user models.Users
-	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
-		log.Println("Error retrieving user:", err)
-		return err
-	}
+	// var user models.Users
+	// if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
+	// 	log.Println("Error retrieving user:", err)
+	// 	return err
+	// }
 	if err = connection.DB.Where("id = ?", masterTableId).Delete(&models.MasterTable{}).Error; err != nil {
 		return err
 	}

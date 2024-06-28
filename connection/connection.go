@@ -34,6 +34,7 @@ func Connect() {
 	connection.AutoMigrate(&models.Users{})
 	connection.AutoMigrate(&models.RoleModules{})
 	connection.AutoMigrate(&models.RoleTables{})
+	connection.AutoMigrate(&models.RoleWorkflow{})
 	connection.AutoMigrate(&models.Menu{})
 	connection.AutoMigrate(&models.RoleMenu{})
 
@@ -112,6 +113,7 @@ func Connect() {
 	connection.AutoMigrate(&models.MasterMapperColumn{})
 	connection.AutoMigrate(&models.MasterMapperTable{})
 	connection.AutoMigrate(&models.MasterParameter{})
+	connection.AutoMigrate(&models.MasterWorkflow{})
 
 	connection.AutoMigrate(&models.OwnershipData{})
 	connection.AutoMigrate(&models.RelationWithBank{})

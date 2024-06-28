@@ -16,6 +16,7 @@ import (
 	"github.com/syahlan1/golos/controllers/masterModuleController"
 	"github.com/syahlan1/golos/controllers/masterParameterController"
 	"github.com/syahlan1/golos/controllers/masterTableController"
+	"github.com/syahlan1/golos/controllers/masterWorkflowController"
 	"github.com/syahlan1/golos/controllers/menuController"
 	"github.com/syahlan1/golos/controllers/ownershipDataController"
 	"github.com/syahlan1/golos/controllers/roleController"
@@ -209,4 +210,10 @@ func Setup(app *fiber.App) {
 	api.Delete("/master-parameter/delete/:id", masterParameterController.DeleteMasterParameter)
 	api.Get("/master-parameter/show", masterParameterController.ShowAllParameter)
 	api.Get("/master-parameter/show/:id", masterParameterController.ShowParameterDetail)
+
+	// master workflow
+	api.Post("/master-workflow/create", masterWorkflowController.CreateMasterWorkflow)
+	api.Put("/master-workflow/update/:id", masterWorkflowController.UpdateMasterWorkflow)
+	api.Delete("/master-workflow/delete/:id", masterWorkflowController.DeleteMasterWorkflow)
+	api.Get("/master-workflow/show", masterWorkflowController.ShowMasterWorkflow)
 }
