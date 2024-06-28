@@ -20,7 +20,7 @@ type {{.TableName | ToCamel}} struct {
 {{end}}}
 
 func ({{.TableName | ToCamel}}) TableName() string {
-	return "{{.TableName}}"
+	return "{{.ModuleName}}.{{.TableName}}"
 }
 	`
 }

@@ -27,7 +27,7 @@ func AddRouteAndImport(controllerName, routePath, packagePath string) error {
 		line := scanner.Text()
 		if !importAdded && strings.Contains(line, `import (`) {
 			lines = append(lines, line)
-			importLine := fmt.Sprintf(`	"%s/controllers/%sController"`, packagePath, utils.ToKebabCase(controllerName))
+			importLine := fmt.Sprintf(`	"%s/controllers/%sController"`, packagePath, utils.ToLowerCamelCase(controllerName))
 			lines = append(lines, importLine)
 			importAdded = true
 			continue

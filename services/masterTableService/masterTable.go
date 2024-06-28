@@ -106,9 +106,14 @@ func GenerateTable(tableID string) (err error) {
 	db := connection.DB
 
 	var masterTable models.MasterTable
-	if err := db.First(&masterTable, tableID).Error; err != nil {
+	if err := db.Select("master_tables.*, md.database_name as module_name").
+		Joins("JOIN master_modules md ON md.id = master_tables.module_id").
+		First(&masterTable, tableID).Error; err != nil {
 		return errors.New("Data not found")
 	}
+
+	// log.Println("Generating table", masterTable)
+	// return
 
 	var columns []models.MasterColumn
 	db.Where("table_id = ?", masterTable.Id).Find(&columns)
@@ -124,14 +129,28 @@ func GenerateTable(tableID string) (err error) {
 		{FieldName: "deleted_date", FieldType: "TIMESTAMP"},
 	}
 
+	var SchemaExists bool
+	err = db.Raw("SELECT EXISTS (SELECT FROM information_schema.schemata WHERE schema_name = ?)", masterTable.ModuleName).Scan(&SchemaExists).Error
+	if err != nil {
+		return err
+	}
+
+	if !SchemaExists {
+		// Create schema
+		err = db.Exec(fmt.Sprintf(`CREATE SCHEMA "%s"`, masterTable.ModuleName)).Error
+		if err != nil {
+			return err
+		}
+	}
+
 	var tableExists bool
-	err = db.Raw("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = ?)", masterTable.TableName).Scan(&tableExists).Error
+	err = db.Raw("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = ? AND table_name = ?)", masterTable.ModuleName, masterTable.TableName).Scan(&tableExists).Error
 	if err != nil {
 		return err
 	}
 
 	if !tableExists {
-		createTableSQL := fmt.Sprintf("CREATE TABLE %s (\n", masterTable.TableName)
+		createTableSQL := fmt.Sprintf(`CREATE TABLE "%s".%s (`+"\n", masterTable.ModuleName, masterTable.TableName)
 		createTableSQL += "\tID SERIAL PRIMARY KEY,\n"
 
 		// Add mandatory columns to createTableSQL
@@ -149,6 +168,9 @@ func GenerateTable(tableID string) (err error) {
 		}
 
 		createTableSQL = createTableSQL[:len(createTableSQL)-2] + "\n);"
+
+		// log.Println("createTableSQL", createTableSQL)
+		// return
 		if err := db.Exec(createTableSQL).Error; err != nil {
 			return err
 		}
@@ -319,10 +341,12 @@ func GenerateModel(masterTable models.MasterTable, columns []models.MasterColumn
 	defer f.Close()
 
 	data := struct {
+		ModuleName  string
 		TableName   string
 		PackagePath string
 		Columns     []models.MasterColumn
 	}{
+		ModuleName:  masterTable.ModuleName,
 		TableName:   masterTable.TableName,
 		PackagePath: "github.com/syahlan1/golos",
 		Columns:     columns,
