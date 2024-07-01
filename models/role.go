@@ -10,11 +10,11 @@ type Roles struct {
 }
 
 type ShowRoles struct {
-	Id          uint                        `json:"id"`
-	Name        string                      `json:"name"`
-	Description string                      `json:"description"`
-	Module      []ShowMasterModuleWithTable `json:"module" gorm:"-"`
-	Menu        []ShowParentMenuPermission  `json:"menu" gorm:"-"`
+	Id          uint   `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	// Module      []ShowMasterModuleWithTable `json:"module" gorm:"-"`
+	Menu []ShowMenu `json:"menu" gorm:"-"`
 }
 
 type CreateRole struct {

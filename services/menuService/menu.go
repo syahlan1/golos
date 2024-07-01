@@ -14,8 +14,8 @@ func CreateMenu(claims string, data models.Menu) (err error) {
 
 	} else if data.Type == "P" {
 		data.Command = nil
-		data.ParentId = nil
-		data.MenuCode = nil
+		// data.ParentId = nil
+		// data.MenuCode = nil
 	} else {
 		return errors.New("invalid type")
 	}
@@ -38,28 +38,43 @@ func CreateMenu(claims string, data models.Menu) (err error) {
 func ShowMenu() (result []models.ShowMenu, err error) {
 
 	if err := connection.DB.
+		Select("id, parent_id, icon, label as title, command as path").
 		Model(models.Menu{}).
-		Where("type = ?", "P").
+		Where("parent_id is null").
 		Order(`"order" asc`).
 		Find(&result).Error; err != nil {
 		return result, err
 	}
 
 	for i, data := range result {
-
-		var child []models.Menu
-
-		if err := connection.DB.
-			Where("parent_id = ?", data.Id).
-			Order(`"order" asc`).
-			Find(&child).Error; err != nil {
+		child, err := findChild(data.Id)
+		if err != nil {
 			return result, err
 		}
-
-		result[i].Child = child
+		result[i].Subnav = child
 	}
 
 	return result, nil
 }
 
+func findChild (parentId int) ([]models.ShowMenu, error) {
+	var child []models.ShowMenu
+	if err := connection.DB.Debug().
+		Select("id, parent_id, icon, label as title, command as path").
+		Model(models.Menu{}).
+		Where("parent_id = ?", parentId).
+		Order(`"order" asc`).
+		Find(&child).Error; err != nil {
+		return nil, err
+	}
 
+	for i, data := range child {
+		subChild, err := findChild(data.Id)
+		if err != nil {
+			return nil, err
+		}
+		child[i].Subnav = subChild
+	}
+
+	return child, nil
+}

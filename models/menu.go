@@ -12,13 +12,23 @@ type Menu struct {
 	ModelMasterForm `json:"-"`
 }
 
+// type ShowMenu struct {
+// 	Id    int    `json:"id"`
+// 	Icon  string `json:"icon"`
+// 	Label string `json:"label"`
+// 	Order int    `json:"order"`
+// 	Type  string `json:"type"`
+// 	Child []Menu `json:"child" gorm:"-"`
+// }
+
 type ShowMenu struct {
-	Id    int    `json:"id"`
-	Icon  string `json:"icon"`
-	Label string `json:"label"`
-	Order int    `json:"order"`
-	Type  string `json:"type"`
-	Child []Menu `json:"child" gorm:"-"`
+	Id       int        `json:"id"`
+	ParentId int        `json:"parent_id,omitempty"`
+	Type     string     `json:"-"`
+	Icon     string     `json:"icon"`
+	Title    string     `json:"title"`
+	Path     string     `json:"path,omitempty"`
+	Subnav   []ShowMenu `json:"subnav,omitempty" gorm:"-"`
 }
 
 type ShowParentMenuPermission struct {

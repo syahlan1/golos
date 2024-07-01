@@ -272,62 +272,157 @@ func UserPermission(userId string) (result models.UserPermission, err error) {
 		return result, err
 	}
 
-	// Get menu
-	if err := connection.DB.Select("m.*").
-		Joins("JOIN role_menu rm ON rm.menu_id = menus.id").
-		Joins("JOIN menus m ON m.id = menus.parent_id").
-		Model(models.Menu{}).
-		Where("rm.role_id = ?", result.RoleId).
-		Group("m.id").
-		Order(`"order" asc`).
+	if err := connection.DB.Raw(`
+		WITH RECURSIVE ParentHierarchy AS (
+			SELECT id, parent_id
+			FROM menus
+			WHERE id IN(select m.id 
+						from role_menu rm 
+						join menus m on m.id = rm.menu_id 
+						where rm.role_id = ? and
+						rm.deleted_at is null and m.deleted_at is null)
+			union all
+			SELECT m.id, m.parent_id
+			FROM menus m
+			JOIN ParentHierarchy ph ON ph.parent_id = m.id)
+		SELECT m.id, m.parent_id, m.icon, m.label as title, m.command as path
+		FROM ParentHierarchy ph
+		JOIN menus m ON ph.id = m.id
+		WHERE m.deleted_at IS null
+		and m.parent_id is null
+		group by m.id
+		order by "order"`, result.RoleId).
 		Find(&result.Role.Menu).Error; err != nil {
 		return result, err
 	}
 
 	for i, data := range result.Role.Menu {
-
-		var child []models.ShowMenuPermission
-
-		if err := connection.DB.Select("*").
-			Joins("JOIN role_menu rm ON rm.menu_id = menus.id").
-			Model(models.Menu{}).
-			Where("parent_id = ? AND rm.role_id = ?", data.Id, result.RoleId).
-			Order(`"order" asc`).
-			Find(&child).Error; err != nil {
+		Child, err := findChild(data.Id, int(result.RoleId))
+		if err != nil {
 			return result, err
 		}
-
-		result.Role.Menu[i].Child = child
+		result.Role.Menu[i].Subnav = Child
 	}
+
+	// log.Println()
+
+	// var parent models.ShowMenu
+	// for _, data := range result.Role.Menu {
+
+	// 	if err := connection.DB.Raw(`
+	// 		WITH RECURSIVE ParentHierarchy AS (
+	// 			SELECT id, parent_id
+	// 			FROM menus
+	// 			WHERE id IN(select m.id
+	// 						from role_menu rm
+	// 						join menus m on m.id = rm.menu_id
+	// 						where rm.role_id = ?
+	// 						rm.deleted_at is null and m.deleted_at is null)
+	// 			union all
+	// 			SELECT m.id, m.parent_id
+	// 			FROM menus m
+	// 			JOIN ParentHierarchy ph ON ph.parent_id = m.id)
+	// 		SELECT m.id, m.parent_id, m.icon, m.label as title, m.command as path
+	// 		FROM ParentHierarchy ph
+	// 		JOIN menus m ON ph.id = m.id
+	// 		WHERE m.deleted_at IS null
+	// 		and m.parent_id is null
+	// 		group by m.id
+	// 		order by "order"`, data).Scan(&parent).Error; err != nil {
+	// 		return result, err
+	// 	}
+
+	// 	result.Role.Menu = append(result.Role.Menu, parent)
+
+	// }
+
+	// Get menu
+	// if err := connection.DB.Select("m.*").
+	// 	Joins("JOIN role_menu rm ON rm.menu_id = menus.id").
+	// 	Joins("JOIN menus m ON m.id = menus.parent_id").
+	// 	Model(models.Menu{}).
+	// 	Where("rm.role_id = ?", result.RoleId).
+	// 	Group("m.id").
+	// 	Order(`"order" asc`).
+	// 	Find(&result.Role.Menu).Error; err != nil {
+	// 	return result, err
+	// }
+
+	// for i, data := range result.Role.Menu {
+
+	// 	var child []models.ShowMenuPermission
+
+	// 	if err := connection.DB.Select("*").
+	// 		Joins("JOIN role_menu rm ON rm.menu_id = menus.id").
+	// 		Model(models.Menu{}).
+	// 		Where("parent_id = ? AND rm.role_id = ?", data.Id, result.RoleId).
+	// 		Order(`"order" asc`).
+	// 		Find(&child).Error; err != nil {
+	// 		return result, err
+	// 	}
+
+	// 	result.Role.Menu[i].Child = child
+	// }
 
 	// Get Module
-	if err := connection.DB.
-		Select("rm.*, master_modules.id AS module_id, master_modules.module_name AS module_name",
-			"master_modules.description AS description, master_modules.is_active AS is_active").
-		Joins("JOIN role_modules rm ON rm.module_id = master_modules.id").
-		Model(models.MasterModule{}).
-		Where("rm.roles_id = ? and rm.deleted_at is null", result.RoleId).
-		Find(&result.Role.Module).Error; err != nil {
-		return result, err
-	}
+	// if err := connection.DB.
+	// 	Select("rm.*, master_modules.id AS module_id, master_modules.module_name AS module_name",
+	// 		"master_modules.description AS description, master_modules.is_active AS is_active").
+	// 	Joins("JOIN role_modules rm ON rm.module_id = master_modules.id").
+	// 	Model(models.MasterModule{}).
+	// 	Where("rm.roles_id = ? and rm.deleted_at is null", result.RoleId).
+	// 	Find(&result.Role.Module).Error; err != nil {
+	// 	return result, err
+	// }
 
-	for i, data := range result.Role.Module {
+	// for i, data := range result.Role.Module {
 
-		var table []models.ShowRoleTables
+	// 	var table []models.ShowRoleTables
 
-		if err := connection.DB.
-			Select("*, master_tables.table_name AS table").
-			Joins("JOIN role_tables rt ON rt.table_id = master_tables.id").
-			Model(models.MasterTable{}).
-			Where("rt.role_modules_id = ? and rt.deleted_at is null", data.Id).
-			Find(&table).Error; err != nil {
-			return result, err
-		}
+	// 	if err := connection.DB.
+	// 		Select("*, master_tables.table_name AS table").
+	// 		Joins("JOIN role_tables rt ON rt.table_id = master_tables.id").
+	// 		Model(models.MasterTable{}).
+	// 		Where("rt.role_modules_id = ? and rt.deleted_at is null", data.Id).
+	// 		Find(&table).Error; err != nil {
+	// 		return result, err
+	// 	}
 
-		result.Role.Module[i].Table = table
-	}
+	// 	result.Role.Module[i].Table = table
+	// }
 
 	return
+}
+
+func findChild(parentId, roleId int) ([]models.ShowMenu, error) {
+	var child []models.ShowMenu
+	if err := connection.DB.
+		Select(`menus.id, parent_id, "type", icon, label as title, command as path`).
+		Joins("LEFT JOIN role_menu rm ON rm.menu_id = menus.id").
+		Model(models.Menu{}).
+		Where(`rm.role_id = ? OR (menus."type" = ? AND (select count(*) from menus m 
+				left join role_menu rm on rm.menu_id = m.id 
+				where parent_id = menus.id 
+				AND m."deleted_at" IS NULL 
+				AND rm."deleted_at" IS NULL) > 0)`, roleId, "P").
+		Where("parent_id = ? and rm.deleted_at is null", parentId).
+		Order(`"order" asc`).
+		Find(&child).Error; err != nil {
+		return nil, err
+	}
+
+
+	for i, data := range child {
+		subChild, err := findChild(data.Id, roleId)
+		if err != nil {
+			return nil, err
+		}
+
+		child[i].Subnav = subChild
+
+	}
+
+	return child, nil
 }
 
 func Logout(userId string) {
