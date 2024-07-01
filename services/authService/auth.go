@@ -244,7 +244,7 @@ func ChangePassword(UserID string, data models.Register) (user models.Users, err
 // 	}()
 // }
 
-func User(userId string) (result models.Users, err error) {
+func User(userId string) (result models.Users, err error) { 
 	var user models.Users
 	if err := connection.DB.Where("id = ?", userId).Preload("Role").First(&user).Error; err != nil {
 		return user, err
@@ -280,7 +280,7 @@ func UserPermission(userId string) (result models.UserPermission, err error) {
 						from role_menu rm 
 						join menus m on m.id = rm.menu_id 
 						where rm.role_id = ? and
-						rm.deleted_at is null and m.deleted_at is null)
+						rm.deleted_at is null and m.deleted_at is null and (rm.read = true or rm.write = true or rm.update = true or rm.delete = true or rm.download = true))
 			union all
 			SELECT m.id, m.parent_id
 			FROM menus m
@@ -303,66 +303,6 @@ func UserPermission(userId string) (result models.UserPermission, err error) {
 		}
 		result.Role.Menu[i].Subnav = Child
 	}
-
-	// log.Println()
-
-	// var parent models.ShowMenu
-	// for _, data := range result.Role.Menu {
-
-	// 	if err := connection.DB.Raw(`
-	// 		WITH RECURSIVE ParentHierarchy AS (
-	// 			SELECT id, parent_id
-	// 			FROM menus
-	// 			WHERE id IN(select m.id
-	// 						from role_menu rm
-	// 						join menus m on m.id = rm.menu_id
-	// 						where rm.role_id = ?
-	// 						rm.deleted_at is null and m.deleted_at is null)
-	// 			union all
-	// 			SELECT m.id, m.parent_id
-	// 			FROM menus m
-	// 			JOIN ParentHierarchy ph ON ph.parent_id = m.id)
-	// 		SELECT m.id, m.parent_id, m.icon, m.label as title, m.command as path
-	// 		FROM ParentHierarchy ph
-	// 		JOIN menus m ON ph.id = m.id
-	// 		WHERE m.deleted_at IS null
-	// 		and m.parent_id is null
-	// 		group by m.id
-	// 		order by "order"`, data).Scan(&parent).Error; err != nil {
-	// 		return result, err
-	// 	}
-
-	// 	result.Role.Menu = append(result.Role.Menu, parent)
-
-	// }
-
-	// Get menu
-	// if err := connection.DB.Select("m.*").
-	// 	Joins("JOIN role_menu rm ON rm.menu_id = menus.id").
-	// 	Joins("JOIN menus m ON m.id = menus.parent_id").
-	// 	Model(models.Menu{}).
-	// 	Where("rm.role_id = ?", result.RoleId).
-	// 	Group("m.id").
-	// 	Order(`"order" asc`).
-	// 	Find(&result.Role.Menu).Error; err != nil {
-	// 	return result, err
-	// }
-
-	// for i, data := range result.Role.Menu {
-
-	// 	var child []models.ShowMenuPermission
-
-	// 	if err := connection.DB.Select("*").
-	// 		Joins("JOIN role_menu rm ON rm.menu_id = menus.id").
-	// 		Model(models.Menu{}).
-	// 		Where("parent_id = ? AND rm.role_id = ?", data.Id, result.RoleId).
-	// 		Order(`"order" asc`).
-	// 		Find(&child).Error; err != nil {
-	// 		return result, err
-	// 	}
-
-	// 	result.Role.Menu[i].Child = child
-	// }
 
 	// Get Module
 	// if err := connection.DB.
@@ -404,7 +344,8 @@ func findChild(parentId, roleId int) ([]models.ShowMenu, error) {
 				left join role_menu rm on rm.menu_id = m.id 
 				where parent_id = menus.id 
 				AND m."deleted_at" IS NULL 
-				AND rm."deleted_at" IS NULL) > 0)`, roleId, "P").
+				AND rm."deleted_at" IS NULL  
+				AND (rm.read = true or rm.write = true or rm.update = true or rm.delete = true or rm.download = true)) > 0)`, roleId, "P").
 		Where("parent_id = ? and rm.deleted_at is null", parentId).
 		Order(`"order" asc`).
 		Find(&child).Error; err != nil {
