@@ -19,7 +19,7 @@ func CreateMasterColumn(c *fiber.Ctx) error {
 		})
 	}
 
-	var data models.CreateMasterColumn
+	var data models.MasterColumn
 
 	if err := c.BodyParser(&data); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
@@ -106,15 +106,15 @@ func UpdateColumnTable(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"message": "Unauthorized"})
 	}
 
-	var data models.MasterTable
+	var data models.MasterColumn
 	if err := c.BodyParser(&data); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
-			Message: "Invalid Master Table Data",
+			Message: "Invalid Master Column Data",
 		})
 	}
 
-	result, err := masterColumnService.UpdateColumnTable(claims, masterTableId, data)
+	result, err := masterColumnService.UpdateMasterColumn(claims, masterTableId, data)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
@@ -138,7 +138,7 @@ func DeleteMasterColumn(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"message": "Unauthorized"})
 	}
 
-	result, err := masterColumnService.DeleteMasterColumn(claims, masterTableId)
+	err = masterColumnService.DeleteMasterColumn(claims, masterTableId)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
@@ -149,6 +149,69 @@ func DeleteMasterColumn(c *fiber.Ctx) error {
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
 		Message: "Deleted!",
+	})
+}
+
+func ShowFormColumn(c *fiber.Ctx) error {
+	masterTableId := c.Params("id")
+
+	result, err := masterColumnService.GetFormColumn(masterTableId)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func CheckQuery(c *fiber.Ctx) error {
+
+	var data models.CheckQuery
+
+	if err := c.BodyParser(&data); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	err := masterColumnService.CheckQuery(data)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	// Return success response
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Query Valid",
+	})
+}
+
+func GetUiType(c *fiber.Ctx) error {
+	result := masterColumnService.GetUiType()
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func GetFieldType(c *fiber.Ctx) error {
+	result := masterColumnService.GetFieldType()
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
 		Data:    result,
 	})
 }

@@ -59,7 +59,7 @@ func ShowMenu() (result []models.ShowMenu, err error) {
 
 func findChild (parentId int) ([]models.ShowMenu, error) {
 	var child []models.ShowMenu
-	if err := connection.DB.Debug().
+	if err := connection.DB.
 		Select("id, parent_id, icon, label as title, command as path").
 		Model(models.Menu{}).
 		Where("parent_id = ?", parentId).

@@ -196,12 +196,17 @@ func Setup(app *fiber.App) {
 	api.Put("/master-table/update/:id", masterTableController.UpdateMasterTable)
 
 	// //Master Column
+	api.Get("/master-column/field-type", masterColumnController.GetFieldType)
+	api.Get("/master-column/ui-type", masterColumnController.GetUiType)
+	api.Get("/master-column/show-column/:id", masterColumnController.ShowFormColumn)
 	api.Get("/master-column/show", masterColumnController.ShowMasterColumn)
 	api.Get("/master-column/show/:id", masterColumnController.ShowMasterColumnDetail)
 	api.Get("/master-column/by-table/:id", masterColumnController.ShowMasterColumnByTable)
 	api.Post("/master-column/create/:id", masterColumnController.CreateMasterColumn)
 	api.Delete("/master-column/delete/:id", masterColumnController.DeleteMasterColumn)
 	api.Put("/master-column/:id", masterColumnController.UpdateColumnTable)
+	api.Post("/master-column/check-query", masterColumnController.CheckQuery)
+	
 
 	// //generate table
 	api.Post("/master-table/generate/:id", masterTableController.GenerateTable)

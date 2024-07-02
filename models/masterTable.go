@@ -36,51 +36,66 @@ type MasterTable struct {
 // }
 
 type MasterColumn struct {
-	Id                 int                  `json:"id"`
-	CreatedDate        time.Time            `json:"created_date"`
-	CreatedBy          string               `json:"created_by"`
-	Status             string               `json:"status"`
-	UpdatedDate        time.Time            `json:"updated_date"`
-	UpdatedBy          string               `json:"updated_by"`
-	CodeGroupId        int                  `json:"code_group_id"`
-	Description        string               `json:"description"`
-	EnglishDescription string               `json:"english_description"`
-	FieldLength        int                  `json:"field_length"`
-	FieldName          string               `json:"field_name"`
-	FieldType          string               `json:"field_type"`
-	IsMandatory        bool                 `json:"is_mandatory"`
-	Sequence           int                  `json:"sequence"`
-	TableId            int                  `json:"table_id"`
-	UiSourceQuery      string               `json:"ui_source_query"`
-	UiSourceType       string               `json:"ui_source_type"`
-	UiType             string               `json:"ui_type"`
-	IsExport           bool                 `json:"es_export"`
-	CodeGroup          string               `json:"code_group"`
-	IsNegative         int                  `json:"is_negative"`
-	SqlFunction        string               `json:"sql_function"`
-	OnblurScript       string               `json:"onblur_script"`
+	Id                 int     `json:"id"`
+	TableId            int     `json:"table_id"`
+	FieldName          string  `json:"field_name"`
+	Description        string  `json:"description"`
+	EnglishDescription string  `json:"english_description"`
+	FieldType          string  `json:"field_type"`
+	FieldLength        int     `json:"field_length"`
+	CanFieldNegative   *bool   `json:"can_field_negative"`
+	IsMandatory        bool    `json:"is_mandatory"`
+	Sequence           int     `json:"sequence"`
+	UiTypeId           int     `json:"ui_type_id"`
+	UiSourceType       string  `json:"ui_source_type"`
+	UiSourceQuery      *string `json:"ui_source_query"`
+	CodeGroupId        *int    `json:"code_group_id"`
+	UploadFileExt      *string `json:"upload_file_ext"`
+	IsExport           bool    `json:"is_export"`
+	IsNegative         bool    `json:"is_negative"`
+	SqlFunction        string  `json:"sql_function"`
+	OnblurScript       string  `json:"onblur_script"`
+	ModelMasterForm    `json:"-"`
 	MasterMapperColumn []MasterMapperColumn `json:"-" gorm:"foreignKey:ColumnId"`
 	MasterSourceColumn []MasterSourceColumn `json:"-" gorm:"foreignKey:ColumnId"`
 	MasterTable        MasterTable          `json:"-" gorm:"foreignKey:TableId"`
+	UiType             UiType               `json:"-" gorm:"foreignKey:UiTypeId"`
 	MasterCodeGroup    MasterCodeGroup      `json:"-" gorm:"foreignKey:CodeGroupId"`
 }
 
-type CreateMasterColumn struct {
-	FieldName          string `json:"field_name"`
-	FieldType          string `json:"field_type"`
-	FieldLength        int    `json:"field_length"`
-	Description        string `json:"description"`
-	EnglishDescription string `json:"english_description"`
-	IsMandatory        bool   `json:"is_mandatory"`
-	Sequence           int    `json:"sequence"`
-	TableId            int    `json:"table_id"`
-	UiSourceQuery      string `json:"ui_source_query"`
-	UiSourceType       string `json:"ui_source_type"`
-	UiType             string `json:"ui_type"`
-	IsExport           bool   `json:"es_export"`
-	SqlFunction        string `json:"sql_function"`
-	OnblurScript       string `json:"onblur_script"`
+type CheckQuery struct {
+	Query string `json:"query"`
 }
+
+type UiType struct {
+	Id             int    `json:"id" gorm:"primaryKey"`
+	Code           string `json:"code"`
+	Name           string `json:"name"`
+	NeedSourceType bool   `json:"need_source_type"`
+	NeedFirstEmpty bool   `json:"-"`
+}
+
+type FieldType struct {
+	Code string `json:"code"`
+	Name string `json:"name"`
+}
+
+type TableForm struct {
+	FormName string     `json:"form_name"`
+	Form     []FormList `json:"form"`
+}
+
+type FormList struct {
+	FieldName      string       `json:"field_name"`
+	IsMandatory    bool         `json:"is_mandatory"`
+	UiType         string       `json:"ui_type"`
+	NeedFirstEmpty bool         `json:"-"`
+	UiSourceType   string       `json:"-"`
+	UiSourceQuery  string       `json:"-"`
+	CodeGroupId    *int         `json:"-"`
+	UiSource       []DropdownEn `json:"ui_source,omitempty" gorm:"-"`
+}
+
 type MasterSourceColumn struct {
 	Id           int       `json:"id"`
 	CreatedDate  time.Time `json:"created_date"`

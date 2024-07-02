@@ -15664,3 +15664,78 @@ func SectorEconomySeed() {
 	connection.DB.Save(&HubunganKeluarga,)
 
 }
+
+func MasterColumnSeed() {
+
+	var UiType = []models.UiType{
+		{
+			Code: "C",
+			Name: "Combo Box",
+			NeedSourceType: true,
+			NeedFirstEmpty: true,
+		},
+		{
+			Code: "D",
+			Name: "Date",
+		},
+		{
+			Code: "X",
+			Name: "Check Box",
+			NeedSourceType: true,
+		},
+		{
+			Code: "H",
+			Name: "Hidden",
+			
+		},
+		{
+			Code: "CMB",
+			Name: "Combo Box Multiple",
+			NeedSourceType: true,
+			NeedFirstEmpty: true,
+		},
+		{
+			Code: "TMF",
+			Name: "Input Text Multiple (float)",
+		},
+		{
+			Code: "TA",
+			Name: "Text Area",
+		},
+		{
+			Code: "R",
+			Name: "E-Signature",
+		},
+		{
+			Code: "RBF",
+			Name: "Radio Button",
+			NeedSourceType: true,
+		},
+		{
+			Code: "U",
+			Name: "Upload File",
+		},
+		{
+			Code: "F",
+			Name: "System Filter",
+		},
+		{
+			Code: "T",
+			Name: "Input Text",
+		},
+		{
+			Code: "L",
+			Name: "Workflow",
+		},
+		{
+			Code: "TBF",
+			Name: "Input Text Multiple",
+		},
+		{
+			Code: "HAC",
+			Name: "Hidden Auto Created",
+		},
+	}
+
+	connection.DB.Save(&UiType)
+}
