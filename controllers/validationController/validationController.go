@@ -77,7 +77,7 @@ func CreateValidation(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"message": "Unauthorized"})
 	}
 
-	var data models.CreateValidation
+	var data models.MasterValidation
 	if err := c.BodyParser(&data); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,

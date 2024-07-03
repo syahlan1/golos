@@ -7,12 +7,13 @@ import (
 
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
+	"github.com/syahlan1/golos/utils"
 )
 
 func ShowAllValidations() (result []models.MasterValidation, err error) {
 	var validations []models.MasterValidation
 
-	if err := connection.DB.Where("status = ? AND is_active = ?", "L", 1).Find(&validations).Error; err != nil {
+	if err := connection.DB.Where("is_active = ?", 1).Find(&validations).Error; err != nil {
 		return result, errors.New("failed to fetch validations")
 	}
 	return validations, nil
@@ -31,16 +32,14 @@ func ShowDetailValidation(validationId string) (result models.MasterValidation, 
 func ShowValidationByColumn(columnId string) (result []models.MasterValidation, err error) {
 	var validations []models.MasterValidation
 
-	if err := connection.DB.Where("status = ? AND is_active = ? AND column_id = ?", "L", 1, columnId).Find(&validations).Error; err != nil {
+	if err := connection.DB.Where("is_active = ? AND column_id = ?", 1, columnId).Find(&validations).Error; err != nil {
 		return result, errors.New("failed to fetch validations")
 	}
 
 	return validations, nil
 }
 
-func CreateValidation(claims string, columnId int, data models.CreateValidation) (err error) {
-
-	timeNow := time.Now()
+func CreateValidation(claims string, columnId int, data models.MasterValidation) (err error) {
 
 	var user models.Users
 	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
@@ -49,9 +48,9 @@ func CreateValidation(claims string, columnId int, data models.CreateValidation)
 	}
 
 	newMasterValidation := models.MasterValidation{
-		CreatedBy:          user.Username,
-		CreatedDate:        timeNow,
-		Status:             "L",
+		// CreatedBy:          user.Username,
+		// CreatedDate:        timeNow,
+		// Status:             "L",
 		Description:        data.Description,
 		EnglishDescription: data.EnglishDescription,
 		MessageType:        data.MessageType,
@@ -81,7 +80,7 @@ func UpdateValidation(claims, masterValidationId string, updatedMasterValidation
 	}
 
 	masterValidation.UpdatedBy = user.Username
-	masterValidation.UpdatedDate = time.Now()
+	masterValidation.UpdatedAt = time.Now()
 	masterValidation.Description = updatedMasterValidation.Description
 	masterValidation.EnglishDescription = updatedMasterValidation.EnglishDescription
 	masterValidation.MessageType = updatedMasterValidation.MessageType
@@ -95,7 +94,7 @@ func UpdateValidation(claims, masterValidationId string, updatedMasterValidation
 	return masterValidation, nil
 }
 
-func DeleteValidation(claims, masterValidateId string) (result models.MasterValidation, err error){
+func DeleteValidation(claims, masterValidateId string) (result models.MasterValidation, err error) {
 	var user models.Users
 	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("error retrieving user:", err)
@@ -103,17 +102,15 @@ func DeleteValidation(claims, masterValidateId string) (result models.MasterVali
 	}
 
 	var masterValidate models.MasterValidation
-	if err := connection.DB.First(&masterValidate, masterValidateId).Error; err != nil {
-		return result, errors.New("data Not Found")
-	}
+	// if err := connection.DB.First(&masterValidate, masterValidateId).Error; err != nil {
+	// 	return result, errors.New("data Not Found")
+	// }
 
-	masterValidate.UpdatedBy = user.Username
-	masterValidate.UpdatedDate = time.Now()
-	masterValidate.Status = "D"
+	masterValidate.ModelMasterForm = utils.SoftDelete(user.Username)
 
-	if err := connection.DB.Save(&masterValidate).Error; err != nil {
+	if err := connection.DB.Model(&masterValidate).Where("id = ?", masterValidateId).Updates(&masterValidate).Error; err != nil {
 		return result, errors.New("failed to delete Master Validation")
 	}
 
-	return masterValidate,  nil
+	return masterValidate, nil
 }
