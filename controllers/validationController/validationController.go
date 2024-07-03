@@ -143,7 +143,7 @@ func DeleteValidation(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"message": "Unauthorized"})
 	}
 
-	result, err := validationService.DeleteValidation(claims, masterValidateId)
+	err = validationService.DeleteValidation(claims, masterValidateId)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
@@ -154,6 +154,5 @@ func DeleteValidation(c *fiber.Ctx) error {
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
 		Message: "Deleted!",
-		Data:    result,
 	})
 }

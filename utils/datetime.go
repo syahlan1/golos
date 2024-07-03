@@ -22,8 +22,9 @@ func GetDateTimeNow() string {
 func SoftDelete(username string) models.ModelMasterForm {
 	return models.ModelMasterForm{
 		DeletedAt: gorm.DeletedAt{
-			Time: time.Now(),
-			Valid: true,},
+			Time:  time.Now(),
+			Valid: true,
+		},
 		UpdatedBy: username,
 	}
 }

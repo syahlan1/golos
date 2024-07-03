@@ -97,26 +97,16 @@ func UpdateMasterColumn(claims, masterColumnId string, updatedMasterColumn model
 }
 
 func DeleteMasterColumn(claims, masterColumnId string) (err error) {
-	// var user models.Users
-	// if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
-	// 	log.Println("Error retrieving user:", err)
-	// 	return result, err
-	// }
+	var user models.Users
+	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
+		log.Println("error retrieving user:", err)
+		return err
+	}
 
-	// var masterColumn models.MasterColumn
-	// if err := connection.DB.First(&masterColumn, masterColumnId).Error; err != nil {
-	// 	return result, errors.New("Data Not Found")
-	// }
+	var masterColumn models.MasterColumn
 
-	// masterColumn.UpdatedBy = user.Username
-	// // masterColumn.UpdatedDate = time.Now()
-	// // masterColumn.Status = "D"
-
-	// if err := connection.DB.Save(&masterColumn).Error; err != nil {
-	// 	return result, errors.New("Failed to delete Master Column")
-	// }
-
-	return connection.DB.Delete(&models.MasterColumn{}, masterColumnId).Error
+	masterColumn.ModelMasterForm = utils.SoftDelete(user.Username)
+	return connection.DB.Model(&masterColumn).Where("id = ?", masterColumnId).Updates(&masterColumn).Error
 }
 
 func GetFormColumn(masterTableId string) (result models.TableForm, err error) {

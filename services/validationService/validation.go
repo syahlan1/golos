@@ -94,23 +94,16 @@ func UpdateValidation(claims, masterValidationId string, updatedMasterValidation
 	return masterValidation, nil
 }
 
-func DeleteValidation(claims, masterValidateId string) (result models.MasterValidation, err error) {
+func DeleteValidation(claims, masterValidateId string) (err error) {
 	var user models.Users
 	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("error retrieving user:", err)
-		return result, err
+		return err
 	}
 
 	var masterValidate models.MasterValidation
-	// if err := connection.DB.First(&masterValidate, masterValidateId).Error; err != nil {
-	// 	return result, errors.New("data Not Found")
-	// }
 
 	masterValidate.ModelMasterForm = utils.SoftDelete(user.Username)
 
-	if err := connection.DB.Model(&masterValidate).Where("id = ?", masterValidateId).Updates(&masterValidate).Error; err != nil {
-		return result, errors.New("failed to delete Master Validation")
-	}
-
-	return masterValidate, nil
+	return connection.DB.Model(&masterValidate).Where("id = ?", masterValidateId).Updates(&masterValidate).Error
 }

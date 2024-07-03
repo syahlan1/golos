@@ -90,16 +90,16 @@ func UpdateMasterTable(claims, masterTableId string, updatedMasterTable models.M
 }
 
 func DeleteMasterTable(claims, masterTableId string) (err error) {
-	// var user models.Users
-	// if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
-	// 	log.Println("Error retrieving user:", err)
-	// 	return err
-	// }
-	if err = connection.DB.Where("id = ?", masterTableId).Delete(&models.MasterTable{}).Error; err != nil {
+	var user models.Users
+	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
+		log.Println("error retrieving user:", err)
 		return err
 	}
 
-	return nil
+	var masterTable models.MasterTable
+
+	masterTable.ModelMasterForm = utils.SoftDelete(user.Username)
+	return connection.DB.Model(&masterTable).Where("id = ?", masterTableId).Updates(&masterTable).Error
 }
 
 func GenerateTable(tableID string) (err error) {

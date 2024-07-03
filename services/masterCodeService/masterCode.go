@@ -8,6 +8,7 @@ import (
 
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
+	"github.com/syahlan1/golos/utils"
 )
 
 func ShowDetailMasterCode(groupId, groupName string) (result []models.MasterCode, err error) {
@@ -120,7 +121,7 @@ func UpdateMasterCode(claims, masterCodeId string, updatedMasterCode models.Mast
 
 	var masterCode models.MasterCode
 	if err := connection.DB.First(&masterCode, masterCodeId).Error; err != nil {
-		return result,errors.New("data Not Found")
+		return result, errors.New("data Not Found")
 	}
 
 	masterCode.UpdatedBy = user.Username
@@ -133,13 +134,13 @@ func UpdateMasterCode(claims, masterCodeId string, updatedMasterCode models.Mast
 	masterCode.CodeGroup = updatedMasterCode.CodeGroup
 
 	if err := connection.DB.Save(&masterCode).Error; err != nil {
-		return result,errors.New("failed to update Master Code")
+		return result, errors.New("failed to update Master Code")
 	}
 
 	return masterCode, nil
 }
 
-func UpdateMasterCodeGroup(claims string, masterCodeGroupId string, updatedMasterCodeGroup models.MasterCodeGroup) (result models.MasterCodeGroup,err error) {
+func UpdateMasterCodeGroup(claims string, masterCodeGroupId string, updatedMasterCodeGroup models.MasterCodeGroup) (result models.MasterCodeGroup, err error) {
 	var user models.Users
 	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("Error retrieving user:", err)
@@ -148,7 +149,7 @@ func UpdateMasterCodeGroup(claims string, masterCodeGroupId string, updatedMaste
 
 	var masterCodeGroup models.MasterCodeGroup
 	if err := connection.DB.First(&masterCodeGroup, masterCodeGroupId).Error; err != nil {
-		return result,errors.New("data Not Found")
+		return result, errors.New("data Not Found")
 	}
 
 	masterCodeGroup.UpdatedBy = user.Username
@@ -158,33 +159,23 @@ func UpdateMasterCodeGroup(claims string, masterCodeGroupId string, updatedMaste
 	masterCodeGroup.EnglishDescription = updatedMasterCodeGroup.EnglishDescription
 
 	if err := connection.DB.Save(&masterCodeGroup).Error; err != nil {
-		return result,errors.New("failed to update Master Code Group")
+		return result, errors.New("failed to update Master Code Group")
 	}
 
 	return masterCodeGroup, nil
 }
 
 func DeleteMasterCode(claims, masterCodeId string) (err error) {
-	// var user models.Users
-	// if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
-	// 	log.Println("error retrieving user:", err)
-	// 	return result, err
-	// }
+	var user models.Users
+	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
+		log.Println("error retrieving user:", err)
+		return err
+	}
 
-	// var masterCode models.MasterCode
-	// if err := connection.DB.First(&masterCode, masterCodeId).Error; err != nil {
-	// 	return result,errors.New("data Not Found")
-	// }
+	var masterCode models.MasterCode
 
-	// masterCode.UpdatedBy = user.Username
-	// masterCode.UpdatedAt = time.Now()
-	// masterCode.Status = "D"
-
-	// if err := connection.DB.Save(&masterCode).Error; err != nil {
-	// 	return result,errors.New("failed to delete Master Code")
-	// }
-
-	return connection.DB.Where("id = ?", masterCodeId).Delete(&models.MasterCode{}).Error
+	masterCode.ModelMasterForm = utils.SoftDelete(user.Username)
+	return connection.DB.Model(&masterCode).Where("id = ?", masterCodeId).Updates(&masterCode).Error
 }
 
 func DeleteMasterCodeGroup(claims string, masterCodeGroupId string) (err error) {

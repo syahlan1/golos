@@ -7,6 +7,7 @@ import (
 
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
+	"github.com/syahlan1/golos/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -91,24 +92,14 @@ func UpdateMasterParameter(claims string, parameterId string, updatedMasterParam
 
 func DeleteMasterParameter(claims, parameterId string) (err error) {
 
-	// var user models.Users
-	// if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
-	// 	log.Println("Error retrieving user:", err)
-	// 	return result, err
-	// }
+	var user models.Users
+	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
+		log.Println("error retrieving user:", err)
+		return err
+	}
 
-	// var masterParameter models.MasterParameter
-	// if err := connection.DB.First(&masterParameter, parameterId).Error; err != nil {
-	// 	return result ,errors.New("data Not Found")
-	// }
+	var masterParameter models.MasterParameter
 
-	// masterParameter.UpdatedBy = user.Username
-	// masterParameter.UpdatedAt = time.Now()
-	// masterParameter.Status = "D"
-
-	// if err := connection.DB.Save(&masterParameter).Error; err != nil {
-	// 	return result ,errors.New("Failed to Delete Master Parameter")
-	// }
-
-	return connection.DB.Where("id = ?", parameterId).Delete(&models.MasterParameter{}).Error
+	masterParameter.ModelMasterForm = utils.SoftDelete(user.Username)
+	return connection.DB.Model(&masterParameter).Where("id = ?", parameterId).Updates(&masterParameter).Error
 }

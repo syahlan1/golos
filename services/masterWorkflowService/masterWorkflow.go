@@ -6,6 +6,7 @@ import (
 
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
+	"github.com/syahlan1/golos/utils"
 )
 
 func CreateMasterWorkflow(claims string, data models.MasterWorkflow) (err error) {
@@ -54,5 +55,14 @@ func UpdateMasterWorkflow(claims string, masterWorkflowId string, data models.Ma
 }
 
 func DeleteMasterWorkflow(claims, masterWorkflowId string) (err error) {
-	return connection.DB.Where("id = ?", masterWorkflowId).Delete(&models.MasterWorkflow{}).Error
+	var user models.Users
+	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
+		log.Println("error retrieving user:", err)
+		return err
+	}
+
+	var masterWorkflow models.MasterWorkflow
+
+	masterWorkflow.ModelMasterForm = utils.SoftDelete(user.Username)
+	return connection.DB.Model(&masterWorkflow).Where("id = ?", masterWorkflowId).Updates(&masterWorkflow).Error
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
+	"github.com/syahlan1/golos/utils"
 )
 
 func CreateMasterModule(claims string, data models.MasterModule) (err error) {
@@ -78,9 +79,14 @@ func UpdateMasterModule(claims string, masterModuleId string, data models.Master
 
 func DeleteMasterModule(claims, masterModuleId string) (err error) {
 
-	if err := connection.DB.Where("id = ?", masterModuleId).Delete(&models.MasterModule{}).Error; err != nil {
+	var user models.Users
+	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
+		log.Println("error retrieving user:", err)
 		return err
 	}
 
-	return
+	var masterModule models.MasterModule
+
+	masterModule.ModelMasterForm = utils.SoftDelete(user.Username)
+	return connection.DB.Model(&masterModule).Where("id = ?", masterModuleId).Updates(&masterModule).Error
 }
