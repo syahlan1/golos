@@ -47,7 +47,7 @@ func ShowMasterCodeGroup(c *fiber.Ctx) error {
 }
 
 func CreateMasterCode(c *fiber.Ctx) error {
-	var data models.CreateMasterCode
+	var data models.MasterCode
 
 	if err := c.BodyParser(&data); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
@@ -79,7 +79,7 @@ func CreateMasterCode(c *fiber.Ctx) error {
 }
 
 func CreateMasterCodeGroup(c *fiber.Ctx) error {
-	var data models.CreateMasterCode
+	var data models.MasterCodeGroup
 
 	if err := c.BodyParser(&data); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
@@ -95,7 +95,7 @@ func CreateMasterCodeGroup(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"message": "Unauthorized"})
 	}
 
-	err = masterCodeService.CreateMasterCode(claims, data)
+	err = masterCodeService.CreateMasterCodeGroup(claims, data)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
@@ -185,7 +185,7 @@ func DeleteMasterCode(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"message": "Unauthorized"})
 	}
 
-	result, err := masterCodeService.DeleteMasterCode(claims, masterCodeId)
+	err = masterCodeService.DeleteMasterCode(claims, masterCodeId)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
@@ -196,7 +196,6 @@ func DeleteMasterCode(c *fiber.Ctx) error {
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
 		Message: "Deleted!",
-		Data:    result,
 	})
 }
 
@@ -210,7 +209,7 @@ func DeleteMasterCodeGroup(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"message": "Unauthorized"})
 	}
 
-	result, err := masterCodeService.DeleteMasterCodeGroup(claims, masterCodeGroupId)
+	err = masterCodeService.DeleteMasterCodeGroup(claims, masterCodeGroupId)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
@@ -221,6 +220,5 @@ func DeleteMasterCodeGroup(c *fiber.Ctx) error {
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
 		Message: "Deleted!",
-		Data:    result,
 	})
 }

@@ -12,7 +12,7 @@ type MasterValidation struct {
 	ColumnId           int          `json:"column_id"`
 	Description        string       `json:"description"`
 	EnglishDescription string       `json:"english_description"`
-	MasterCodeId       int          `json:"master_code_id"`
+	MasterCodeId       *int          `json:"master_code_id"`
 	MessageType        string       `json:"message_type"`
 	ValidationFunction string       `json:"validation_function"`
 	IsActive           int          `json:"is_active"`
@@ -26,7 +26,7 @@ type CreateValidation struct {
 	MessageType        string `json:"message_type"`
 	ValidationFunction string `json:"validation_function"`
 	IsActive           int    `json:"is_active"`
-	MasterCodeId       int    `json:"master_code_id"`
+	MasterCodeId       *int    `json:"master_code_id"`
 }
 
 type MasterValidationRelation struct {

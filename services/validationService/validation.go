@@ -95,14 +95,14 @@ func UpdateValidation(claims, masterValidationId string, updatedMasterValidation
 	return masterValidation, nil
 }
 
-func DeleteValidation(claims, masterValidateId string) (result models.MasterCode, err error){
+func DeleteValidation(claims, masterValidateId string) (result models.MasterValidation, err error){
 	var user models.Users
 	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
 		log.Println("error retrieving user:", err)
 		return result, err
 	}
 
-	var masterValidate models.MasterCode
+	var masterValidate models.MasterValidation
 	if err := connection.DB.First(&masterValidate, masterValidateId).Error; err != nil {
 		return result, errors.New("data Not Found")
 	}

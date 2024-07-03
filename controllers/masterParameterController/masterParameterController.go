@@ -8,7 +8,7 @@ import (
 )
 
 func CreateParameter(c *fiber.Ctx) error {
-	var data models.CreateMasterParameter
+	var data models.MasterParameter
 
 	if err := c.BodyParser(&data); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
@@ -117,7 +117,7 @@ func DeleteMasterParameter(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"message": "Unauthorized"})
 	}
 
-	result, err := masterParameterService.DeleteMasterParameter(claims, parameterId)
+	err = masterParameterService.DeleteMasterParameter(claims, parameterId)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
@@ -128,6 +128,5 @@ func DeleteMasterParameter(c *fiber.Ctx) error {
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
 		Message: "Deleted!",
-		Data:    result,
 	})
 }
