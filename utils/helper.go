@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"unicode"
 
@@ -149,13 +150,14 @@ func ApplyValidations(db *gorm.DB, data map[string]interface{}, columns []models
 			continue
 		}
 
-		fieldValueStr, ok := fieldValue.(string)
-		if !ok {
-			errorMessages[validation.ColumnId] = append(errorMessages[validation.ColumnId], "Field value is not a string")
-			continue
-		}
+		// fieldValueStr, _ := fieldValue.(string)
+		// log.Println(fieldValueStr)
+		// if !ok {
+		// 	errorMessages[validation.ColumnId] = append(errorMessages[validation.ColumnId], "Field value is not a string")
+		// 	continue
+		// }
 
-		isValid, err := executeValidationFunction(db, fieldValueStr, validation.ValidationFunction)
+		isValid, err := executeValidationFunction(db, interfaceToString(fieldValue), validation.ValidationFunction)
 		if err != nil {
 			errorMessages[validation.ColumnId] = append(errorMessages[validation.ColumnId], fmt.Sprintf("Error validating field %s: %s", columnName, err.Error()))
 			continue
@@ -197,4 +199,23 @@ func executeValidationFunction(db *gorm.DB, value string, validationFunction str
 	}
 
 	return result == "valid", nil
+}
+
+func interfaceToString(i interface{}) string {
+	switch v := i.(type) {
+	case int:
+		return strconv.Itoa(v)
+	case int8, int16, int32, int64:
+		return fmt.Sprintf("%d", v)
+	case uint, uint8, uint16, uint32, uint64:
+		return fmt.Sprintf("%d", v)
+	case float32, float64:
+		return fmt.Sprintf("%f", v)
+	case bool:
+		return strconv.FormatBool(v)
+	case string:
+		return v
+	default:
+		return fmt.Sprintf("%v", v)
+	}
 }
