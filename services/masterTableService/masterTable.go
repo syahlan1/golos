@@ -150,7 +150,7 @@ func GenerateTable(tableID string) (err error) {
 	}
 
 	if !tableExists {
-		createTableSQL := fmt.Sprintf(`CREATE TABLE "%s".%s (`+"\n", masterTable.ModuleName, masterTable.TableName)
+		createTableSQL := fmt.Sprintf(`CREATE TABLE "%s"."%s" (`+"\n", masterTable.ModuleName, masterTable.TableName)
 		createTableSQL += "\tID SERIAL PRIMARY KEY,\n"
 
 		// Add mandatory columns to createTableSQL
@@ -180,7 +180,7 @@ func GenerateTable(tableID string) (err error) {
 			DataType               string
 			CharacterMaximumLength sql.NullInt32
 		}
-		rows, err := db.Raw(fmt.Sprintf("SELECT column_name, data_type, character_maximum_length FROM information_schema.columns WHERE table_name = '%s'", masterTable.TableName)).Rows()
+		rows, err := db.Raw(fmt.Sprintf("SELECT column_name, data_type, character_maximum_length FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s'",masterTable.ModuleName, masterTable.TableName)).Rows()
 		if err != nil {
 			return err
 		}
@@ -227,7 +227,7 @@ func GenerateTable(tableID string) (err error) {
 		}
 
 		if len(alterTableQueries) > 0 {
-			alterTableSQL := fmt.Sprintf("ALTER TABLE %s\n%s;", masterTable.TableName, strings.Join(alterTableQueries, ",\n"))
+			alterTableSQL := fmt.Sprintf(`ALTER TABLE "%s"."%s"`+"\n"+`%s;`, masterTable.ModuleName, masterTable.TableName, strings.Join(alterTableQueries, ",\n"))
 			if err := db.Exec(alterTableSQL).Error; err != nil {
 				return err
 			}
