@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/syahlan1/golos/controllers/masterTemplateController"
 
 	"github.com/syahlan1/golos/controllers/aplicantController"
 	"github.com/syahlan1/golos/controllers/approvalController"
@@ -36,6 +37,13 @@ func Setup(app *fiber.App) {
 	app.Use(logger.New())
 
 	api := app.Group("/api")
+
+	//route tes_table_1
+	// api.Post("/tes_table_1/create", tesTable1Controller.CreateTesTable1)
+	// api.Put("/tes_table_1/update/:id", tesTable1Controller.UpdateTesTable1)
+	// api.Put("/tes_table_1/delete/:id", tesTable1Controller.DeleteTesTable1)
+	// api.Get("/tes_table_1/show", tesTable1Controller.ShowTesTable1)
+	// api.Get("/tes_table_1/show/:id", tesTable1Controller.ShowDetailTesTable1)
 
 	api.Post("/register", authController.Register)
 	api.Post("/login", authController.Login)
@@ -223,4 +231,9 @@ func Setup(app *fiber.App) {
 	api.Put("/master-workflow/update/:id", masterWorkflowController.UpdateMasterWorkflow)
 	api.Delete("/master-workflow/delete/:id", masterWorkflowController.DeleteMasterWorkflow)
 	api.Get("/master-workflow/show", masterWorkflowController.ShowMasterWorkflow)
+
+	api.Get("/master-template/:module/:table/show", masterTemplateController.ShowMasterTemplate)
+	api.Post("/master-template/:module/:table/Create", masterTemplateController.CreateMasterTemplate)
+	api.Put("/master-template/:module/:table/update/:id", masterTemplateController.UpdateMasterTemplate)
+	api.Delete("/master-template/:module/:table/delete/:id", masterTemplateController.DeleteMasterTemplate)
 }

@@ -19,6 +19,14 @@ type MasterValidation struct {
 	MasterCode   MasterCode   `json:"-" gorm:"foreignKey:MasterCodeId"`
 }
 
+type Validate struct {
+	ColumnId           int    `json:"column_id"`
+	ColumnName         string `json:"column_name"`
+	ValidationFunction string `json:"-"`
+	Description        string `json:"description"`
+	EnglishDescription string `json:"english_description"`
+}
+
 type CreateValidation struct {
 	Description        string `json:"description"`
 	EnglishDescription string `json:"english_description"`
@@ -35,12 +43,12 @@ type MasterValidationRelation struct {
 	// UpdatedDate     time.Time `json:"updated_date"`
 	// UpdatedBy       string    `json:"updated_by"`
 	// Status          string    `json:"status"`
-	FieldName       string       `json:"field_name"`
-	ColumnId        int          `json:"column_id"`
-	IsActive        int          `json:"is_aactive"`
-	TableId         int          `json:"table_id"`
-	ValidationQuery string       `json:"validation_query"`
+	FieldName       string `json:"field_name"`
+	ColumnId        int    `json:"column_id"`
+	IsActive        int    `json:"is_aactive"`
+	TableId         int    `json:"table_id"`
+	ValidationQuery string `json:"validation_query"`
 	ModelMasterForm
-	Column          MasterColumn `json:"-" gorm:"foreignKey:ColumnId"`
-	Table           MasterTable  `json:"-" gorm:"foreignKey:TableId"`
+	Column MasterColumn `json:"-" gorm:"foreignKey:ColumnId"`
+	Table  MasterTable  `json:"-" gorm:"foreignKey:TableId"`
 }

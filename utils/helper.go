@@ -128,6 +128,34 @@ func GetColumnIds(columns []models.MasterColumn) []int {
 	return columnIds
 }
 
+func ApplyValidations2(db *gorm.DB, data map[string]interface{}, validations []models.Validate) (errorMessages []models.Validate, err error) {
+	for _, validation := range validations {
+		isValid, err := executeValidationFunction(db, interfaceToString(data[validation.ColumnName]), validation.ValidationFunction)
+		if err != nil {
+			errorMessages = append(errorMessages, models.Validate{
+				ColumnId:           validation.ColumnId,
+				ColumnName:         validation.ColumnName,
+				Description:        err.Error(),
+				EnglishDescription: err.Error(),
+			})
+			continue
+		}
+		if !isValid {
+			errorMessages = append(errorMessages, models.Validate{
+				ColumnId:           validation.ColumnId,
+				ColumnName:         validation.ColumnName,
+				Description:        validation.Description,
+				EnglishDescription: validation.EnglishDescription,
+			})
+		}
+	}
+
+	if len(errorMessages) > 0 {
+		return errorMessages, errors.New("validation errors")
+	}
+	return nil, nil
+}
+
 func ApplyValidations(db *gorm.DB, data map[string]interface{}, columns []models.MasterColumn, validations []models.MasterValidation) (map[int][]string, error) {
 	errorMessages := make(map[int][]string)
 	columnIds := GetColumnIds(columns)
@@ -163,7 +191,7 @@ func ApplyValidations(db *gorm.DB, data map[string]interface{}, columns []models
 			continue
 		}
 		if !isValid {
-			errorMessages[validation.ColumnId] = append(errorMessages[validation.ColumnId], validation.EnglishDescription)
+			errorMessages[validation.ColumnId] = append(errorMessages[validation.ColumnId], []string{"aaa", validation.EnglishDescription}...)
 		}
 	}
 

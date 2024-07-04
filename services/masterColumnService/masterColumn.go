@@ -118,11 +118,13 @@ func GetFormColumn(masterTableId string) (result models.TableForm, err error) {
 		return result, errors.New("data Not Found")
 	}
 
-	rows, err := connection.DB.
-		Select("field_name, is_mandatory, need_first_empty, ut.name as ui_type, ui_source_type, ui_source_query, code_group_id").
+	rows, err := connection.DB.Debug().
+		Select("master_columns.id AS field_id ,field_name, is_mandatory, need_first_empty, ut.name as ui_type, ui_source_type, ui_source_query, code_group_id").
 		Joins("JOIN ui_types ut ON ut.id = master_columns.ui_type_id").
 		Model(&models.MasterColumn{}).
-		Where("table_id = ?", masterTableId).Rows()
+		Where("table_id = ?", masterTableId).
+		Order("sequence").
+		Rows()
 
 	var data models.FormList
 
@@ -139,13 +141,16 @@ func GetFormColumn(masterTableId string) (result models.TableForm, err error) {
 
 		if data.UiSourceType == "C" {
 			err = connection.DB.
-				Select("id, description as name, english_description as name_en").
+				Select("code, description as name, english_description as name_en").
 				Model(&models.MasterCode{}).
 				Where("code_group_id = ?", data.CodeGroupId).
 				Order("sequence").
 				Scan(&data.UiSource).Error
 			if err != nil {
 				return result, err
+			}
+			if data.NeedFirstEmpty {
+				data.UiSource = utils.Prepend(data.UiSource, models.DropdownEn{Code: "", Name: "", NameEn: ""})
 			}
 
 		} else if data.UiSourceType == "Q" {
@@ -155,11 +160,12 @@ func GetFormColumn(masterTableId string) (result models.TableForm, err error) {
 			if err != nil {
 				return result, err
 			}
+			if data.NeedFirstEmpty {
+				data.UiSource = utils.Prepend(data.UiSource, models.DropdownEn{Code: "", Name: "", NameEn: ""})
+			}
 		}
 
-		if data.NeedFirstEmpty {
-			data.UiSource = utils.Prepend(data.UiSource, models.DropdownEn{Id: 0, Name: "", NameEn: ""})
-		}
+		
 
 		result.Form = append(result.Form, data)
 	}

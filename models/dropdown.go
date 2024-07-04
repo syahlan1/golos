@@ -6,7 +6,7 @@ type Dropdown struct {
 }
 
 type DropdownEn struct {
-	Id     int    `json:"id"`
+	Code   string `json:"code"`
 	Name   string `json:"name"`
 	NameEn string `json:"name_en"`
 }

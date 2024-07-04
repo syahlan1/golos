@@ -86,6 +86,7 @@ type TableForm struct {
 }
 
 type FormList struct {
+	FieldId        int          `json:"field_id"`
 	FieldName      string       `json:"field_name"`
 	IsMandatory    bool         `json:"is_mandatory"`
 	UiType         string       `json:"ui_type"`
@@ -94,6 +95,13 @@ type FormList struct {
 	UiSourceQuery  string       `json:"-"`
 	CodeGroupId    *int         `json:"-"`
 	UiSource       []DropdownEn `json:"ui_source,omitempty" gorm:"-"`
+}
+
+type ColumnSource struct {
+	Id            int     `json:"id"`
+	UiSourceType  string  `json:"ui_source_type"`
+	UiSourceQuery *string `json:"ui_source_query"`
+	CodeGroupId   *int    `json:"code_group_id"`
 }
 
 type MasterSourceColumn struct {
