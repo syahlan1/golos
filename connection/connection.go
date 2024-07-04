@@ -28,96 +28,175 @@ func Connect() {
 
 	DB = connection
 
-	connection.AutoMigrate(&models.RolePermission{})
-	connection.AutoMigrate(&models.Permission{})
-	connection.AutoMigrate(&models.Roles{})
-	connection.AutoMigrate(&models.Users{})
-	connection.AutoMigrate(&models.RoleModules{})
-	connection.AutoMigrate(&models.RoleTables{})
-	connection.AutoMigrate(&models.RoleWorkflow{})
-	connection.AutoMigrate(&models.Menu{})
-	connection.AutoMigrate(&models.RoleMenu{})
+	connection.AutoMigrate(
+		&models.RolePermission{},
+		&models.Permission{},
+		&models.Roles{},
+		&models.Users{},
+		&models.RoleModules{},
+		&models.RoleTables{},
+		&models.RoleWorkflow{},
+		&models.Menu{},
+		&models.RoleMenu{},
 
-	connection.AutoMigrate(&models.Business{})
-	connection.AutoMigrate(&models.Applicant{})
-	connection.AutoMigrate(&models.IdCard{})
-	connection.AutoMigrate(&models.SpouseData{})
-	connection.AutoMigrate(&models.Document{})
-	connection.AutoMigrate(&models.GeneralInformation{})
-	connection.AutoMigrate(&models.SectorEconomy{})
+		&models.Business{},
+		&models.Applicant{},
+		&models.IdCard{},
+		&models.SpouseData{},
+		&models.Document{},
+		&models.GeneralInformation{},
+		&models.SectorEconomy{},
 
-	connection.AutoMigrate(&models.AddressType{})
+		&models.AddressType{},
 
-	connection.AutoMigrate(&models.HomeStatus{})
-	connection.AutoMigrate(&models.Education{})
-	connection.AutoMigrate(&models.JobPosition{})
-	connection.AutoMigrate(&models.BusinessSector{})
-	connection.AutoMigrate(&models.Negara{})
-	connection.AutoMigrate(&models.MaritalStatus{})
-	connection.AutoMigrate(&models.Nationality{})
-	connection.AutoMigrate(&models.Gender{})
+		&models.HomeStatus{},
+		&models.Education{},
+		&models.JobPosition{},
+		&models.BusinessSector{},
+		&models.Negara{},
+		&models.MaritalStatus{},
+		&models.Nationality{},
+		&models.Gender{},
 
-	connection.AutoMigrate(&models.SectorEconomy1{})
-	connection.AutoMigrate(&models.SectorEconomy2{})
-	connection.AutoMigrate(&models.SectorEconomy3{})
-	connection.AutoMigrate(&models.SectorEconomyOjk{})
-	connection.AutoMigrate(&models.LokasiPabrik{})
-	connection.AutoMigrate(&models.LokasiDati2{})
-	connection.AutoMigrate(&models.HubunganNasabahBank{})
-	connection.AutoMigrate(&models.HubunganKeluarga{})
+		&models.SectorEconomy1{},
+		&models.SectorEconomy2{},
+		&models.SectorEconomy3{},
+		&models.SectorEconomyOjk{},
+		&models.LokasiPabrik{},
+		&models.LokasiDati2{},
+		&models.HubunganNasabahBank{},
+		&models.HubunganKeluarga{},
 
+		&models.Cabang{},
+		&models.Program{},
+		&models.Segment{},
 
-	connection.AutoMigrate(&models.Cabang{})
-	connection.AutoMigrate(&models.Program{})
-	connection.AutoMigrate(&models.Segment{})
+		&models.CompanyFirstName{},
+		&models.CompanyType{},
+		&models.ExternalRatingCompany{},
+		&models.RatingClass{},
+		&models.KodeBursa{},
+		&models.BusinessType{},
 
-	connection.AutoMigrate(&models.CompanyFirstName{})
-	connection.AutoMigrate(&models.CompanyType{})
-	connection.AutoMigrate(&models.ExternalRatingCompany{})
-	connection.AutoMigrate(&models.RatingClass{})
-	connection.AutoMigrate(&models.KodeBursa{})
-	connection.AutoMigrate(&models.BusinessType{})
+		&models.ZipCode{},
 
-	// connection.AutoMigrate(&models.BusinessAddressType{})
+		&models.Approval{},
+		&models.ApprovalSetting{},
+		&models.ApprovalWorkflow{},
+		&models.ApprovalHistory{},
+		&models.ApprovalWorkflowRole{},
+
+		&models.MasterValidation{},
+
+		&models.MasterCode{},
+		&models.MasterCodeGroup{},
+
+		&models.MasterModule{},
+		&models.MasterTable{},
+		&models.UiType{},
+		&models.MasterColumn{},
+		&models.MasterSourceColumn{},
+		&models.MasterMapperColumn{},
+		&models.MasterMapperTable{},
+		&models.MasterParameter{},
+		&models.MasterWorkflow{},
+
+		&models.OwnershipData{},
+		&models.RelationWithBank{},
+		&models.DataRekeningDebitur{},
+		&models.CustomerLoanInfo{},
+	)
+
+	// connection.AutoMigrate(&models.RolePermission{})
+	// connection.AutoMigrate(&models.Permission{})
+	// connection.AutoMigrate(&models.Roles{})
+	// connection.AutoMigrate(&models.Users{})
+	// connection.AutoMigrate(&models.RoleModules{})
+	// connection.AutoMigrate(&models.RoleTables{})
+	// connection.AutoMigrate(&models.RoleWorkflow{})
+	// connection.AutoMigrate(&models.Menu{})
+	// connection.AutoMigrate(&models.RoleMenu{})
+
+	// connection.AutoMigrate(&models.Business{})
+	// connection.AutoMigrate(&models.Applicant{})
+	// connection.AutoMigrate(&models.IdCard{})
+	// connection.AutoMigrate(&models.SpouseData{})
+	// connection.AutoMigrate(&models.Document{})
+	// connection.AutoMigrate(&models.GeneralInformation{})
+	// connection.AutoMigrate(&models.SectorEconomy{})
+
+	// connection.AutoMigrate(&models.AddressType{})
 
 	// connection.AutoMigrate(&models.HomeStatus{})
-	// connection.AutoMigrate(&models.ApplicantAddressType{})
 	// connection.AutoMigrate(&models.Education{})
 	// connection.AutoMigrate(&models.JobPosition{})
 	// connection.AutoMigrate(&models.BusinessSector{})
-	// connection.AutoMigrate(&models.KodeInstansi{})
 	// connection.AutoMigrate(&models.Negara{})
-	// connection.AutoMigrate(&models.SektorEkonomi{})
-	// connection.AutoMigrate(&models.HubunganNasabah{})
-	// connection.AutoMigrate(&models.HubunganKeluarga{})
-	// connection.AutoMigrate(&models.LokasiPabrik{})
 	// connection.AutoMigrate(&models.MaritalStatus{})
+	// connection.AutoMigrate(&models.Nationality{})
+	// connection.AutoMigrate(&models.Gender{})
 
-	connection.AutoMigrate(&models.ZipCode{})
+	// connection.AutoMigrate(&models.SectorEconomy1{})
+	// connection.AutoMigrate(&models.SectorEconomy2{})
+	// connection.AutoMigrate(&models.SectorEconomy3{})
+	// connection.AutoMigrate(&models.SectorEconomyOjk{})
+	// connection.AutoMigrate(&models.LokasiPabrik{})
+	// connection.AutoMigrate(&models.LokasiDati2{})
+	// connection.AutoMigrate(&models.HubunganNasabahBank{})
+	// connection.AutoMigrate(&models.HubunganKeluarga{})
 
-	connection.AutoMigrate(&models.Approval{})
-	connection.AutoMigrate(&models.ApprovalSetting{})
-	connection.AutoMigrate(&models.ApprovalWorkflow{})
-	connection.AutoMigrate(&models.ApprovalHistory{})
-	connection.AutoMigrate(&models.ApprovalWorkflowRole{})
 
-	connection.AutoMigrate(&models.MasterValidation{})
+	// connection.AutoMigrate(&models.Cabang{})
+	// connection.AutoMigrate(&models.Program{})
+	// connection.AutoMigrate(&models.Segment{})
 
-	connection.AutoMigrate(&models.MasterCode{})
-	connection.AutoMigrate(&models.MasterCodeGroup{})
+	// connection.AutoMigrate(&models.CompanyFirstName{})
+	// connection.AutoMigrate(&models.CompanyType{})
+	// connection.AutoMigrate(&models.ExternalRatingCompany{})
+	// connection.AutoMigrate(&models.RatingClass{})
+	// connection.AutoMigrate(&models.KodeBursa{})
+	// connection.AutoMigrate(&models.BusinessType{})
 
-	connection.AutoMigrate(&models.MasterModule{})
-	connection.AutoMigrate(&models.MasterTable{})
-	connection.AutoMigrate(&models.UiType{})
-	connection.AutoMigrate(&models.MasterColumn{})
-	connection.AutoMigrate(&models.MasterSourceColumn{})
-	connection.AutoMigrate(&models.MasterMapperColumn{})
-	connection.AutoMigrate(&models.MasterMapperTable{})
-	connection.AutoMigrate(&models.MasterParameter{})
-	connection.AutoMigrate(&models.MasterWorkflow{})
+	// // connection.AutoMigrate(&models.BusinessAddressType{})
 
-	connection.AutoMigrate(&models.OwnershipData{})
-	connection.AutoMigrate(&models.RelationWithBank{})
-	connection.AutoMigrate(&models.DataRekeningDebitur{})
-	connection.AutoMigrate(&models.CustomerLoanInfo{})
+	// // connection.AutoMigrate(&models.HomeStatus{})
+	// // connection.AutoMigrate(&models.ApplicantAddressType{})
+	// // connection.AutoMigrate(&models.Education{})
+	// // connection.AutoMigrate(&models.JobPosition{})
+	// // connection.AutoMigrate(&models.BusinessSector{})
+	// // connection.AutoMigrate(&models.KodeInstansi{})
+	// // connection.AutoMigrate(&models.Negara{})
+	// // connection.AutoMigrate(&models.SektorEkonomi{})
+	// // connection.AutoMigrate(&models.HubunganNasabah{})
+	// // connection.AutoMigrate(&models.HubunganKeluarga{})
+	// // connection.AutoMigrate(&models.LokasiPabrik{})
+	// // connection.AutoMigrate(&models.MaritalStatus{})
+
+	// connection.AutoMigrate(&models.ZipCode{})
+
+	// connection.AutoMigrate(&models.Approval{})
+	// connection.AutoMigrate(&models.ApprovalSetting{})
+	// connection.AutoMigrate(&models.ApprovalWorkflow{})
+	// connection.AutoMigrate(&models.ApprovalHistory{})
+	// connection.AutoMigrate(&models.ApprovalWorkflowRole{})
+
+	// connection.AutoMigrate(&models.MasterValidation{})
+
+	// connection.AutoMigrate(&models.MasterCode{})
+	// connection.AutoMigrate(&models.MasterCodeGroup{})
+
+	// connection.AutoMigrate(&models.MasterModule{})
+	// connection.AutoMigrate(&models.MasterTable{})
+	// connection.AutoMigrate(&models.UiType{})
+	// connection.AutoMigrate(&models.MasterColumn{})
+	// connection.AutoMigrate(&models.MasterSourceColumn{})
+	// connection.AutoMigrate(&models.MasterMapperColumn{})
+	// connection.AutoMigrate(&models.MasterMapperTable{})
+	// connection.AutoMigrate(&models.MasterParameter{})
+	// connection.AutoMigrate(&models.MasterWorkflow{})
+
+	// connection.AutoMigrate(&models.OwnershipData{})
+	// connection.AutoMigrate(&models.RelationWithBank{})
+	// connection.AutoMigrate(&models.DataRekeningDebitur{})
+	// connection.AutoMigrate(&models.CustomerLoanInfo{})
 }
