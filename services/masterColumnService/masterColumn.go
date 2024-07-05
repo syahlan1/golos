@@ -2,6 +2,7 @@ package masterColumnService
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -139,33 +140,35 @@ func GetFormColumn(masterTableId string) (result models.TableForm, err error) {
 			return result, err
 		}
 
+		var UiSource []models.DropdownEn
+
 		if data.UiSourceType == "C" {
 			err = connection.DB.
-				Select("code, description as name, english_description as name_en").
+				Select("code, description, english_description").
 				Model(&models.MasterCode{}).
 				Where("code_group_id = ?", data.CodeGroupId).
 				Order("sequence").
-				Scan(&data.UiSource).Error
+				Scan(&UiSource).Error
 			if err != nil {
 				return result, err
 			}
 			if data.NeedFirstEmpty {
-				data.UiSource = utils.Prepend(data.UiSource, models.DropdownEn{Code: "", Name: "", NameEn: ""})
+				UiSource = utils.Prepend(UiSource, models.DropdownEn{Code: "", Description: "", EnglishDescription: ""})
 			}
 
 		} else if data.UiSourceType == "Q" {
 			err = connection.DB.
-				Raw(data.UiSourceQuery).
-				Scan(&data.UiSource).Error
+				Raw(fmt.Sprintf(`select * from(%s) t order by "code"`, data.UiSourceQuery)).
+				Scan(&UiSource).Error
 			if err != nil {
 				return result, err
 			}
 			if data.NeedFirstEmpty {
-				data.UiSource = utils.Prepend(data.UiSource, models.DropdownEn{Code: "", Name: "", NameEn: ""})
+				UiSource = utils.Prepend(UiSource, models.DropdownEn{Code: "", Description: "", EnglishDescription: ""})
 			}
 		}
 
-		
+		data.UiSource = UiSource
 
 		result.Form = append(result.Form, data)
 	}
@@ -174,7 +177,7 @@ func GetFormColumn(masterTableId string) (result models.TableForm, err error) {
 }
 
 func CheckQuery(data models.CheckQuery) (err error) {
-	return connection.DB.Raw(`?`,data.Query).Error
+	return connection.DB.Raw(`?`, data.Query).Error
 }
 
 func GetUiType() (result []models.UiType) {

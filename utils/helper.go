@@ -130,7 +130,7 @@ func GetColumnIds(columns []models.MasterColumn) []int {
 
 func ApplyValidations2(db *gorm.DB, data map[string]interface{}, validations []models.Validate) (errorMessages []models.Validate, err error) {
 	for _, validation := range validations {
-		isValid, err := executeValidationFunction(db, interfaceToString(data[validation.ColumnName]), validation.ValidationFunction)
+		isValid, err := executeValidationFunction(db, InterfaceToString(data[validation.ColumnName]), validation.ValidationFunction)
 		if err != nil {
 			errorMessages = append(errorMessages, models.Validate{
 				ColumnId:           validation.ColumnId,
@@ -185,7 +185,7 @@ func ApplyValidations(db *gorm.DB, data map[string]interface{}, columns []models
 		// 	continue
 		// }
 
-		isValid, err := executeValidationFunction(db, interfaceToString(fieldValue), validation.ValidationFunction)
+		isValid, err := executeValidationFunction(db, InterfaceToString(fieldValue), validation.ValidationFunction)
 		if err != nil {
 			errorMessages[validation.ColumnId] = append(errorMessages[validation.ColumnId], fmt.Sprintf("Error validating field %s: %s", columnName, err.Error()))
 			continue
@@ -214,7 +214,7 @@ func contains(s []int, e int) bool {
 // ExecuteValidationFunction executes the validation function as SQL query
 func executeValidationFunction(db *gorm.DB, value string, validationFunction string) (bool, error) {
 	valueEscaped := strings.ReplaceAll(value, "'", "''")
-	validationQuery := strings.Replace(validationFunction, "#", valueEscaped, -1)
+	validationQuery := strings.Replace(validationFunction, "#", "'"+valueEscaped+"'", -1)
 	validationQuery = "SELECT " + validationQuery
 
 	// Tambahkan log untuk melihat query yang dihasilkan
@@ -229,7 +229,7 @@ func executeValidationFunction(db *gorm.DB, value string, validationFunction str
 	return result == "valid", nil
 }
 
-func interfaceToString(i interface{}) string {
+func InterfaceToString(i interface{}) string {
 	switch v := i.(type) {
 	case int:
 		return strconv.Itoa(v)

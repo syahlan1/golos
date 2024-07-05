@@ -14,6 +14,14 @@ func ShowMasterTemplate(schema, tableName string) (result []map[string]interface
 
 	column := FindColumn(tableName, true)
 
+	var columnSource []models.ColumnSource
+	err = connection.DB.
+		Select("*").
+		Model(&models.MasterColumn{}).
+		Where("table_id = ? AND deleted_at is null", tableName).
+		Where("ui_source_type = ? OR ui_source_type = ?", "Q", "C").
+		Find(&columnSource).Error
+
 	err = connection.DB.
 		Select("database_name, table_name").
 		Joins("JOIN master_modules mm ON mm.id = master_tables.module_id").
@@ -22,14 +30,6 @@ func ShowMasterTemplate(schema, tableName string) (result []map[string]interface
 	if err != nil {
 		return nil, err
 	}
-
-	// var columnSource []models.ColumnSource
-	// err = connection.DB.
-	// 	Select("*").
-	// 	Model(&models.MasterColumn{}).
-	// 	Where("table_id = ? AND deleted_at is null", tableName).
-	// 	Where("ui_source_type = ? OR ui_source_type = ?", "Q", "C").
-	// 	Find(&columnSource).Error
 
 	rows, err := connection.DB.
 		Select(column).
@@ -49,11 +49,45 @@ func ShowMasterTemplate(schema, tableName string) (result []map[string]interface
 			return nil, err
 		}
 
-		// for _, v := range columnSource {
-		// 	if _, ok := data[v.Id]; ok {
-		// 		data[v.Field] = v.UiSource
-		// 	}
-		// }
+		// log.Println(data[columnSource[0].FieldName])
+		datas := make(map[string]interface{})
+		for _, v := range columnSource {
+			if _, ok := data[v.FieldName]; ok {
+				datas = nil
+				// var datas map[string]interface{}
+				if v.UiSourceType == "C" {
+					err = connection.DB.
+						Select("code, description, english_description").
+						Model(&models.MasterCode{}).
+						Where("code_group_id = ? AND code = ?", v.CodeGroupId, utils.InterfaceToString(data[v.FieldName])).
+						Order("sequence").
+						Scan(&datas).Error
+					if err != nil {
+						return nil, err
+					}
+
+					data[v.FieldName+"_data"] = datas
+				} else if v.UiSourceType == "Q" {
+					err = connection.DB.
+						Raw(fmt.Sprintf(`select * from(%s) t where "code" = ?`, *v.UiSourceQuery), utils.InterfaceToString(data[v.FieldName])).
+						Scan(&datas).Error
+					if err != nil {
+						return nil, err
+					}
+
+					// if len(datas) == 0 {
+					// 	datas["code"] = ""
+					// 	datas["description"] = ""
+					// 	datas["english_description"] = ""
+					// }
+
+					data[v.FieldName+"_data"] = datas
+				}
+			}
+			// if data["id"] == v.Id {
+			// 	fmt.Println(v.CodeGroupId)
+			// }
+		}
 
 		result = append(result, data)
 	}

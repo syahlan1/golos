@@ -6,9 +6,9 @@ type Dropdown struct {
 }
 
 type DropdownEn struct {
-	Code   string `json:"code"`
-	Name   string `json:"name"`
-	NameEn string `json:"name_en"`
+	Code               string `json:"code"`
+	Description        string `json:"description"`
+	EnglishDescription string `json:"english_description"`
 }
 
 type OwnershipDataDropdown struct {

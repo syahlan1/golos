@@ -99,6 +99,7 @@ type FormList struct {
 
 type ColumnSource struct {
 	Id            int     `json:"id"`
+	FieldName     string  `json:"field_name"`
 	UiSourceType  string  `json:"ui_source_type"`
 	UiSourceQuery *string `json:"ui_source_query"`
 	CodeGroupId   *int    `json:"code_group_id"`
