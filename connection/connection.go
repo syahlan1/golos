@@ -93,6 +93,8 @@ func Connect() {
 
 		&models.MasterModule{},
 		&models.MasterTable{},
+		&models.MasterTableGroup{},
+		&models.MasterTableItem{},
 		&models.UiType{},
 		&models.MasterColumn{},
 		&models.MasterSourceColumn{},

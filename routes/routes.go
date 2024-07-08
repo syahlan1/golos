@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/syahlan1/golos/controllers/masterTableGroupController"
 	"github.com/syahlan1/golos/controllers/masterTemplateController"
 
 	"github.com/syahlan1/golos/controllers/aplicantController"
@@ -203,6 +204,20 @@ func Setup(app *fiber.App) {
 	api.Delete("/master-table/delete/:id", masterTableController.DeleteMasterTable)
 	api.Put("/master-table/update/:id", masterTableController.UpdateMasterTable)
 
+	//Master Table Group
+	api.Get("/master-table-group/show", masterTableGroupController.ShowMasterTableGroup)
+	api.Get("/master-table-group/show/:id", masterTableGroupController.ShowMasterTableGroupDetail)
+	api.Post("/master-table-group/create", masterTableGroupController.CreateMasterTableGroup)
+	api.Put("/master-table-group/update/:id", masterTableGroupController.UpdateMasterTableGroup)
+	api.Delete("/master-table-group/delete/:id", masterTableGroupController.DeleteMasterTableGroup)
+
+	//Master Table Item
+	api.Get("/master-table-item/show", masterTableGroupController.ShowMasterTableItem)
+	api.Get("/master-table-item/show/:id", masterTableGroupController.ShowMasterTableItemDetail)
+	api.Post("/master-table-item/create", masterTableGroupController.CreateMasterTableItem)
+	api.Put("/master-table-item/update/:id", masterTableGroupController.UpdateMasterTableItem)
+	api.Delete("/master-table-item/delete/:id", masterTableGroupController.DeleteMasterTableItem)
+
 	// //Master Column
 	api.Get("/master-column/field-type", masterColumnController.GetFieldType)
 	api.Get("/master-column/ui-type", masterColumnController.GetUiType)
@@ -218,6 +233,7 @@ func Setup(app *fiber.App) {
 
 	// //generate table
 	api.Post("/master-table/generate/:id", masterTableController.GenerateTable)
+	api.Post("/master-table-group/generate/:id", masterTableGroupController.GenerateTableGroup)
 
 	// //master parameter
 	api.Post("/master-parameter/create", masterParameterController.CreateParameter)

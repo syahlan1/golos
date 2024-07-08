@@ -235,10 +235,10 @@ func GenerateTable(tableID string) (err error) {
 	}
 
 	// Generate Model and CRUD handlers
-	GenerateModel(masterTable, columns)
-	GenerateServiceHandler(masterTable, columns)
-	GenerateControllerHandler(masterTable, columns)
-	GenerateRouteHandler(masterTable)
+	// GenerateModel(masterTable, columns)
+	// GenerateServiceHandler(masterTable, columns)
+	// GenerateControllerHandler(masterTable, columns)
+	// GenerateRouteHandler(masterTable)
 
 	return nil
 }
