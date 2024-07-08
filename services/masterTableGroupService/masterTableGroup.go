@@ -9,6 +9,7 @@ import (
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
 	"github.com/syahlan1/golos/utils"
+	"gorm.io/gorm"
 )
 
 // func ShowMenuIcons() (result []models.Dropdown) {
@@ -24,11 +25,106 @@ func CreateMasterTableGroup(claims string, data models.MasterTableGroup) (err er
 
 	data.CreatedBy = user.Username
 
-	if err := connection.DB.Create(&data).Error; err != nil {
-		return errors.New("failed to create Master Table Group")
-	}
+	err = connection.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&data).Error; err != nil {
+			return errors.New("failed to create Master Table Group")
+		}
 
-	return nil
+		var moduleName string
+
+		if err := tx.
+			Select("module_name").
+			Model(&models.MasterModule{}).
+			Where("id = ?", data.ModuleId).
+			Scan(&moduleName).Error; err != nil {
+			return err
+		}
+
+		var ParentMenu models.Menu
+		if err := tx.
+			Select("*").
+			Where("menu_code = ?", moduleName+"_menu").
+			Find(&ParentMenu).
+			Error; err != nil {
+			return err
+		}
+
+		// var masterTableGroupMenu models.Menu
+		if ParentMenu.Id == 0 {
+			log.Println("Parent menu not found")
+			var order int
+
+			if err := tx.Select("order").
+				Model(&models.Menu{}).
+				Where("type = ?", "P").
+				Order(`"order" desc`).
+				Limit(1).
+				Scan(&order).Error; err != nil {
+				return err
+			}
+
+			menuCode := moduleName + "_menu"
+			ParentMenu = models.Menu{
+				MenuCode: &menuCode,
+				Icon:     "fa-table",
+				Order:    order + 1,
+				Type:     "P",
+				Label:    moduleName + " Menu",
+				ModelMasterForm: models.ModelMasterForm{
+					CreatedBy: "System",
+				},
+			}
+
+			if err := tx.Create(&ParentMenu).Error; err != nil {
+				return err
+			}
+		}
+
+		var ChildOrder int
+		if err := tx.Select("order").
+			Model(&models.Menu{}).
+			Where("parent_id = ?", ParentMenu.Id).
+			Order(`"order" desc`).
+			Limit(1).
+			Scan(&ChildOrder).Error; err != nil {
+			return err
+		}
+
+		ChildMenu := models.Menu{
+			ParentId: &ParentMenu.Id,
+			Icon:     data.MenuIcon,
+			Order:    ChildOrder + 1,
+			Type:     "C",
+			Label:    data.Description,
+			MenuCode: &data.GroupName,
+			ModelMasterForm: models.ModelMasterForm{
+				CreatedBy: user.Username,
+			},
+		}
+
+		ChildMenuFill := ChildMenu
+		commandFill := "/" + utils.ToDashCase(moduleName) + "/fill/" + utils.ToDashCase(data.GroupName)
+
+		ChildMenuFill.Command = &commandFill
+
+		if err := tx.Create(&ChildMenuFill).Error; err != nil {
+			return err
+		}
+
+		ChildMenuAdmin := ChildMenu
+		commandAdmin := "/" + utils.ToDashCase(moduleName) + "/admin/" + utils.ToDashCase(data.GroupName)
+		MenuCodeAdmin := data.GroupName + "_admin"
+
+		ChildMenuAdmin.Command = &commandAdmin
+		ChildMenuAdmin.MenuCode = &MenuCodeAdmin
+
+		if err := tx.Create(&ChildMenuAdmin).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+	return err
 }
 
 func ShowMasterTableGroup() (result []models.MasterTableGroup) {

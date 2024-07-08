@@ -82,6 +82,13 @@ func ToKebabCase(s string) string {
 	return string(result)
 }
 
+func ToDashCase(s string) string {
+	replacer := strings.NewReplacer("_", "-")
+	result := replacer.Replace(s)
+
+	return strings.ToLower(result)
+}
+
 // mapFieldType berfungsi untuk memetakan tipe data dari MasterColumn ke tipe data SQL
 func MapFieldType(fieldType string, fieldLength int) string {
 	switch fieldType {

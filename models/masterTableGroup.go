@@ -4,6 +4,7 @@ type MasterTableGroup struct {
 	Id                 int    `json:"id"`
 	Description        string `json:"description"`
 	EnglishDescription string `json:"english_description"`
+	GroupName          string `json:"group_name"`
 	ModuleId           int    `json:"module_id"`
 	TableName          string `json:"table_name"`
 	Type               string `json:"type"`
