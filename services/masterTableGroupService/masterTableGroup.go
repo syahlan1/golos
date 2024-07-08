@@ -40,7 +40,7 @@ func CreateMasterTableGroup(claims string, data models.MasterTableGroup) (err er
 			return err
 		}
 
-		var ParentMenu models.Menu
+		var ParentMenu, ParentMenuAdmin models.Menu
 		if err := tx.
 			Select("*").
 			Where("menu_code = ?", moduleName+"_menu").
@@ -49,8 +49,16 @@ func CreateMasterTableGroup(claims string, data models.MasterTableGroup) (err er
 			return err
 		}
 
+		if err := tx.
+			Select("*").
+			Where("menu_code = ?", moduleName+"_admin").
+			Find(&ParentMenuAdmin).
+			Error; err != nil {
+			return err
+		}
+
 		// var masterTableGroupMenu models.Menu
-		if ParentMenu.Id == 0 {
+		if ParentMenu.Id == 0 || ParentMenuAdmin.Id == 0 {
 			log.Println("Parent menu not found")
 			var order int
 
@@ -63,20 +71,42 @@ func CreateMasterTableGroup(claims string, data models.MasterTableGroup) (err er
 				return err
 			}
 
-			menuCode := moduleName + "_menu"
-			ParentMenu = models.Menu{
-				MenuCode: &menuCode,
-				Icon:     "fa-table",
-				Order:    order + 1,
-				Type:     "P",
-				Label:    moduleName + " Menu",
-				ModelMasterForm: models.ModelMasterForm{
-					CreatedBy: "System",
-				},
+			if ParentMenu.Id == 0 {
+				order++
+				menuCode := moduleName + "_menu"
+				ParentMenu = models.Menu{
+					MenuCode: &menuCode,
+					Icon:     "fa-table",
+					Order:    order,
+					Type:     "P",
+					Label:    moduleName + " Menu",
+					ModelMasterForm: models.ModelMasterForm{
+						CreatedBy: "System",
+					},
+				}
+
+				if err := tx.Create(&ParentMenu).Error; err != nil {
+					return err
+				}
 			}
 
-			if err := tx.Create(&ParentMenu).Error; err != nil {
-				return err
+			if ParentMenuAdmin.Id == 0 {
+				order++
+				menuCode := moduleName + "_admin"
+				ParentMenuAdmin = models.Menu{
+					MenuCode: &menuCode,
+					Icon:     "fa-table",
+					Order:    order,
+					Type:     "P",
+					Label:    moduleName + " Admin",
+					ModelMasterForm: models.ModelMasterForm{
+						CreatedBy: "System",
+					},
+				}
+
+				if err := tx.Create(&ParentMenuAdmin).Error; err != nil {
+					return err
+				}
 			}
 		}
 
@@ -115,6 +145,7 @@ func CreateMasterTableGroup(claims string, data models.MasterTableGroup) (err er
 		commandAdmin := "/" + utils.ToDashCase(moduleName) + "/admin/" + utils.ToDashCase(data.GroupName)
 		MenuCodeAdmin := data.GroupName + "_admin"
 
+		ChildMenuAdmin.ParentId = &ParentMenuAdmin.Id
 		ChildMenuAdmin.Command = &commandAdmin
 		ChildMenuAdmin.MenuCode = &MenuCodeAdmin
 
