@@ -240,6 +240,146 @@ func DeleteMasterTableItem(c *fiber.Ctx) error {
 	})
 }
 
+func ShowFormMasterTableGroup(c *fiber.Ctx) error {
+	// Ambil ID tabel dari parameter rute
+	groupName := c.Params("group_name")
+
+	result ,err := masterTableGroupService.ShowFormMasterTableGroup(groupName)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func ShowDataMasterTableGroup(c *fiber.Ctx) error {
+	tableGroup := c.Params("table_group")
+	tableItem := c.Params("table_item")
+
+	result, err := masterTableGroupService.ShowDataMasterTableGroup(tableGroup, tableItem)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func CreateDataMasterTableGroup(c *fiber.Ctx) error {
+	tableGroup := c.Params("table_group")
+	tableItem := c.Params("table_item")
+
+	var data map[string]interface{}
+
+	if err := c.BodyParser(&data); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	claims, err := utils.TakeUsername(c)
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{"message": "Unauthorized"})
+	}
+
+	err, errValidation := masterTableGroupService.CreateDataMasterTableGroup(tableGroup, tableItem, claims, data)
+	if errValidation != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: "Error Validation",
+			Data:    errValidation,
+		})
+	}
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+	return c.JSON(models.Response{
+		Code:    fiber.StatusCreated,
+		Message: "Success Create",
+	})
+}
+
+func UpdateDataMasterTableGroup(c *fiber.Ctx) error {
+	tableGroup := c.Params("table_group")
+	tableItem := c.Params("table_item")
+	id := c.Params("id")
+
+	var data map[string]interface{}
+
+	if err := c.BodyParser(&data); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	claims, err := utils.TakeUsername(c)
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{"message": "Unauthorized"})
+	}
+
+	err, errValidation := masterTableGroupService.UpdateDataMasterTableGroup(tableGroup, tableItem, id, claims, data)
+	if errValidation != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: "Error Validation",
+			Data:    errValidation,
+		})
+	}
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success Update",
+	})
+}
+
+func DeleteDataMasterTableGroup(c *fiber.Ctx) error {
+	tableGroup := c.Params("table_group")
+	tableItem := c.Params("table_item")
+	id := c.Params("id")
+
+	claims, err := utils.TakeUsername(c)
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{"message": "Unauthorized"})
+	}
+
+	err = masterTableGroupService.DeleteDataMasterTableGroup(tableGroup, tableItem, id, claims)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success Delete",
+	})
+}
+
 func GenerateTableGroup(c *fiber.Ctx) error {
 	// Ambil ID tabel dari parameter rute
 	tableID := c.Params("id")

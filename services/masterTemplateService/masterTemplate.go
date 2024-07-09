@@ -1,6 +1,7 @@
 package masterTemplateService
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"strings"
@@ -10,7 +11,7 @@ import (
 	"github.com/syahlan1/golos/utils"
 )
 
-func ShowMasterTemplate(schema, tableName string) (result []map[string]interface{}, err error) {
+func ShowMasterTemplate(schema, tableName, tableGroup string) (result []map[string]interface{}, err error) {
 
 	column := FindColumn(tableName, true)
 
@@ -31,11 +32,27 @@ func ShowMasterTemplate(schema, tableName string) (result []map[string]interface
 		return nil, err
 	}
 
-	rows, err := connection.DB.
+	checkTableGroup, err := CheckTableGroup(schema, tableName)
+	if err != nil {
+		return nil, err
+	}
+
+	db := connection.DB.
 		Select(column).
 		Table(schema + "." + tableName).
 		Where("deleted_date is null").
-		Order("id").Rows()
+		Order("id")
+
+	var rows *sql.Rows
+	if checkTableGroup {
+		if tableGroup == "" {
+			db = db.Where(schema + "_group_id is null")
+		} else {
+			db = db.Where(schema+"_group_id = ?", tableGroup)
+		}
+	}
+
+	rows, err = db.Rows()
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +112,7 @@ func ShowMasterTemplate(schema, tableName string) (result []map[string]interface
 	return result, nil
 }
 
-func CreateMasterTemplate(schema, tableName, username string, data map[string]interface{}) (err error, errValidation []models.Validate) {
+func CreateMasterTemplate(schema, tableName, username, tableGroup string, data map[string]interface{}) (err error, errValidation []models.Validate) {
 
 	var columnId []int
 
@@ -133,12 +150,18 @@ func CreateMasterTemplate(schema, tableName, username string, data map[string]in
 		placeholders = append(placeholders, "?")
 	}
 
+	if tableGroup != "" {
+		columns = append(columns, schema+"_group_id")
+		values = append(values, tableGroup)
+		placeholders = append(placeholders, "?")
+	}
+
 	query := fmt.Sprintf("INSERT INTO %s.%s (%s) VALUES (%s) RETURNING id",
 		schema, tableName,
 		strings.Join(columns, ", "), strings.Join(placeholders, ", "))
 
 	var id int
-	err = connection.DB.Raw(query, values...).Row().Scan(&id)
+	err = connection.DB.Debug().Raw(query, values...).Row().Scan(&id)
 	if err != nil {
 		return err, nil
 	}
@@ -237,4 +260,14 @@ func FindColumn(tableId string, withId bool) (result string) {
 	}
 
 	return result[:len(result)-2]
+}
+
+func CheckTableGroup(schema, tableName string) (check bool, err error) {
+
+	err = connection.DB.Raw("SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = ? AND table_name = ? AND column_name = ?)", schema, tableName, schema+"_group_id").Scan(&check).Error
+	if err != nil {
+		return
+	}
+
+	return true, nil
 }

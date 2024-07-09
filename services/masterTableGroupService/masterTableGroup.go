@@ -4,10 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
+	"github.com/syahlan1/golos/services/masterColumnService"
+	"github.com/syahlan1/golos/services/masterTemplateService"
 	"github.com/syahlan1/golos/utils"
 	"gorm.io/gorm"
 )
@@ -24,6 +27,7 @@ func CreateMasterTableGroup(claims string, data models.MasterTableGroup) (err er
 	}
 
 	data.CreatedBy = user.Username
+	data.ParentType = "C"
 
 	err = connection.DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(&data).Error; err != nil {
@@ -133,7 +137,7 @@ func CreateMasterTableGroup(claims string, data models.MasterTableGroup) (err er
 		}
 
 		ChildMenuFill := ChildMenu
-		commandFill := "/" + utils.ToDashCase(moduleName) + "/fill/" + utils.ToDashCase(data.GroupName)
+		commandFill := "/" + utils.ToDashCase(moduleName) + "/fill/" + data.GroupName
 
 		ChildMenuFill.Command = &commandFill
 
@@ -142,7 +146,7 @@ func CreateMasterTableGroup(claims string, data models.MasterTableGroup) (err er
 		}
 
 		ChildMenuAdmin := ChildMenu
-		commandAdmin := "/" + utils.ToDashCase(moduleName) + "/admin/" + utils.ToDashCase(data.GroupName)
+		commandAdmin := "/" + utils.ToDashCase(moduleName) + "/admin/" + data.GroupName
 		MenuCodeAdmin := data.GroupName + "_admin"
 
 		ChildMenuAdmin.ParentId = &ParentMenuAdmin.Id
@@ -286,6 +290,123 @@ func DeleteMasterTableItem(claims, masterTableItemId string) (err error) {
 
 	masterTableItem.ModelMasterForm = utils.SoftDelete(user.Username)
 	return connection.DB.Model(&masterTableItem).Where("id = ?", masterTableItemId).Updates(&masterTableItem).Error
+}
+
+func ShowFormMasterTableGroup(groupName string) (result models.FormMasterTableGroup, err error) {
+	// var masterTableGroup []models.MasterTableGroup
+
+	if err = connection.DB.
+		Select("id, type").
+		Model(&models.MasterTableGroup{}).
+		Where("group_name = ?", groupName).
+		Find(&result).Error; err != nil {
+		return result, err
+	}
+
+	rows, err := connection.DB.
+		Select("master_table_items.*, mt.id as table_id, mt.table_name as table_name").
+		Joins("JOIN master_tables mt ON mt.id = master_table_items.table_id").
+		Model(&models.MasterTableItem{}).
+		Where("group_id = ?", result.Id).
+		Order("master_table_items.sequence").
+		Rows()
+
+	if err != nil {
+		return result, err
+	}
+	defer rows.Close()
+
+	var item models.FormMasterTableItem
+	for rows.Next() {
+		if err := connection.DB.ScanRows(rows, &item); err != nil {
+			return result, err
+		}
+
+		tableForm, err := masterColumnService.GetFormColumn(strconv.Itoa(item.TableId))
+		if err != nil {
+			return result, err
+		}
+
+		item.FormList = tableForm.Form
+
+		result.Form = append(result.Form, item)
+	}
+
+	return
+}
+
+func ShowDataMasterTableGroup(tableGroupId, tableItemId string) (data []map[string]interface{}, err error) {
+
+	var schemaId, tableId string
+
+	if err := connection.DB.
+		Select("master_tables.module_id, master_tables.id").
+		Joins("JOIN master_table_items mti ON mti.table_id = master_tables.id").
+		Model(&models.MasterTable{}).
+		Where("mti.deleted_at is null").
+		Where("mti.id = ? AND mti.group_id = ?", tableItemId, tableGroupId).Row().Scan(&schemaId, &tableId); err != nil {
+		return data, errors.New("data not found")
+	}
+
+	data, err = masterTemplateService.ShowMasterTemplate(schemaId, tableId, tableGroupId)
+	if err != nil {
+		return data, err
+	}
+
+	return data, nil
+}
+
+func CreateDataMasterTableGroup(tableGroupId, tableItemId, username string, data map[string]interface{}) (err error, errValidation []models.Validate) {
+
+	var schemaId, tableId string
+
+	if err := connection.DB.
+		Select("master_tables.module_id, master_tables.id").
+		Joins("JOIN master_table_items mti ON mti.table_id = master_tables.id").
+		Model(&models.MasterTable{}).
+		Where("mti.deleted_at is null").
+		Where("mti.id = ? AND mti.group_id = ?", tableItemId, tableGroupId).Row().Scan(&schemaId, &tableId); err != nil {
+		return errors.New("data not found"), nil
+	}
+
+	err, errValidation = masterTemplateService.CreateMasterTemplate(schemaId, tableId, username, tableGroupId, data)
+
+	return
+}
+
+func UpdateDataMasterTableGroup(tableGroupId, tableItemId, idData, username string, data map[string]interface{}) (err error, errValidation []models.Validate) {
+	var schemaId, tableId string
+
+	if err := connection.DB.
+		Select("master_tables.module_id, master_tables.id").
+		Joins("JOIN master_table_items mti ON mti.table_id = master_tables.id").
+		Model(&models.MasterTable{}).
+		Where("mti.deleted_at is null").
+		Where("mti.id = ? AND mti.group_id = ?", tableItemId, tableGroupId).Row().Scan(&schemaId, &tableId); err != nil {
+		return errors.New("data not found"), nil
+	}
+
+	err, errValidation = masterTemplateService.UpdateMasterTemplate(schemaId, tableId, idData, username, data)
+
+	return
+}
+
+func DeleteDataMasterTableGroup(tableGroupId, tableItemId, idData, username string) (err error) {
+
+	var schemaId, tableId string
+
+	if err := connection.DB.
+		Select("master_tables.module_id, master_tables.id").
+		Joins("JOIN master_table_items mti ON mti.table_id = master_tables.id").
+		Model(&models.MasterTable{}).
+		Where("mti.deleted_at is null").
+		Where("mti.id = ? AND mti.group_id = ?", tableItemId, tableGroupId).Row().Scan(&schemaId, &tableId); err != nil {
+		return errors.New("data not found")
+	}
+
+	err = masterTemplateService.DeleteMasterTemplate(schemaId, tableId, idData, username)
+
+	return
 }
 
 func GenerateTableGroup(tableID string) (err error) {

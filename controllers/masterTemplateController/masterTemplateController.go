@@ -11,7 +11,7 @@ func ShowMasterTemplate(c *fiber.Ctx) error {
 	module := c.Params("module")
 	table := c.Params("table")
 
-	result, err := masterTemplateService.ShowMasterTemplate(module, table)
+	result, err := masterTemplateService.ShowMasterTemplate(module, table,"")
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
@@ -44,7 +44,7 @@ func CreateMasterTemplate(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"message": "Unauthorized"})
 	}
 
-	err, errValidation := masterTemplateService.CreateMasterTemplate(module, table, claims, data)
+	err, errValidation := masterTemplateService.CreateMasterTemplate(module, table, claims, "", data)
 	if errValidation != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
