@@ -120,7 +120,7 @@ func GetFormColumn(masterTableId string) (result models.TableForm, err error) {
 	}
 
 	rows, err := connection.DB.Debug().
-		Select("master_columns.id AS field_id ,field_name, is_mandatory, need_first_empty, ut.name as ui_type, ui_source_type, ui_source_query, code_group_id").
+		Select("master_columns.id AS field_id ,field_name, is_mandatory, need_first_empty, ut.name as ui_type, ut.name_ui as ui_name, ui_source_type, ui_source_query, code_group_id").
 		Joins("JOIN ui_types ut ON ut.id = master_columns.ui_type_id").
 		Model(&models.MasterColumn{}).
 		Where("table_id = ?", masterTableId).

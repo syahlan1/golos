@@ -71,6 +71,7 @@ type UiType struct {
 	Id             int    `json:"id" gorm:"primaryKey"`
 	Code           string `json:"code"`
 	Name           string `json:"name"`
+	NameUi         string `json:"name_ui"`
 	NeedSourceType bool   `json:"need_source_type"`
 	NeedFirstEmpty bool   `json:"-"`
 }
@@ -90,6 +91,7 @@ type FormList struct {
 	FieldName      string       `json:"field_name"`
 	IsMandatory    bool         `json:"is_mandatory"`
 	UiType         string       `json:"ui_type"`
+	UiName         string       `json:"ui_name"`
 	NeedFirstEmpty bool         `json:"-"`
 	UiSourceType   string       `json:"-"`
 	UiSourceQuery  string       `json:"-"`

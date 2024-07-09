@@ -15671,69 +15671,84 @@ func MasterColumnSeed() {
 		{
 			Code: "C",
 			Name: "Combo Box",
+			NameUi: "select",
 			NeedSourceType: true,
 			NeedFirstEmpty: true,
 		},
 		{
 			Code: "D",
 			Name: "Date",
+			NameUi: "date",
 		},
 		{
 			Code: "X",
 			Name: "Check Box",
+			NameUi: "checkbox",
 			NeedSourceType: true,
 		},
 		{
 			Code: "H",
 			Name: "Hidden",
+			NameUi: "hidden",
 			
 		},
 		{
 			Code: "CMB",
 			Name: "Combo Box Multiple",
+			NameUi: "select",
 			NeedSourceType: true,
 			NeedFirstEmpty: true,
 		},
 		{
 			Code: "TMF",
 			Name: "Input Text Multiple (float)",
+			NameUi: "text",
 		},
 		{
 			Code: "TA",
 			Name: "Text Area",
+			NameUi: "textarea",
 		},
 		{
 			Code: "R",
 			Name: "E-Signature",
+			NameUi: "file",
 		},
 		{
 			Code: "RBF",
 			Name: "Radio Button",
+			NameUi: "radio",
 			NeedSourceType: true,
 		},
 		{
 			Code: "U",
 			Name: "Upload File",
+			NameUi: "file",
 		},
 		{
 			Code: "F",
 			Name: "System Filter",
+			NameUi: "select",
 		},
 		{
 			Code: "T",
 			Name: "Input Text",
+			NameUi: "text",
 		},
 		{
 			Code: "L",
 			Name: "Workflow",
+			NameUi: "select",
 		},
 		{
 			Code: "TBF",
 			Name: "Input Text Multiple",
+			NameUi: "text",
 		},
 		{
 			Code: "HAC",
 			Name: "Hidden Auto Created",
+			NameUi: "hidden",
 		},
 	}
 
