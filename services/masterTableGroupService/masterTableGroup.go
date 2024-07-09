@@ -439,3 +439,54 @@ func GenerateTableGroup(tableID string) (err error) {
 
 	return
 }
+
+func GenerateTableGroupByGroupId(tableGroupId string) (err error) {
+
+	err = connection.DB.Transaction(func(tx *gorm.DB) error {
+
+		var masterTable models.MasterTable
+
+		rows, err := tx.
+			Select("master_tables.*, md.database_name as module_name").
+			Joins("JOIN master_modules md ON md.id = master_tables.module_id").
+			Joins("JOIN master_table_groups mti ON mti.table_id = master_tables.id").
+			Model(&models.MasterTable{}).
+			Where("mti.deleted_at is null AND md.deleted_at is null AND mti.group_id = ?", tableGroupId).
+			Rows()
+		if err != nil {
+			return err
+		}
+
+		defer rows.Close()
+
+		for rows.Next() {
+
+			if err := tx.ScanRows(rows, &masterTable); err != nil {
+				return err
+			}
+
+			groupColumn := models.MasterColumn{
+				FieldName: masterTable.ModuleName + "_group_id",
+				FieldType: "INTEGER",
+			}
+
+			var checkTable bool
+			err = tx.Raw("SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = ? AND table_name = ? AND column_name = ?)", masterTable.ModuleName, masterTable.TableName, groupColumn.FieldName).Scan(&checkTable).Error
+			if err != nil {
+				return err
+			}
+
+			if !checkTable {
+				query := fmt.Sprintf(`ALTER TABLE "%s"."%s" ADD COLUMN %s %s`, masterTable.ModuleName, masterTable.TableName, groupColumn.FieldName, groupColumn.FieldType)
+				if err := tx.Exec(query).Error; err != nil {
+					return err
+				}
+			}
+
+		}
+
+		return nil
+	})
+
+	return
+}

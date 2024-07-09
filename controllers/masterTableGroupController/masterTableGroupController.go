@@ -381,10 +381,9 @@ func DeleteDataMasterTableGroup(c *fiber.Ctx) error {
 }
 
 func GenerateTableGroup(c *fiber.Ctx) error {
-	// Ambil ID tabel dari parameter rute
-	tableID := c.Params("id")
+	groupId := c.Params("id")
 
-	err := masterTableGroupService.GenerateTableGroup(tableID)
+	err := masterTableGroupService.GenerateTableGroupByGroupId(groupId)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
