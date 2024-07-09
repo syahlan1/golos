@@ -269,5 +269,5 @@ func CheckTableGroup(schema, tableName string) (check bool, err error) {
 		return
 	}
 
-	return true, nil
+	return check, nil
 }
