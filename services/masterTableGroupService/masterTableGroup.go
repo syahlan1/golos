@@ -335,7 +335,7 @@ func ShowFormMasterTableGroup(groupName string) (result models.FormMasterTableGr
 	return
 }
 
-func ShowDataMasterTableGroup(tableGroupId, tableItemId string) (data []map[string]interface{}, err error) {
+func ShowDataMasterTableGroup(tableGroupId, tableItemId, id string) (data []map[string]interface{}, err error) {
 
 	var schemaId, tableId string
 
@@ -348,7 +348,7 @@ func ShowDataMasterTableGroup(tableGroupId, tableItemId string) (data []map[stri
 		return data, errors.New("data not found")
 	}
 
-	data, err = masterTemplateService.ShowMasterTemplate(schemaId, tableId, tableGroupId)
+	data, err = masterTemplateService.ShowMasterTemplate(schemaId, tableId, tableGroupId, id)
 	if err != nil {
 		return data, err
 	}

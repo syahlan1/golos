@@ -263,7 +263,26 @@ func ShowDataMasterTableGroup(c *fiber.Ctx) error {
 	tableGroup := c.Params("table_group")
 	tableItem := c.Params("table_item")
 
-	result, err := masterTableGroupService.ShowDataMasterTableGroup(tableGroup, tableItem)
+	result, err := masterTableGroupService.ShowDataMasterTableGroup(tableGroup, tableItem, "")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func ShowDataMasterTableGroupById(c *fiber.Ctx) error {
+	tableGroup := c.Params("table_group")
+	tableItem := c.Params("table_item")
+	id := c.Params("id")
+
+	result, err := masterTableGroupService.ShowDataMasterTableGroup(tableGroup, tableItem, id)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,

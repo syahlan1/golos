@@ -11,7 +11,7 @@ import (
 	"github.com/syahlan1/golos/utils"
 )
 
-func ShowMasterTemplate(schema, tableName, tableGroup string) (result []map[string]interface{}, err error) {
+func ShowMasterTemplate(schema, tableName, tableGroup, id string) (result []map[string]interface{}, err error) {
 
 	column := FindColumn(tableName, true)
 
@@ -42,6 +42,10 @@ func ShowMasterTemplate(schema, tableName, tableGroup string) (result []map[stri
 		Table(schema + "." + tableName).
 		Where("deleted_date is null").
 		Order("id")
+
+	if id != "" {
+		db = db.Where("id = ?", id)
+	}
 
 	var rows *sql.Rows
 	if checkTableGroup {
