@@ -11,7 +11,7 @@ func ShowMasterTemplate(c *fiber.Ctx) error {
 	module := c.Params("module")
 	table := c.Params("table")
 
-	result, err := masterTemplateService.ShowMasterTemplate(module, table,"", "")
+	result, err := masterTemplateService.ShowMasterTemplate(module, table, "", "", "","")
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
@@ -30,7 +30,7 @@ func ShowMasterTemplateById(c *fiber.Ctx) error {
 	table := c.Params("table")
 	id := c.Params("id")
 
-	result, err := masterTemplateService.ShowMasterTemplate(module, table,"", id)
+	result, err := masterTemplateService.ShowMasterTemplate(module, table, "", "", "", id)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,

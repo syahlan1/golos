@@ -83,7 +83,7 @@ func Setup(app *fiber.App) {
 	api.Get("/relation-with-bank/show", ownershipDataController.ShowRelationWithBank)
 	api.Put("/relation-with-bank/update/:id", ownershipDataController.UpdateRelationWithBank)
 	api.Delete("/relation-with-bank/delete/:id", ownershipDataController.DeleteRelationWithBank)
-	
+
 	api.Post("/customer-loan-info/create", ownershipDataController.CreateCustomerLoanInfo)
 	api.Get("/customer-loan-info/show", ownershipDataController.ShowCustomerLoanInfo)
 	api.Put("/customer-loan-info/update/:id", ownershipDataController.UpdateCustomerLoanInfo)
@@ -167,7 +167,7 @@ func Setup(app *fiber.App) {
 	api.Get("/role/:id/workflow", roleController.ShowRoleWorkflows)
 	api.Post("/role/:id/workflow", roleController.CreateRoleWorkflows)
 
-	//menu 
+	//menu
 	api.Post("/menu/create", menuController.CreateMenu)
 	api.Get("/menu/show", menuController.ShowMenu)
 
@@ -176,7 +176,7 @@ func Setup(app *fiber.App) {
 	// api.Get("/validation/show/:group_id", controllers.ShowDetailValidation)
 	api.Delete("/validation/delete/:id", validationController.DeleteValidation)
 	api.Put("/validation/update/:id", validationController.UpdateValidation)
-	api.Post("/validation/create", validationController.CreateValidation)
+	api.Post("/validation/create/:id", validationController.CreateValidation)
 
 	//Master Code
 	api.Get("/master-codes/show", masterCodeController.ShowMasterCode)
@@ -225,6 +225,8 @@ func Setup(app *fiber.App) {
 	api.Delete("/data-master-table-group/:table_group/:table_item/delete", masterTableGroupController.DeleteDataMasterTableGroup)
 
 	api.Get("/form-master-table-group/show/:group_name", masterTableGroupController.ShowFormMasterTableGroup)
+	api.Get("/approval-master-table-group/show/:group_name", masterTableGroupController.ShowApprovalTableGroupItem)
+	api.Post("/submit-master-table-group", masterTableGroupController.SubmitTableGroupItem)
 
 	// //Master Column
 	api.Get("/master-column/field-type", masterColumnController.GetFieldType)
@@ -237,7 +239,6 @@ func Setup(app *fiber.App) {
 	api.Delete("/master-column/delete/:id", masterColumnController.DeleteMasterColumn)
 	api.Put("/master-column/:id", masterColumnController.UpdateColumnTable)
 	api.Post("/master-column/check-query", masterColumnController.CheckQuery)
-	
 
 	// //generate table
 	api.Post("/master-table/generate/:id", masterTableController.GenerateTable)

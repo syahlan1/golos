@@ -148,7 +148,6 @@ func Connect() {
 	// connection.AutoMigrate(&models.HubunganNasabahBank{})
 	// connection.AutoMigrate(&models.HubunganKeluarga{})
 
-
 	// connection.AutoMigrate(&models.Cabang{})
 	// connection.AutoMigrate(&models.Program{})
 	// connection.AutoMigrate(&models.Segment{})

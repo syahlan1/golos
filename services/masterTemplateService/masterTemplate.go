@@ -11,9 +11,9 @@ import (
 	"github.com/syahlan1/golos/utils"
 )
 
-func ShowMasterTemplate(schema, tableName, tableGroup, id string) (result []map[string]interface{}, err error) {
+func ShowMasterTemplate(schema, tableName, username, tableGroup, approval, id string) (result []map[string]interface{}, err error) {
 
-	column := FindColumn(tableName, true)
+	tableId := tableName
 
 	var columnSource []models.ColumnSource
 	err = connection.DB.
@@ -32,19 +32,29 @@ func ShowMasterTemplate(schema, tableName, tableGroup, id string) (result []map[
 		return nil, err
 	}
 
+	column := FindColumn(tableId, tableName, true)
+
 	checkTableGroup, err := CheckTableGroup(schema, tableName)
 	if err != nil {
 		return nil, err
 	}
 
-	db := connection.DB.
+	db := connection.DB.Debug().
 		Select(column).
 		Table(schema + "." + tableName).
-		Where("deleted_date is null").
-		Order("id")
+		Where(tableName + ".deleted_date is null").
+		Order(tableName + ".id")
+
+	if approval != "" {
+		db = db.Joins("JOIN table_group_item_statuses tgis on tgis.id = "+tableName+".item_status_id AND tgis.status = ?", approval)
+	}
 
 	if id != "" {
 		db = db.Where("id = ?", id)
+	}
+
+	if username != "" {
+		db = db.Where("created_by = ?", username)
 	}
 
 	var rows *sql.Rows
@@ -236,7 +246,7 @@ func DeleteMasterTemplate(schema, tableName, id, username string) (err error) {
 	return
 }
 
-func FindColumn(tableId string, withId bool) (result string) {
+func FindColumn(tableId, tableName string, withId bool) (result string) {
 	var column string
 
 	rows, err := connection.DB.
@@ -251,7 +261,7 @@ func FindColumn(tableId string, withId bool) (result string) {
 	defer rows.Close()
 
 	if withId {
-		result = "id, "
+		result = tableName + ".id, "
 	}
 
 	for rows.Next() {
@@ -260,7 +270,7 @@ func FindColumn(tableId string, withId bool) (result string) {
 			return ""
 		}
 
-		result += column + ", "
+		result += tableName + "." + column + ", "
 	}
 
 	return result[:len(result)-2]
