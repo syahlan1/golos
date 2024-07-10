@@ -152,9 +152,9 @@ func GetFormColumn(masterTableId string) (result models.TableForm, err error) {
 			if err != nil {
 				return result, err
 			}
-			if data.NeedFirstEmpty {
-				UiSource = utils.Prepend(UiSource, models.DropdownEn{Code: "", Description: "", EnglishDescription: ""})
-			}
+			// if data.NeedFirstEmpty {
+			// 	UiSource = utils.Prepend(UiSource, models.DropdownEn{Code: "", Description: "", EnglishDescription: ""})
+			// }
 
 		} else if data.UiSourceType == "Q" {
 			err = connection.DB.
@@ -163,9 +163,9 @@ func GetFormColumn(masterTableId string) (result models.TableForm, err error) {
 			if err != nil {
 				return result, err
 			}
-			if data.NeedFirstEmpty {
-				UiSource = utils.Prepend(UiSource, models.DropdownEn{Code: "", Description: "", EnglishDescription: ""})
-			}
+			// if data.NeedFirstEmpty {
+			// 	UiSource = utils.Prepend(UiSource, models.DropdownEn{Code: "", Description: "", EnglishDescription: ""})
+			// }
 		}
 
 		data.UiSource = UiSource
