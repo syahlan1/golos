@@ -374,6 +374,19 @@ func CreateDataMasterTableGroup(tableGroupId, tableItemId, username string, data
 	return
 }
 
+func CreateTableGroupItemStatus(username string, data models.TableGroupItemStatus) (err error) {
+
+	err = connection.DB.Transaction(func(tx *gorm.DB) error {
+
+		// var schema, tableName string
+		// err = tx.Select()
+		
+		return nil
+	})
+
+	return
+}
+
 func UpdateDataMasterTableGroup(tableGroupId, tableItemId, idData, username string, data map[string]interface{}) (err error, errValidation []models.Validate) {
 	var schemaId, tableId string
 

@@ -15,6 +15,7 @@ import (
 	"github.com/syahlan1/golos/models"
 	"github.com/syahlan1/golos/utils"
 	"github.com/syahlan1/golos/utils/templates"
+	"gorm.io/gorm"
 )
 
 func CreateMasterTable(claims string, data models.MasterTable) (err error) {
@@ -180,7 +181,7 @@ func GenerateTable(tableID string) (err error) {
 			DataType               string
 			CharacterMaximumLength sql.NullInt32
 		}
-		rows, err := db.Raw(fmt.Sprintf("SELECT column_name, data_type, character_maximum_length FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s'",masterTable.ModuleName, masterTable.TableName)).Rows()
+		rows, err := db.Raw(fmt.Sprintf("SELECT column_name, data_type, character_maximum_length FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s'", masterTable.ModuleName, masterTable.TableName)).Rows()
 		if err != nil {
 			return err
 		}
@@ -241,6 +242,40 @@ func GenerateTable(tableID string) (err error) {
 	// GenerateRouteHandler(masterTable)
 
 	return nil
+}
+
+func GenerateItemGroup(db *gorm.DB, schema string) (err error) {
+
+	var tableExists bool
+	err = db.Raw("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = ? AND table_name = ?)", schema, "item_groups").Scan(&tableExists).Error
+	if err != nil {
+		return err
+	}
+
+	if tableExists {
+		return nil
+	}
+
+	mandatoryColumns := []models.MasterColumn{
+		{FieldName: "id_group", FieldType: "SERIAL"},
+	}
+
+	createTableSQL := fmt.Sprintf(`CREATE TABLE "%s"."%s" (`+"\n", schema, "item_groups")
+		createTableSQL += "\tID SERIAL PRIMARY KEY,\n"
+
+		// Add mandatory columns to createTableSQL
+		for _, column := range mandatoryColumns {
+			fieldSQL := fmt.Sprintf("\t%s %s", column.FieldName, utils.MapFieldType(column.FieldType, column.FieldLength))
+			createTableSQL += fieldSQL + ",\n"
+		}
+
+		createTableSQL = createTableSQL[:len(createTableSQL)-2] + "\n);"
+
+		if err := db.Exec(createTableSQL).Error; err != nil {
+			return err
+		}
+
+	return
 }
 
 func findExistingColumn(existingColumns []struct {
