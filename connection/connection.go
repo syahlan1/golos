@@ -95,6 +95,7 @@ func Connect() {
 		&models.MasterTable{},
 		&models.MasterTableGroup{},
 		&models.MasterTableItem{},
+		&models.TableGroupItemStatus{},
 		&models.UiType{},
 		&models.MasterColumn{},
 		&models.MasterSourceColumn{},

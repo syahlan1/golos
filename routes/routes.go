@@ -219,6 +219,7 @@ func Setup(app *fiber.App) {
 	api.Delete("/master-table-item/delete/:id", masterTableGroupController.DeleteMasterTableItem)
 
 	api.Get("/data-master-table-group/:table_group/:table_item/show", masterTableGroupController.ShowDataMasterTableGroup)
+	api.Get("/data-master-table-group/:table_group/:table_item/show/:id", masterTableGroupController.ShowDataMasterTableGroupById)
 	api.Post("/data-master-table-group/:table_group/:table_item/create", masterTableGroupController.CreateDataMasterTableGroup)
 	api.Put("/data-master-table-group/:table_group/:table_item/update", masterTableGroupController.UpdateDataMasterTableGroup)
 	api.Delete("/data-master-table-group/:table_group/:table_item/delete", masterTableGroupController.DeleteDataMasterTableGroup)
@@ -256,6 +257,7 @@ func Setup(app *fiber.App) {
 	api.Get("/master-workflow/show", masterWorkflowController.ShowMasterWorkflow)
 
 	api.Get("/master-template/:module/:table/show", masterTemplateController.ShowMasterTemplate)
+	api.Get("/master-template/:module/:table/show/:id", masterTemplateController.ShowMasterTemplateById)
 	api.Post("/master-template/:module/:table/Create", masterTemplateController.CreateMasterTemplate)
 	api.Put("/master-template/:module/:table/update/:id", masterTemplateController.UpdateMasterTemplate)
 	api.Delete("/master-template/:module/:table/delete/:id", masterTemplateController.DeleteMasterTemplate)

@@ -29,6 +29,15 @@ type MasterTableItem struct {
 	MasterTable     MasterTable      `json:"-" gorm:"foreignKey:TableId"`
 }
 
+type TableGroupItemStatus struct {
+	Id       int              `json:"id"`
+	GroupId  int              `json:"group_id"`
+	Status   string           `json:"status"`
+	Reason   *string          `json:"reason"`
+	Username string           `json:"username"`
+	Group    MasterTableGroup `json:"-" gorm:"foreignKey:GroupId"`
+}
+
 type FormMasterTableGroup struct {
 	Id   int                   `json:"id"`
 	Type string                `json:"type"`

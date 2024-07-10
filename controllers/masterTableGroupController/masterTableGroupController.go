@@ -263,7 +263,26 @@ func ShowDataMasterTableGroup(c *fiber.Ctx) error {
 	tableGroup := c.Params("table_group")
 	tableItem := c.Params("table_item")
 
-	result, err := masterTableGroupService.ShowDataMasterTableGroup(tableGroup, tableItem)
+	result, err := masterTableGroupService.ShowDataMasterTableGroup(tableGroup, tableItem, "")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func ShowDataMasterTableGroupById(c *fiber.Ctx) error {
+	tableGroup := c.Params("table_group")
+	tableItem := c.Params("table_item")
+	id := c.Params("id")
+
+	result, err := masterTableGroupService.ShowDataMasterTableGroup(tableGroup, tableItem, id)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
@@ -381,10 +400,9 @@ func DeleteDataMasterTableGroup(c *fiber.Ctx) error {
 }
 
 func GenerateTableGroup(c *fiber.Ctx) error {
-	// Ambil ID tabel dari parameter rute
-	tableID := c.Params("id")
+	groupId := c.Params("id")
 
-	err := masterTableGroupService.GenerateTableGroup(tableID)
+	err := masterTableGroupService.GenerateTableGroupByGroupId(groupId)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
