@@ -467,6 +467,53 @@ func SubmitTableGroupItem(c *fiber.Ctx) error {
 
 }
 
+func ShowDetailApprovalTableGroupItem(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	result, err := masterTableGroupService.ShowDetailApprovalTableGroupItem(id, "")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func ApprovalTableGroupItem(c *fiber.Ctx) error {
+	var data models.TableGroupItemStatus
+
+	if err := c.BodyParser(&data); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	claims, err := utils.TakeUsername(c)
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{"message": "Unauthorized"})
+	}
+
+	err= masterTableGroupService.ApprovalTableGroupItem(claims, data)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success Update",
+	})
+
+}
+
 func GenerateTableGroup(c *fiber.Ctx) error {
 	groupId := c.Params("id")
 

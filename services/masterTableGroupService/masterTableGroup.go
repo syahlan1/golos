@@ -385,7 +385,7 @@ func ShowDataMasterTableGroup(tableGroupId, tableItemId, username, id string) (d
 		return data, errors.New("data not found")
 	}
 
-	data, err = masterTemplateService.ShowMasterTemplate(schemaId, tableId, username, tableGroupId, "", id)
+	data, err = masterTemplateService.ShowMasterTemplate(schemaId, tableId, username, tableGroupId, "", "", id)
 	if err != nil {
 		return data, err
 	}
@@ -472,20 +472,71 @@ func ShowApprovalTableGroupItem(groupName, username string) (data models.ShowApp
 		return data, errors.New("must select child master table first")
 	}
 
-	data.Submitted, err = masterTemplateService.ShowMasterTemplate(schemaId, tableId, "", tableGroupId, "SUBMITTED", "")
+	data.Submitted, err = masterTemplateService.ShowMasterTemplate(schemaId, tableId, "", tableGroupId, "SUBMITTED", "", "")
 	if err != nil {
 		return data, err
 	}
 
-	data.Rejected, err = masterTemplateService.ShowMasterTemplate(schemaId, tableId, "", tableGroupId, "REJECTED", "")
+	data.Rejected, err = masterTemplateService.ShowMasterTemplate(schemaId, tableId, "", tableGroupId, "REJECTED", "", "")
 	if err != nil {
 		return data, err
 	}
 
-	data.Approved, err = masterTemplateService.ShowMasterTemplate(schemaId, tableId, "", tableGroupId, "APPROVED", "")
+	data.Approved, err = masterTemplateService.ShowMasterTemplate(schemaId, tableId, "", tableGroupId, "APPROVED", "", "")
 	if err != nil {
 		return data, err
 	}
+
+	return
+}
+
+func ShowDetailApprovalTableGroupItem(idApproval, username string) (data models.ShowDetailApprovalTableGroup, err error) {
+
+	err = connection.DB.
+		Model(&models.TableGroupItemStatus{}).
+		Where("id = ?", idApproval).
+		First(&data).Error
+	if err != nil {
+		return
+	}
+
+	var dataTable models.DataDetailApprovalTableGroup
+
+	rows, err := connection.DB.
+		Select("master_tables.description as table_name, mti.type, master_tables.module_id AS schema_id, master_tables.id as table_id").
+		Joins("JOIN master_table_items mti ON mti.table_id = master_tables.id").
+		Model(&models.MasterTable{}).
+		Where("mti.deleted_at is null").
+		Where("mti.group_id = ?", data.GroupId).
+		Order("mti.sequence").
+		Rows()
+	if err != nil {
+		return
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		if err := connection.DB.ScanRows(rows, &dataTable); err != nil {
+			return data, err
+		}
+
+		dataTable.Data, err = masterTemplateService.ShowMasterTemplate(dataTable.SchemaId, dataTable.TableId, "", strconv.Itoa(data.GroupId), "", idApproval, "")
+
+		data.Data = append(data.Data, dataTable)
+
+	}
+	return
+}
+
+func ApprovalTableGroupItem(username string, data models.TableGroupItemStatus) (err error) {
+
+	db := connection.DB
+
+	data.Username = username
+	data.UpdatedBy = username
+
+	err = db.Model(&data).Where("id = ?", data.Id).Updates(data).Error
 
 	return
 }

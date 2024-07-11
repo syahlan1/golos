@@ -11,7 +11,7 @@ import (
 	"github.com/syahlan1/golos/utils"
 )
 
-func ShowMasterTemplate(schema, tableName, username, tableGroup, approval, id string) (result []map[string]interface{}, err error) {
+func ShowMasterTemplate(schema, tableName, username, tableGroup, approval, approvalId, id string) (result []map[string]interface{}, err error) {
 
 	tableId := tableName
 
@@ -46,7 +46,12 @@ func ShowMasterTemplate(schema, tableName, username, tableGroup, approval, id st
 		Order(tableName + ".id")
 
 	if approval != "" {
-		db = db.Joins("JOIN table_group_item_statuses tgis on tgis.id = "+tableName+".item_status_id AND tgis.status = ?", approval)
+		db = db.Select(column,"tgis.id AS id_status").
+		Joins("JOIN table_group_item_statuses tgis on tgis.id = "+tableName+".item_status_id AND tgis.status = ?", approval)
+	}
+
+	if approvalId != "" {
+		db = db.Where("item_status_id = ?", approvalId)
 	}
 
 	if id != "" {
@@ -57,7 +62,7 @@ func ShowMasterTemplate(schema, tableName, username, tableGroup, approval, id st
 		db = db.Where("created_by = ?", username)
 	}
 
-	var rows *sql.Rows
+
 	if checkTableGroup {
 		if tableGroup == "" {
 			db = db.Where(schema + "_group_id is null")
@@ -66,6 +71,7 @@ func ShowMasterTemplate(schema, tableName, username, tableGroup, approval, id st
 		}
 	}
 
+	var rows *sql.Rows
 	rows, err = db.Rows()
 	if err != nil {
 		return nil, err

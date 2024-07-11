@@ -45,6 +45,22 @@ type ShowApprovalTableGroup struct {
 	Rejected  []map[string]interface{} `json:"rejected"`
 }
 
+type ShowDetailApprovalTableGroup struct {
+	Id      int                            `json:"id"`
+	Status  string                         `json:"status"`
+	Reason  *string                        `json:"reason"`
+	GroupId int                            `json:"group_id"`
+	Data    []DataDetailApprovalTableGroup `json:"data" gorm:"-"`
+}
+
+type DataDetailApprovalTableGroup struct {
+	TableName string                   `json:"table_name"`
+	Type      int                      `json:"type"`
+	SchemaId  string                   `json:"-"`
+	TableId   string                   `json:"-"`
+	Data      []map[string]interface{} `json:"data" gorm:"-"`
+}
+
 type FormMasterTableGroup struct {
 	Id        int                   `json:"id"`
 	Type      string                `json:"type"`

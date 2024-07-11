@@ -224,8 +224,10 @@ func Setup(app *fiber.App) {
 	api.Put("/data-master-table-group/:table_group/:table_item/update", masterTableGroupController.UpdateDataMasterTableGroup)
 	api.Delete("/data-master-table-group/:table_group/:table_item/delete", masterTableGroupController.DeleteDataMasterTableGroup)
 
-	api.Get("/form-master-table-group/show/:group_name", masterTableGroupController.ShowFormMasterTableGroup)
-	api.Get("/approval-master-table-group/show/:group_name", masterTableGroupController.ShowApprovalTableGroupItem)
+	api.Get("/form-master-table-group/:group_name/show", masterTableGroupController.ShowFormMasterTableGroup)
+	api.Get("/approval-master-table-group/:group_name/show", masterTableGroupController.ShowApprovalTableGroupItem)
+	api.Post("/approval-master-table-group", masterTableGroupController.ApprovalTableGroupItem)
+	api.Get("/approval-master-table-group/:group_name/show/:id", masterTableGroupController.ShowDetailApprovalTableGroupItem)
 	api.Post("/submit-master-table-group", masterTableGroupController.SubmitTableGroupItem)
 
 	// //Master Column
