@@ -40,7 +40,17 @@ func CreateMasterModule(c *fiber.Ctx) error {
 }
 
 func ShowMasterModule(c *fiber.Ctx) error {
-	result := masterModuleService.ShowAllMasterModule()
+	result := masterModuleService.ShowAllMasterModule(false)
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func ShowActiveMasterModule(c *fiber.Ctx) error {
+	result := masterModuleService.ShowAllMasterModule(true)
 
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,

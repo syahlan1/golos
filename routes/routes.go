@@ -191,7 +191,8 @@ func Setup(app *fiber.App) {
 	api.Delete("/master-code-group/delete/:id", masterCodeController.DeleteMasterCodeGroup)
 
 	//Master Module
-	api.Get("/master-module/show", masterModuleController.ShowMasterModule)
+	api.Get("/master-module/show-all", masterModuleController.ShowMasterModule)
+	api.Get("/master-module/show", masterModuleController.ShowActiveMasterModule)
 	api.Get("/master-module/show/:id", masterModuleController.ShowMasterModuleDetail)
 	api.Post("/master-module/create", masterModuleController.CreateMasterModule)
 	api.Put("/master-module/update/:id", masterModuleController.UpdateMasterModule)

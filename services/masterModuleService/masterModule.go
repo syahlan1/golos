@@ -36,8 +36,13 @@ func CreateMasterModule(claims string, data models.MasterModule) (err error) {
 	return
 }
 
-func ShowAllMasterModule() (result []models.MasterModule) {
-	connection.DB.Find(&result)
+func ShowAllMasterModule(active bool) (result []models.MasterModule) {
+
+	if active {
+		connection.DB.Where("is_active = ?", true).Find(&result)
+	} else {
+		connection.DB.Find(&result)
+	}
 
 	return result
 }
