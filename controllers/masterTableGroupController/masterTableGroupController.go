@@ -244,7 +244,14 @@ func ShowFormMasterTableGroup(c *fiber.Ctx) error {
 	// Ambil ID tabel dari parameter rute
 	groupName := c.Params("group_name")
 
-	result ,err := masterTableGroupService.ShowFormMasterTableGroup(groupName)
+	claims, err := utils.TakeUsername(c)
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{"message": "Unauthorized"})
+	}
+
+
+	result ,err := masterTableGroupService.ShowFormMasterTableGroup(groupName, claims)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
@@ -263,7 +270,13 @@ func ShowDataMasterTableGroup(c *fiber.Ctx) error {
 	tableGroup := c.Params("table_group")
 	tableItem := c.Params("table_item")
 
-	result, err := masterTableGroupService.ShowDataMasterTableGroup(tableGroup, tableItem, "")
+	claims, err := utils.TakeUsername(c)
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{"message": "Unauthorized"})
+	}
+
+	result, err := masterTableGroupService.ShowDataMasterTableGroup(tableGroup, tableItem, claims, "")
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
@@ -277,12 +290,37 @@ func ShowDataMasterTableGroup(c *fiber.Ctx) error {
 	})
 }
 
+func ShowApprovalTableGroupItem(c *fiber.Ctx) error {
+	groupName := c.Params("group_name")
+
+	claims, err := utils.TakeUsername(c)
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{"message": "Unauthorized"})
+	}
+
+
+	result ,err := masterTableGroupService.ShowApprovalTableGroupItem(groupName, claims)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
 func ShowDataMasterTableGroupById(c *fiber.Ctx) error {
 	tableGroup := c.Params("table_group")
 	tableItem := c.Params("table_item")
 	id := c.Params("id")
 
-	result, err := masterTableGroupService.ShowDataMasterTableGroup(tableGroup, tableItem, id)
+	result, err := masterTableGroupService.ShowDataMasterTableGroup(tableGroup, tableItem, "", id)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
@@ -397,6 +435,83 @@ func DeleteDataMasterTableGroup(c *fiber.Ctx) error {
 		Code:    fiber.StatusOK,
 		Message: "Success Delete",
 	})
+}
+
+func SubmitTableGroupItem(c *fiber.Ctx) error {
+	var data models.TableGroupItemStatus
+
+	if err := c.BodyParser(&data); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	claims, err := utils.TakeUsername(c)
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{"message": "Unauthorized"})
+	}
+
+	err= masterTableGroupService.SubmitTableGroupItem(claims, data)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success Update",
+	})
+
+}
+
+func ShowDetailApprovalTableGroupItem(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	result, err := masterTableGroupService.ShowDetailApprovalTableGroupItem(id, "")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func ApprovalTableGroupItem(c *fiber.Ctx) error {
+	var data models.TableGroupItemStatus
+
+	if err := c.BodyParser(&data); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	claims, err := utils.TakeUsername(c)
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{"message": "Unauthorized"})
+	}
+
+	err= masterTableGroupService.ApprovalTableGroupItem(claims, data)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success Update",
+	})
+
 }
 
 func GenerateTableGroup(c *fiber.Ctx) error {

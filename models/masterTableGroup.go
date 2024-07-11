@@ -30,24 +30,49 @@ type MasterTableItem struct {
 }
 
 type TableGroupItemStatus struct {
-	Id       int              `json:"id"`
-	GroupId  int              `json:"group_id"`
-	Status   string           `json:"status"`
-	Reason   *string          `json:"reason"`
-	Username string           `json:"username"`
-	Group    MasterTableGroup `json:"-" gorm:"foreignKey:GroupId"`
+	Id              int     `json:"id"`
+	GroupId         int     `json:"group_id"`
+	Status          string  `json:"status"`
+	Reason          *string `json:"reason"`
+	Username        string  `json:"username"`
+	ModelMasterForm `json:"-"`
+	Group           MasterTableGroup `json:"-" gorm:"foreignKey:GroupId"`
+}
+
+type ShowApprovalTableGroup struct {
+	Submitted []map[string]interface{} `json:"submitted"`
+	Approved  []map[string]interface{} `json:"approved"`
+	Rejected  []map[string]interface{} `json:"rejected"`
+}
+
+type ShowDetailApprovalTableGroup struct {
+	Id      int                            `json:"id"`
+	Status  string                         `json:"status"`
+	Reason  *string                        `json:"reason"`
+	GroupId int                            `json:"group_id"`
+	Data    []DataDetailApprovalTableGroup `json:"data" gorm:"-"`
+}
+
+type DataDetailApprovalTableGroup struct {
+	TableName string                   `json:"table_name"`
+	Type      int                      `json:"type"`
+	SchemaId  string                   `json:"-"`
+	TableId   string                   `json:"-"`
+	Data      []map[string]interface{} `json:"data" gorm:"-"`
 }
 
 type FormMasterTableGroup struct {
-	Id   int                   `json:"id"`
-	Type string                `json:"type"`
-	Form []FormMasterTableItem `json:"form"`
+	Id        int                   `json:"id"`
+	Type      string                `json:"type"`
+	CanSubmit bool                  `json:"can_submit"`
+	Form      []FormMasterTableItem `json:"form" gorm:"-"`
 }
 
 type FormMasterTableItem struct {
 	Id        int        `json:"id"`
 	TableId   int        `json:"table_id"`
 	TableName string     `json:"table_name"`
+	DataId    []int      `json:"data_id" gorm:"-"`
 	Type      int        `json:"type"`
 	Sequence  int        `json:"sequence"`
 	FormList  []FormList `json:"form_list"  gorm:"-"`

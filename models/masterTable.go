@@ -88,6 +88,8 @@ type TableForm struct {
 
 type FormList struct {
 	FieldId        int          `json:"field_id"`
+	Name           string       `json:"name"`
+	NameEn         string       `json:"name_en"`
 	FieldName      string       `json:"field_name"`
 	IsMandatory    bool         `json:"is_mandatory"`
 	UiType         string       `json:"ui_type"`

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/syahlan1/golos/connection"
@@ -292,11 +293,12 @@ func DeleteMasterTableItem(claims, masterTableItemId string) (err error) {
 	return connection.DB.Model(&masterTableItem).Where("id = ?", masterTableItemId).Updates(&masterTableItem).Error
 }
 
-func ShowFormMasterTableGroup(groupName string) (result models.FormMasterTableGroup, err error) {
+func ShowFormMasterTableGroup(groupName, username string) (result models.FormMasterTableGroup, err error) {
 	// var masterTableGroup []models.MasterTableGroup
 
 	if err = connection.DB.
-		Select("id, type").
+		Select("master_table_groups.id, type").
+		// Joins("Left Join table_group_item_statuses tgi ON tgi.group_id = master_table_groups.id").
 		Model(&models.MasterTableGroup{}).
 		Where("group_name = ?", groupName).
 		Find(&result).Error; err != nil {
@@ -304,7 +306,7 @@ func ShowFormMasterTableGroup(groupName string) (result models.FormMasterTableGr
 	}
 
 	rows, err := connection.DB.
-		Select("master_table_items.*, mt.id as table_id, mt.table_name as table_name").
+		Select("master_table_items.*, mt.id as table_id, mt.description as table_name").
 		Joins("JOIN master_tables mt ON mt.id = master_table_items.table_id").
 		Model(&models.MasterTableItem{}).
 		Where("group_id = ?", result.Id).
@@ -316,9 +318,16 @@ func ShowFormMasterTableGroup(groupName string) (result models.FormMasterTableGr
 	}
 	defer rows.Close()
 
+	result.CanSubmit = true
+
 	var item models.FormMasterTableItem
 	for rows.Next() {
 		if err := connection.DB.ScanRows(rows, &item); err != nil {
+			return result, err
+		}
+
+		item.DataId, err = GetIdDataTableItem(result.Id, item.Id, username)
+		if err != nil {
 			return result, err
 		}
 
@@ -330,12 +339,40 @@ func ShowFormMasterTableGroup(groupName string) (result models.FormMasterTableGr
 		item.FormList = tableForm.Form
 
 		result.Form = append(result.Form, item)
+
+		if len(item.DataId) == 0 || !result.CanSubmit {
+			result.CanSubmit = false
+		}
 	}
 
 	return
 }
 
-func ShowDataMasterTableGroup(tableGroupId, tableItemId, id string) (data []map[string]interface{}, err error) {
+func GetIdDataTableItem(tableGroupId, tableItemId int, username string) (id []int, err error) {
+
+	var schema, table string
+
+	err = connection.DB.
+		Select("mm.database_name, master_tables.table_name").
+		Joins("JOIN master_table_items mti ON mti.table_id = master_tables.id").
+		Joins("JOIN master_modules mm ON mm.id = master_tables.module_id").
+		Model(&models.MasterTable{}).
+		Where("mti.deleted_at is null AND mm.deleted_at is null").
+		Where("mti.id = ? AND mti.group_id = ?", tableItemId, tableGroupId).Row().Scan(&schema, &table)
+	if err != nil {
+		return nil, errors.New("data not found")
+	}
+
+	err = connection.DB.
+		Table(schema+"."+table).
+		Where("deleted_date is null AND created_by = ? AND item_status_id is null AND "+schema+"_group_id = ?", username, tableGroupId).
+		Order("id").
+		Pluck("id", &id).Error
+
+	return
+}
+
+func ShowDataMasterTableGroup(tableGroupId, tableItemId, username, id string) (data []map[string]interface{}, err error) {
 
 	var schemaId, tableId string
 
@@ -348,7 +385,7 @@ func ShowDataMasterTableGroup(tableGroupId, tableItemId, id string) (data []map[
 		return data, errors.New("data not found")
 	}
 
-	data, err = masterTemplateService.ShowMasterTemplate(schemaId, tableId, tableGroupId, id)
+	data, err = masterTemplateService.ShowMasterTemplate(schemaId, tableId, username, tableGroupId, "", "", id)
 	if err != nil {
 		return data, err
 	}
@@ -374,15 +411,132 @@ func CreateDataMasterTableGroup(tableGroupId, tableItemId, username string, data
 	return
 }
 
-func CreateTableGroupItemStatus(username string, data models.TableGroupItemStatus) (err error) {
+func SubmitTableGroupItem(username string, data models.TableGroupItemStatus) (err error) {
 
-	err = connection.DB.Transaction(func(tx *gorm.DB) error {
+	db := connection.DB
 
-		// var schema, tableName string
-		// err = tx.Select()
-		
-		return nil
-	})
+	data.Status = "SUBMITTED"
+	data.Username = username
+	data.CreatedBy = username
+
+	if err := db.Create(&data).Error; err != nil {
+		return err
+	}
+
+	var masterTable models.MasterTable
+	rows, err := db.
+		Select("master_tables.*, md.database_name as module_name").
+		Joins("JOIN master_modules md ON md.id = master_tables.module_id").
+		Joins("JOIN master_table_items mti ON mti.table_id = master_tables.id").
+		Model(&models.MasterTable{}).
+		Where("mti.deleted_at is null AND md.deleted_at is null AND mti.group_id = ?", data.GroupId).
+		Rows()
+	if err != nil {
+		return err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+
+		if err := db.ScanRows(rows, &masterTable); err != nil {
+			return err
+		}
+
+		err = db.
+			Table(masterTable.ModuleName+"."+masterTable.TableName).
+			Where("created_by = ? AND "+masterTable.ModuleName+"_group_id = ? AND item_status_id is null AND deleted_date is null", username, data.GroupId).
+			Updates(map[string]interface{}{"item_status_id": data.Id}).Error
+		if err != nil {
+			return err
+		}
+
+	}
+
+	return
+}
+
+func ShowApprovalTableGroupItem(groupName, username string) (data models.ShowApprovalTableGroup, err error) {
+
+	var schemaId, tableId, tableGroupId string
+
+	if err := connection.DB.
+		Select("master_tables.module_id, master_tables.id, mtg.id").
+		Joins("JOIN master_table_items mti ON mti.table_id = master_tables.id").
+		Joins("JOIN master_table_groups mtg ON mtg.id = mti.group_id").
+		Model(&models.MasterTable{}).
+		Where("mti.deleted_at is null AND mtg.deleted_at is null").
+		Where("mtg.group_name = ?", groupName).
+		Where("mti.is_master = ?", true).
+		Row().Scan(&schemaId, &tableId, &tableGroupId); err != nil {
+		return data, errors.New("must select child master table first")
+	}
+
+	data.Submitted, err = masterTemplateService.ShowMasterTemplate(schemaId, tableId, "", tableGroupId, "SUBMITTED", "", "")
+	if err != nil {
+		return data, err
+	}
+
+	data.Rejected, err = masterTemplateService.ShowMasterTemplate(schemaId, tableId, "", tableGroupId, "REJECTED", "", "")
+	if err != nil {
+		return data, err
+	}
+
+	data.Approved, err = masterTemplateService.ShowMasterTemplate(schemaId, tableId, "", tableGroupId, "APPROVED", "", "")
+	if err != nil {
+		return data, err
+	}
+
+	return
+}
+
+func ShowDetailApprovalTableGroupItem(idApproval, username string) (data models.ShowDetailApprovalTableGroup, err error) {
+
+	err = connection.DB.
+		Model(&models.TableGroupItemStatus{}).
+		Where("id = ?", idApproval).
+		First(&data).Error
+	if err != nil {
+		return
+	}
+
+	var dataTable models.DataDetailApprovalTableGroup
+
+	rows, err := connection.DB.
+		Select("master_tables.description as table_name, mti.type, master_tables.module_id AS schema_id, master_tables.id as table_id").
+		Joins("JOIN master_table_items mti ON mti.table_id = master_tables.id").
+		Model(&models.MasterTable{}).
+		Where("mti.deleted_at is null").
+		Where("mti.group_id = ?", data.GroupId).
+		Order("mti.sequence").
+		Rows()
+	if err != nil {
+		return
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		if err := connection.DB.ScanRows(rows, &dataTable); err != nil {
+			return data, err
+		}
+
+		dataTable.Data, err = masterTemplateService.ShowMasterTemplate(dataTable.SchemaId, dataTable.TableId, "", strconv.Itoa(data.GroupId), "", idApproval, "")
+
+		data.Data = append(data.Data, dataTable)
+
+	}
+	return
+}
+
+func ApprovalTableGroupItem(username string, data models.TableGroupItemStatus) (err error) {
+
+	db := connection.DB
+
+	data.Username = username
+	data.UpdatedBy = username
+
+	err = db.Model(&data).Where("id = ?", data.Id).Updates(data).Error
 
 	return
 }
@@ -432,21 +586,29 @@ func GenerateTableGroup(tableID string) (err error) {
 		return errors.New("data not found")
 	}
 
-	groupColumn := models.MasterColumn{
-		FieldName: masterTable.ModuleName + "_group_id",
-		FieldType: "INTEGER",
+	groupColumn := []models.MasterColumn{
+		{
+			FieldName: masterTable.ModuleName + "_group_id",
+			FieldType: "INTEGER",
+		},
+		{
+			FieldName: "item_status_id",
+			FieldType: "INTEGER",
+		},
 	}
 
-	var checkTable bool
-	err = db.Raw("SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = ? AND table_name = ? AND column_name = ?)", masterTable.ModuleName, masterTable.TableName, groupColumn.FieldName).Scan(&checkTable).Error
-	if err != nil {
-		return err
-	}
-
-	if !checkTable {
-		query := fmt.Sprintf(`ALTER TABLE "%s"."%s" ADD COLUMN %s %s`, masterTable.ModuleName, masterTable.TableName, groupColumn.FieldName, groupColumn.FieldType)
-		if err := db.Exec(query).Error; err != nil {
+	for _, v := range groupColumn {
+		var checkTable bool
+		err = db.Raw("SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = ? AND table_name = ? AND column_name = ?)", masterTable.ModuleName, masterTable.TableName, v.FieldName).Scan(&checkTable).Error
+		if err != nil {
 			return err
+		}
+
+		if !checkTable {
+			query := fmt.Sprintf(`ALTER TABLE "%s"."%s" ADD COLUMN %s %s`, masterTable.ModuleName, masterTable.TableName, v.FieldName, v.FieldType)
+			if err := db.Exec(query).Error; err != nil {
+				return err
+			}
 		}
 	}
 
@@ -455,51 +617,62 @@ func GenerateTableGroup(tableID string) (err error) {
 
 func GenerateTableGroupByGroupId(tableGroupId string) (err error) {
 
-	err = connection.DB.Transaction(func(tx *gorm.DB) error {
+	db := connection.DB
 
-		var masterTable models.MasterTable
+	var masterTable models.MasterTable
 
-		rows, err := tx.
-			Select("master_tables.*, md.database_name as module_name").
-			Joins("JOIN master_modules md ON md.id = master_tables.module_id").
-			Joins("JOIN master_table_groups mti ON mti.table_id = master_tables.id").
-			Model(&models.MasterTable{}).
-			Where("mti.deleted_at is null AND md.deleted_at is null AND mti.group_id = ?", tableGroupId).
-			Rows()
-		if err != nil {
+	rows, err := db.Debug().
+		Select("master_tables.*, md.database_name as module_name").
+		Joins("JOIN master_modules md ON md.id = master_tables.module_id").
+		Joins("JOIN master_table_items mti ON mti.table_id = master_tables.id").
+		Model(&models.MasterTable{}).
+		Where("mti.deleted_at is null AND md.deleted_at is null AND mti.group_id = ?", tableGroupId).
+		Rows()
+	if err != nil {
+		return err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+
+		if err := db.ScanRows(rows, &masterTable); err != nil {
 			return err
 		}
 
-		defer rows.Close()
-
-		for rows.Next() {
-
-			if err := tx.ScanRows(rows, &masterTable); err != nil {
-				return err
-			}
-
-			groupColumn := models.MasterColumn{
+		groupColumn := []models.MasterColumn{
+			{
 				FieldName: masterTable.ModuleName + "_group_id",
 				FieldType: "INTEGER",
-			}
+			},
+			{
+				FieldName: "item_status_id",
+				FieldType: "INTEGER",
+			},
+		}
 
+		var alterTableQueries []string
+
+		for _, v := range groupColumn {
 			var checkTable bool
-			err = tx.Raw("SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = ? AND table_name = ? AND column_name = ?)", masterTable.ModuleName, masterTable.TableName, groupColumn.FieldName).Scan(&checkTable).Error
+			err = db.Raw("SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = ? AND table_name = ? AND column_name = ?)", masterTable.ModuleName, masterTable.TableName, v.FieldName).Scan(&checkTable).Error
 			if err != nil {
 				return err
 			}
 
 			if !checkTable {
-				query := fmt.Sprintf(`ALTER TABLE "%s"."%s" ADD COLUMN %s %s`, masterTable.ModuleName, masterTable.TableName, groupColumn.FieldName, groupColumn.FieldType)
-				if err := tx.Exec(query).Error; err != nil {
-					return err
-				}
+				alterTableQueries = append(alterTableQueries, fmt.Sprintf("ADD COLUMN %s %s", v.FieldName, v.FieldType))
 			}
-
 		}
 
-		return nil
-	})
+		if len(alterTableQueries) > 0 {
+			alterTableSQL := fmt.Sprintf(`ALTER TABLE "%s"."%s"`+"\n"+`%s;`, masterTable.ModuleName, masterTable.TableName, strings.Join(alterTableQueries, ",\n"))
+			if err := db.Exec(alterTableSQL).Error; err != nil {
+				return err
+			}
+		}
+
+	}
 
 	return
 }
