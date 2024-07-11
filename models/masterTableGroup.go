@@ -10,6 +10,7 @@ type MasterTableGroup struct {
 	Type               string `json:"type"`
 	ParentType         string `json:"parent_type"`
 	ParentId           *int   `json:"parent_id"`
+	Order              int    `json:"order"`
 	MenuIcon           string `json:"menu_icon"`
 	ModelMasterForm    `json:"-"`
 	MasterModule       MasterModule `json:"-" gorm:"foreignKey:ModuleId"`
@@ -62,10 +63,12 @@ type DataDetailApprovalTableGroup struct {
 }
 
 type FormMasterTableGroup struct {
-	Id        int                   `json:"id"`
-	Type      string                `json:"type"`
-	CanSubmit bool                  `json:"can_submit"`
-	Form      []FormMasterTableItem `json:"form" gorm:"-"`
+	Id                 int                   `json:"id"`
+	Type               string                `json:"type"`
+	Description        string                `json:"description"`
+	EnglishDescription string                `json:"english_description"`
+	CanSubmit          bool                  `json:"can_submit"`
+	Form               []FormMasterTableItem `json:"form" gorm:"-"`
 }
 
 type FormMasterTableItem struct {
@@ -76,4 +79,16 @@ type FormMasterTableItem struct {
 	Type      int        `json:"type"`
 	Sequence  int        `json:"sequence"`
 	FormList  []FormList `json:"form_list"  gorm:"-"`
+}
+
+type FormMasterTableGroupParent struct {
+	Id                 int                          `json:"id"`
+	Type               string                       `json:"type"`
+	ParentType         string                       `json:"-"`
+	Description        string                       `json:"description"`
+	EnglishDescription string                       `json:"english_description"`
+	CanSubmit          bool                         `json:"can_submit"`
+	Form               []FormMasterTableItem        `json:"form,omitempty" gorm:"-"`
+	ParentId           *int                         `json:"parent_id,omitempty"`
+	Child              []FormMasterTableGroupParent `json:"child,omitempty" gorm:"-"`
 }

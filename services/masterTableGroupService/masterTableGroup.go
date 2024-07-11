@@ -293,59 +293,104 @@ func DeleteMasterTableItem(claims, masterTableItemId string) (err error) {
 	return connection.DB.Model(&masterTableItem).Where("id = ?", masterTableItemId).Updates(&masterTableItem).Error
 }
 
-func ShowFormMasterTableGroup(groupName, username string) (result models.FormMasterTableGroup, err error) {
-	// var masterTableGroup []models.MasterTableGroup
+func ShowFormMasterTableGroup(groupName, username string) (result models.FormMasterTableGroupParent, err error) {
 
 	if err = connection.DB.
-		Select("master_table_groups.id, type").
-		// Joins("Left Join table_group_item_statuses tgi ON tgi.group_id = master_table_groups.id").
+		Select("master_table_groups.id, type, parent_type, description, english_description").
 		Model(&models.MasterTableGroup{}).
 		Where("group_name = ?", groupName).
 		Find(&result).Error; err != nil {
 		return result, err
 	}
 
+	if result.ParentType == "P" {
+		result.Child, result.CanSubmit, err = scanRowsChild(result.Id, username, true)
+	} else {
+		result.Form, result.CanSubmit, err = scanRowsForm(result.Id, username, true)
+	}
+
+	return
+}
+
+func scanRowsChild(parentId int, username string, canSubmitDefault bool) (result []models.FormMasterTableGroupParent, canSubmit bool, err error) {
+
+	rows, err := connection.DB.Debug().
+		Select("master_table_groups.id, type, parent_type, description, english_description").
+		Model(&models.MasterTableGroup{}).
+		Where("parent_id = ?", parentId).
+		Order(`"order"`).
+		Rows()
+
+	if err != nil {
+		return result, canSubmit, err
+	}
+
+	defer rows.Close()
+
+	var child models.FormMasterTableGroupParent
+	child.CanSubmit = canSubmitDefault
+	canSubmit = canSubmitDefault
+
+	for rows.Next() {
+		if err := connection.DB.ScanRows(rows, &child); err != nil {
+			return result, canSubmit, err
+		}
+		child.Form, child.CanSubmit, err = scanRowsForm(child.Id, username, child.CanSubmit)
+		if err != nil {
+			return result, canSubmit, err
+		}
+
+		if !child.CanSubmit {
+			canSubmit = false
+		}
+
+		result = append(result, child)
+	}
+
+	return result, canSubmit, nil
+}
+
+func scanRowsForm(groupID int, username string, canSubmitDefault bool) (result []models.FormMasterTableItem, canSubmit bool, err error) {
+
+	canSubmit = canSubmitDefault
 	rows, err := connection.DB.
 		Select("master_table_items.*, mt.id as table_id, mt.description as table_name").
 		Joins("JOIN master_tables mt ON mt.id = master_table_items.table_id").
 		Model(&models.MasterTableItem{}).
-		Where("group_id = ?", result.Id).
+		Where("group_id = ?", groupID).
 		Order("master_table_items.sequence").
 		Rows()
 
 	if err != nil {
-		return result, err
+		return result, canSubmit, err
 	}
+
 	defer rows.Close()
 
-	result.CanSubmit = true
-
 	var item models.FormMasterTableItem
+
 	for rows.Next() {
 		if err := connection.DB.ScanRows(rows, &item); err != nil {
-			return result, err
+			return result, canSubmit, err
 		}
-
-		item.DataId, err = GetIdDataTableItem(result.Id, item.Id, username)
+		item.DataId, err = GetIdDataTableItem(groupID, item.Id, username)
 		if err != nil {
-			return result, err
+			return result, canSubmit, err
 		}
-
-		tableForm, err := masterColumnService.GetFormColumn(strconv.Itoa(item.TableId))
+		FormList, err := masterColumnService.GetFormColumn(strconv.Itoa(item.TableId))
 		if err != nil {
-			return result, err
+			return result, canSubmit, err
+		}
+		item.FormList = FormList.Form
+
+		if len(item.DataId) == 0 || !(canSubmit) {
+			canSubmit = false
 		}
 
-		item.FormList = tableForm.Form
-
-		result.Form = append(result.Form, item)
-
-		if len(item.DataId) == 0 || !result.CanSubmit {
-			result.CanSubmit = false
-		}
+		result = append(result, item)
 	}
 
-	return
+	return result, canSubmit, nil
 }
 
 func GetIdDataTableItem(tableGroupId, tableItemId int, username string) (id []int, err error) {
@@ -360,7 +405,7 @@ func GetIdDataTableItem(tableGroupId, tableItemId int, username string) (id []in
 		Where("mti.deleted_at is null AND mm.deleted_at is null").
 		Where("mti.id = ? AND mti.group_id = ?", tableItemId, tableGroupId).Row().Scan(&schema, &table)
 	if err != nil {
-		return nil, errors.New("data not found")
+		return nil, err
 	}
 
 	err = connection.DB.
