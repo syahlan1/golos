@@ -218,11 +218,8 @@ func UpdateMasterTableGroup(claims, masterTableGroupId string, updatedMasterTabl
 
 		return nil
 	})
-	if err != nil {
-		return result, err
-	}
 
-	return masterTableGroup, nil
+	return 
 }
 
 func DeleteMasterTableGroup(claims, masterTableGroupId string) (err error) {
