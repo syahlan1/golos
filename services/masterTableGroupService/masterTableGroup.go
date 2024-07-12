@@ -306,7 +306,7 @@ func ShowFormMasterTableGroup(groupName, username string) (result models.FormMas
 	if result.ParentType == "P" {
 		result.Child, result.CanSubmit, err = scanRowsChild(result.Id, username, true)
 	} else {
-		result.Form, result.CanSubmit, err = scanRowsForm(result.Id, username, true)
+		result.Form, result.CanSubmit, err = scanRowsForm(result.Id, nil, username, true)
 	}
 
 	return
@@ -314,8 +314,8 @@ func ShowFormMasterTableGroup(groupName, username string) (result models.FormMas
 
 func scanRowsChild(parentId int, username string, canSubmitDefault bool) (result []models.FormMasterTableGroupParent, canSubmit bool, err error) {
 
-	rows, err := connection.DB.Debug().
-		Select("master_table_groups.id, type, parent_type, description, english_description").
+	rows, err := connection.DB.
+		Select("master_table_groups.id, parent_id, type, parent_type, description, english_description").
 		Model(&models.MasterTableGroup{}).
 		Where("parent_id = ?", parentId).
 		Order(`"order"`).
@@ -335,7 +335,7 @@ func scanRowsChild(parentId int, username string, canSubmitDefault bool) (result
 		if err := connection.DB.ScanRows(rows, &child); err != nil {
 			return result, canSubmit, err
 		}
-		child.Form, child.CanSubmit, err = scanRowsForm(child.Id, username, child.CanSubmit)
+		child.Form, child.CanSubmit, err = scanRowsForm(child.Id, &parentId, username, child.CanSubmit)
 		if err != nil {
 			return result, canSubmit, err
 		}
@@ -350,14 +350,15 @@ func scanRowsChild(parentId int, username string, canSubmitDefault bool) (result
 	return result, canSubmit, nil
 }
 
-func scanRowsForm(groupID int, username string, canSubmitDefault bool) (result []models.FormMasterTableItem, canSubmit bool, err error) {
+func scanRowsForm(groupID int, parentId *int, username string, canSubmitDefault bool) (result []models.FormMasterTableItem, canSubmit bool, err error) {
 
 	canSubmit = canSubmitDefault
 	rows, err := connection.DB.
 		Select("master_table_items.*, mt.id as table_id, mt.description as table_name").
 		Joins("JOIN master_tables mt ON mt.id = master_table_items.table_id").
+		Joins("JOIN master_table_groups mtg ON mtg.id = master_table_items.group_id").
 		Model(&models.MasterTableItem{}).
-		Where("group_id = ?", groupID).
+		Where("mtg.id = ?", groupID).
 		Order("master_table_items.sequence").
 		Rows()
 
@@ -373,7 +374,7 @@ func scanRowsForm(groupID int, username string, canSubmitDefault bool) (result [
 		if err := connection.DB.ScanRows(rows, &item); err != nil {
 			return result, canSubmit, err
 		}
-		item.DataId, err = GetIdDataTableItem(groupID, item.Id, username)
+		item.DataId, err = GetIdDataTableItem(groupID, item.Id, parentId, username)
 		if err != nil {
 			return result, canSubmit, err
 		}
@@ -393,7 +394,7 @@ func scanRowsForm(groupID int, username string, canSubmitDefault bool) (result [
 	return result, canSubmit, nil
 }
 
-func GetIdDataTableItem(tableGroupId, tableItemId int, username string) (id []int, err error) {
+func GetIdDataTableItem(tableGroupId, tableItemId int, parentId *int, username string) (id []int, err error) {
 
 	var schema, table string
 
@@ -401,11 +402,16 @@ func GetIdDataTableItem(tableGroupId, tableItemId int, username string) (id []in
 		Select("mm.database_name, master_tables.table_name").
 		Joins("JOIN master_table_items mti ON mti.table_id = master_tables.id").
 		Joins("JOIN master_modules mm ON mm.id = master_tables.module_id").
+		Joins("JOIN master_table_groups mtg ON mtg.id = mti.group_id").
 		Model(&models.MasterTable{}).
 		Where("mti.deleted_at is null AND mm.deleted_at is null").
-		Where("mti.id = ? AND mti.group_id = ?", tableItemId, tableGroupId).Row().Scan(&schema, &table)
+		Where("mti.id = ? AND (mtg.id = ? OR mtg.parent_id = ?)", tableItemId, tableGroupId, parentId).Row().Scan(&schema, &table)
 	if err != nil {
 		return nil, err
+	}
+
+	if parentId != nil {
+		tableGroupId = *parentId
 	}
 
 	err = connection.DB.
@@ -445,9 +451,10 @@ func CreateDataMasterTableGroup(tableGroupId, tableItemId, username string, data
 	if err := connection.DB.
 		Select("master_tables.module_id, master_tables.id").
 		Joins("JOIN master_table_items mti ON mti.table_id = master_tables.id").
+		Joins("JOIN master_table_groups mtg ON mtg.id = mti.group_id").
 		Model(&models.MasterTable{}).
 		Where("mti.deleted_at is null").
-		Where("mti.id = ? AND mti.group_id = ?", tableItemId, tableGroupId).Row().Scan(&schemaId, &tableId); err != nil {
+		Where("mti.id = ? AND (mtg.id = ? OR mtg.parent_id = ?)", tableItemId, tableGroupId, tableGroupId).Row().Scan(&schemaId, &tableId); err != nil {
 		return errors.New("data not found"), nil
 	}
 
@@ -473,8 +480,9 @@ func SubmitTableGroupItem(username string, data models.TableGroupItemStatus) (er
 		Select("master_tables.*, md.database_name as module_name").
 		Joins("JOIN master_modules md ON md.id = master_tables.module_id").
 		Joins("JOIN master_table_items mti ON mti.table_id = master_tables.id").
+		Joins("JOIN master_table_groups mtg ON mtg.id = mti.group_id").
 		Model(&models.MasterTable{}).
-		Where("mti.deleted_at is null AND md.deleted_at is null AND mti.group_id = ?", data.GroupId).
+		Where("mti.deleted_at is null AND md.deleted_at is null AND (mtg.id = ? OR mtg.parent_id = ?)", data.GroupId, data.GroupId).
 		Rows()
 	if err != nil {
 		return err
@@ -503,18 +511,41 @@ func SubmitTableGroupItem(username string, data models.TableGroupItemStatus) (er
 
 func ShowApprovalTableGroupItem(groupName, username string) (data models.ShowApprovalTableGroup, err error) {
 
-	var schemaId, tableId, tableGroupId string
+	var schemaId, tableId, tableGroupId, ParentType, ParentId string
 
 	if err := connection.DB.
-		Select("master_tables.module_id, master_tables.id, mtg.id").
+		Select("id, parent_type").
+		Model(&models.MasterTableGroup{}).
+		Where("group_name = ?", groupName).Row().Scan(&ParentId, &ParentType); err != nil {
+		return data, errors.New("data not found")
+	}
+
+	db := connection.DB.
+		Select("master_tables.module_id, master_tables.id, mti.group_id as table_group_id").
 		Joins("JOIN master_table_items mti ON mti.table_id = master_tables.id").
-		Joins("JOIN master_table_groups mtg ON mtg.id = mti.group_id").
 		Model(&models.MasterTable{}).
-		Where("mti.deleted_at is null AND mtg.deleted_at is null").
-		Where("mtg.group_name = ?", groupName).
-		Where("mti.is_master = ?", true).
-		Row().Scan(&schemaId, &tableId, &tableGroupId); err != nil {
-		return data, errors.New("must select child master table first")
+		Where("mti.deleted_at is null").
+		Where("mti.is_master = ?", true)
+
+	if ParentType == "P" {
+
+		db = db.
+			Select("master_tables.module_id, master_tables.id, mtg.parent_id as table_group_id").
+			Joins("JOIN master_table_groups mtg ON mtg.id = mti.group_id").
+			Where("mtg.deleted_at is null").
+			Where("mtg.parent_id = ?", ParentId).
+			Order(`mtg.order`).
+			Limit(1)
+
+	} else {
+
+		db = db.
+			Where("mti.group_id = ?", ParentId)
+
+	}
+
+	if err = db.Row().Scan(&schemaId, &tableId, &tableGroupId); err != nil {
+		return data, err
 	}
 
 	data.Submitted, err = masterTemplateService.ShowMasterTemplate(schemaId, tableId, "", tableGroupId, "SUBMITTED", "", "")
@@ -535,16 +566,60 @@ func ShowApprovalTableGroupItem(groupName, username string) (data models.ShowApp
 	return
 }
 
-func ShowDetailApprovalTableGroupItem(idApproval, username string) (data models.ShowDetailApprovalTableGroup, err error) {
+func ShowDetailApprovalTableGroupItem(idApproval, username string) (data models.ShowDetailApprovalTableGroupParent, err error) {
 
 	err = connection.DB.
+		Select("table_group_item_statuses.*, mtg.description, mtg.english_description,mtg.parent_type").
 		Model(&models.TableGroupItemStatus{}).
-		Where("id = ?", idApproval).
+		Joins("JOIN master_table_groups mtg ON mtg.id = table_group_item_statuses.group_id").
+		Where("table_group_item_statuses.id = ?", idApproval).
 		First(&data).Error
 	if err != nil {
 		return
 	}
 
+	if data.ParentType == "P" {
+		data.Child, err = showDetailApprovalTableGroupItemParent(data.GroupId, idApproval)
+	} else {
+		data.Data, err = showDetailApprovalTableGroupItemChild(data.GroupId, nil, idApproval)
+	}
+
+	return
+}
+
+func showDetailApprovalTableGroupItemParent(groupId int, idApproval string) (data []models.ShowDetailApprovalTableGroupParent, err error) {
+
+	rows, err := connection.DB.
+		Select("id,description, english_description,parent_type").
+		Model(&models.MasterTableGroup{}).
+		Where("parent_id = ?", groupId).
+		Order(`"order"`).
+		Rows()
+	if err != nil {
+		return
+	}
+
+	defer rows.Close()
+
+	var child models.ShowDetailApprovalTableGroupParent
+	for rows.Next() {
+
+		if err := connection.DB.ScanRows(rows, &child); err != nil {
+			return data, err
+		}
+
+		child.Data, err = showDetailApprovalTableGroupItemChild(child.Id, &groupId, idApproval)
+		if err != nil {
+			return
+		}
+
+		data = append(data, child)
+	}
+
+	return
+}
+
+func showDetailApprovalTableGroupItemChild(groupId int, parentId *int, idApproval string) (data []models.DataDetailApprovalTableGroup, err error) {
 	var dataTable models.DataDetailApprovalTableGroup
 
 	rows, err := connection.DB.
@@ -552,11 +627,15 @@ func ShowDetailApprovalTableGroupItem(idApproval, username string) (data models.
 		Joins("JOIN master_table_items mti ON mti.table_id = master_tables.id").
 		Model(&models.MasterTable{}).
 		Where("mti.deleted_at is null").
-		Where("mti.group_id = ?", data.GroupId).
+		Where("mti.group_id = ?", groupId).
 		Order("mti.sequence").
 		Rows()
 	if err != nil {
 		return
+	}
+
+	if parentId != nil {
+		groupId = *parentId
 	}
 
 	defer rows.Close()
@@ -566,9 +645,9 @@ func ShowDetailApprovalTableGroupItem(idApproval, username string) (data models.
 			return data, err
 		}
 
-		dataTable.Data, err = masterTemplateService.ShowMasterTemplate(dataTable.SchemaId, dataTable.TableId, "", strconv.Itoa(data.GroupId), "", idApproval, "")
+		dataTable.Data, err = masterTemplateService.ShowMasterTemplate(dataTable.SchemaId, dataTable.TableId, "", strconv.Itoa(groupId), "", idApproval, "")
 
-		data.Data = append(data.Data, dataTable)
+		data = append(data, dataTable)
 
 	}
 	return
@@ -592,9 +671,10 @@ func UpdateDataMasterTableGroup(tableGroupId, tableItemId, idData, username stri
 	if err := connection.DB.
 		Select("master_tables.module_id, master_tables.id").
 		Joins("JOIN master_table_items mti ON mti.table_id = master_tables.id").
+		Joins("JOIN master_table_groups mtg ON mtg.id = mti.group_id").
 		Model(&models.MasterTable{}).
 		Where("mti.deleted_at is null").
-		Where("mti.id = ? AND mti.group_id = ?", tableItemId, tableGroupId).Row().Scan(&schemaId, &tableId); err != nil {
+		Where("mti.id = ? AND (mtg.id = ? OR mtg.parent_id = ?)", tableItemId, tableGroupId, tableGroupId).Row().Scan(&schemaId, &tableId); err != nil {
 		return errors.New("data not found"), nil
 	}
 
@@ -610,9 +690,10 @@ func DeleteDataMasterTableGroup(tableGroupId, tableItemId, idData, username stri
 	if err := connection.DB.
 		Select("master_tables.module_id, master_tables.id").
 		Joins("JOIN master_table_items mti ON mti.table_id = master_tables.id").
+		Joins("JOIN master_table_groups mtg ON mtg.id = mti.group_id").
 		Model(&models.MasterTable{}).
 		Where("mti.deleted_at is null").
-		Where("mti.id = ? AND mti.group_id = ?", tableItemId, tableGroupId).Row().Scan(&schemaId, &tableId); err != nil {
+		Where("mti.id = ? AND (mtg.id = ? OR mtg.parent_id = ?)", tableItemId, tableGroupId, tableGroupId).Row().Scan(&schemaId, &tableId); err != nil {
 		return errors.New("data not found")
 	}
 

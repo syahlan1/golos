@@ -62,6 +62,19 @@ type DataDetailApprovalTableGroup struct {
 	Data      []map[string]interface{} `json:"data" gorm:"-"`
 }
 
+type ShowDetailApprovalTableGroupParent struct {
+	Id                 int                                  `json:"id"`
+	Status             string                               `json:"status,omitempty"`
+	Description        string                               `json:"description"`
+	EnglishDescription string                               `json:"english_description"`
+	Reason             *string                              `json:"reason,omitempty"`
+	GroupId            int                                  `json:"group_id,omitempty"`
+	ParentType         string                               `json:"-"`
+	// ParentId           *int                                 `json:"-"`
+	Data               []DataDetailApprovalTableGroup       `json:"data,omitempty" gorm:"-"`
+	Child              []ShowDetailApprovalTableGroupParent `json:"child,omitempty" gorm:"-"`
+}
+
 type FormMasterTableGroup struct {
 	Id                 int                   `json:"id"`
 	Type               string                `json:"type"`
