@@ -183,24 +183,43 @@ func ShowMasterTableGroupDetail(masterTableGroupId string) (result models.Master
 
 func UpdateMasterTableGroup(claims, masterTableGroupId string, updatedMasterTableGroup models.MasterTableGroup) (result models.MasterTableGroup, err error) {
 	var user models.Users
-	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
-		log.Println("Error retrieving user:", err)
-		return result, err
-	}
-
 	var masterTableGroup models.MasterTableGroup
-	if err := connection.DB.First(&masterTableGroup, masterTableGroupId).Error; err != nil {
-		return result, errors.New("data Not Found")
-	}
 
-	masterTableGroup.UpdatedBy = user.Username
-	masterTableGroup.UpdatedAt = time.Now()
-	masterTableGroup.Description = updatedMasterTableGroup.Description
-	masterTableGroup.EnglishDescription = updatedMasterTableGroup.EnglishDescription
-	masterTableGroup.MenuIcon = updatedMasterTableGroup.MenuIcon
+	err = connection.DB.Transaction(func(tx *gorm.DB) error {
 
-	if err := connection.DB.Save(&masterTableGroup).Error; err != nil {
-		return result, errors.New("failed to update Master Table Group")
+		if err := tx.Where("id = ?", claims).First(&user).Error; err != nil {
+			log.Println("Error retrieving user:", err)
+			return err
+		}
+
+		if err := tx.First(&masterTableGroup, masterTableGroupId).Error; err != nil {
+			return errors.New("data Not Found")
+		}
+
+		masterTableGroup.UpdatedBy = user.Username
+		masterTableGroup.UpdatedAt = time.Now()
+		masterTableGroup.Description = updatedMasterTableGroup.Description
+		masterTableGroup.EnglishDescription = updatedMasterTableGroup.EnglishDescription
+		masterTableGroup.MenuIcon = updatedMasterTableGroup.MenuIcon
+
+		if err := tx.Save(&masterTableGroup).Error; err != nil {
+			return errors.New("failed to update Master Table Group")
+		}
+
+		if err := tx.Table("menus").
+			Where("menu_code = ? OR menu_code = ?", masterTableGroup.GroupName, masterTableGroup.GroupName+"_admin").
+			Updates(map[string]interface{}{
+				"icon":       updatedMasterTableGroup.MenuIcon,
+				"updated_by": user.Username,
+				"updated_at": time.Now(),
+			}).Error; err != nil {
+			return errors.New("failed to update Menu Icon")
+		}
+
+		return nil
+	})
+	if err != nil {
+		return result, err
 	}
 
 	return masterTableGroup, nil
