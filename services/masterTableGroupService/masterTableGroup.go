@@ -62,6 +62,7 @@ func CreateMasterTableGroup(claims string, data models.MasterTableGroup) (err er
 			return err
 		}
 
+		// create parent menu
 		// var masterTableGroupMenu models.Menu
 		if ParentMenu.Id == 0 || ParentMenuAdmin.Id == 0 {
 			log.Println("Parent menu not found")
@@ -164,21 +165,16 @@ func CreateMasterTableGroup(claims string, data models.MasterTableGroup) (err er
 }
 
 func ShowMasterTableGroup() (result []models.MasterTableGroup) {
-	var masterTableGroup []models.MasterTableGroup
-
-	connection.DB.Find(&masterTableGroup)
-
-	return masterTableGroup
+	connection.DB.Find(&result)
+	return
 }
 
 func ShowMasterTableGroupDetail(masterTableGroupId string) (result models.MasterTableGroup, err error) {
-	var masterTableGroup models.MasterTableGroup
-
-	if err := connection.DB.First(&masterTableGroup, masterTableGroupId).Error; err != nil {
+	if err := connection.DB.First(&result, masterTableGroupId).Error; err != nil {
 		return result, errors.New("MasterTableGroup not found")
 	}
 
-	return masterTableGroup, nil
+	return
 }
 
 func UpdateMasterTableGroup(claims, masterTableGroupId string, updatedMasterTableGroup models.MasterTableGroup) (result models.MasterTableGroup, err error) {
@@ -243,6 +239,15 @@ func CreateMasterTableItem(claims string, data models.MasterTableItem) (err erro
 		return err
 	}
 
+	var checkParent bool
+	if connection.DB.Raw("SELECT EXISTS (SELECT 1 FROM master_table_groups WHERE id = ? AND deleted_at is null AND parent_type = ?)", data.GroupId, "P").Scan(&checkParent).Error != nil {
+		return err
+	}
+
+	if checkParent {
+		return errors.New("cannot use parent table group as group_id")
+	}
+
 	data.CreatedBy = user.Username
 
 	if err := connection.DB.Create(&data).Error; err != nil {
@@ -253,21 +258,16 @@ func CreateMasterTableItem(claims string, data models.MasterTableItem) (err erro
 }
 
 func ShowMasterTableItem(groupId string) (result []models.MasterTableItem) {
-	var masterTableItem []models.MasterTableItem
-
-	connection.DB.Where("group_id = ?", groupId).Find(&masterTableItem)
-
-	return masterTableItem
+	connection.DB.Where("group_id = ?", groupId).Find(&result)
+	return 
 }
 
 func ShowMasterTableItemDetail(masterTableItemId string) (result models.MasterTableItem, err error) {
-	var masterTableItem models.MasterTableItem
-
-	if err := connection.DB.First(&masterTableItem, masterTableItemId).Error; err != nil {
+	if err := connection.DB.First(&result, masterTableItemId).Error; err != nil {
 		return result, errors.New("MasterTableItem not found")
 	}
 
-	return masterTableItem, nil
+	return
 }
 
 func UpdateMasterTableItem(claims, masterTableItemId string, updatedMasterTableItem models.MasterTableItem) (result models.MasterTableItem, err error) {
