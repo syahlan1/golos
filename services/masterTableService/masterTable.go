@@ -25,6 +25,10 @@ func CreateMasterTable(claims string, data models.MasterTable) (err error) {
 		return err
 	}
 
+	if err := utils.IsValidSqlName(data.TableName); err != nil {
+		return err
+	}
+
 	data.CreatedBy = user.Username
 
 	if err := connection.DB.Create(&data).Error; err != nil {

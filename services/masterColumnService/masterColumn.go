@@ -19,12 +19,25 @@ func CreateMasterColumn(claims string, tableId int, data models.MasterColumn) (e
 		return err
 	}
 
-	if err := utils.IsValidColumnName(data.FieldName); err != nil {
+	if err := utils.IsValidSqlName(data.FieldName); err != nil {
 		return err
 	}
-
+	
 	if data.Disable && data.IsMandatory {
 		return errors.New("is_mandatory cannot be true when disable is true")
+	}
+
+	// prevent SQL injection
+	if data.AutoFill {
+		if err := utils.IsValidSQL(*data.FillQuery); err != nil {
+			return err
+		}
+	}
+
+	if data.UiSourceType == "Q" {
+		if err := utils.IsValidSQL(*data.UiSourceQuery); err != nil {
+			return err
+		}
 	}
 
 	data.CreatedBy = user.Username
@@ -80,6 +93,19 @@ func UpdateMasterColumn(claims, masterColumnId string, updatedMasterColumn model
 
 	if updatedMasterColumn.Disable && updatedMasterColumn.IsMandatory {
 		return result, errors.New("is_mandatory cannot be true when disable is true")
+	}
+
+	// prevent SQL injection
+	if updatedMasterColumn.AutoFill {
+		if err := utils.IsValidSQL(*updatedMasterColumn.FillQuery); err != nil {
+			return result, err
+		}
+	}
+
+	if updatedMasterColumn.UiSourceType == "Q" {
+		if err := utils.IsValidSQL(*updatedMasterColumn.UiSourceQuery); err != nil {
+			return result, err
+		}
 	}
 
 	masterColumn.UpdatedBy = user.Username
