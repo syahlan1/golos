@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type MasterTable struct {
 	Id                 int    `json:"id"`
@@ -94,6 +96,7 @@ type FormList struct {
 	IsMandatory    bool         `json:"is_mandatory"`
 	UiType         string       `json:"ui_type"`
 	UiName         string       `json:"ui_name"`
+	UiStep         *float64     `json:"ui_step,omitempty"`
 	NeedFirstEmpty bool         `json:"-"`
 	UiSourceType   string       `json:"-"`
 	UiSourceQuery  string       `json:"-"`
