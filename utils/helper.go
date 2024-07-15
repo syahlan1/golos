@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"unicode"
@@ -253,4 +254,12 @@ func InterfaceToString(i interface{}) string {
 	default:
 		return fmt.Sprintf("%v", v)
 	}
+}
+
+func IsValidColumnName(columnName string) error {
+    match, _ := regexp.MatchString(`^[a-zA-Z_][a-zA-Z0-9_]*$`, columnName)
+    if !match {
+        return errors.New("invalid field_name")
+    }
+    return nil
 }

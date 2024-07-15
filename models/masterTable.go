@@ -57,6 +57,9 @@ type MasterColumn struct {
 	IsNegative         bool    `json:"is_negative"`
 	SqlFunction        string  `json:"sql_function"`
 	OnblurScript       string  `json:"onblur_script"`
+	AutoFill           bool    `json:"auto_fill"`
+	FillQuery          *string `json:"fill_query"`
+	Disable            bool    `json:"disable"`
 	ModelMasterForm    `json:"-"`
 	MasterMapperColumn []MasterMapperColumn `json:"-" gorm:"foreignKey:ColumnId"`
 	MasterSourceColumn []MasterSourceColumn `json:"-" gorm:"foreignKey:ColumnId"`
@@ -96,6 +99,10 @@ type FormList struct {
 	IsMandatory    bool         `json:"is_mandatory"`
 	UiType         string       `json:"ui_type"`
 	UiName         string       `json:"ui_name"`
+	AutoFill       bool         `json:"-"`
+	FillQuery      string       `json:"-"`
+	Fill           string       `json:"fill,omitempty"`
+	Disable        bool         `json:"disable"`
 	UiStep         *float64     `json:"ui_step,omitempty"`
 	NeedFirstEmpty bool         `json:"-"`
 	UiSourceType   string       `json:"-"`
