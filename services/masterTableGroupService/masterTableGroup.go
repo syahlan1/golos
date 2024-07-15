@@ -215,7 +215,7 @@ func UpdateMasterTableGroup(claims, masterTableGroupId string, updatedMasterTabl
 		return nil
 	})
 
-	return 
+	return
 }
 
 func DeleteMasterTableGroup(claims, masterTableGroupId string) (err error) {
@@ -250,6 +250,10 @@ func CreateMasterTableItem(claims string, data models.MasterTableItem) (err erro
 
 	data.CreatedBy = user.Username
 
+	if data.IsMaster && !data.IsMandatory {
+		return errors.New("is_mandatory must be true if is_master is true")
+	}
+
 	if err := connection.DB.Create(&data).Error; err != nil {
 		return errors.New("failed to create Master Table Item")
 	}
@@ -259,7 +263,7 @@ func CreateMasterTableItem(claims string, data models.MasterTableItem) (err erro
 
 func ShowMasterTableItem(groupId string) (result []models.MasterTableItem) {
 	connection.DB.Where("group_id = ?", groupId).Find(&result)
-	return 
+	return
 }
 
 func ShowMasterTableItemDetail(masterTableItemId string) (result models.MasterTableItem, err error) {
@@ -282,12 +286,17 @@ func UpdateMasterTableItem(claims, masterTableItemId string, updatedMasterTableI
 		return result, errors.New("data Not Found")
 	}
 
+	if updatedMasterTableItem.IsMaster && !updatedMasterTableItem.IsMandatory {
+		return result, errors.New("is_mandatory must be true if is_master is true")
+	}
+
 	masterTableItem.UpdatedBy = user.Username
 	masterTableItem.UpdatedAt = time.Now()
 	masterTableItem.Name = updatedMasterTableItem.Name
 	masterTableItem.Sequence = updatedMasterTableItem.Sequence
 	masterTableItem.Type = updatedMasterTableItem.Type
 	masterTableItem.IsMaster = updatedMasterTableItem.IsMaster
+	masterTableItem.IsMandatory = updatedMasterTableItem.IsMandatory
 
 	if err := connection.DB.Save(&masterTableItem).Error; err != nil {
 		return result, errors.New("failed to update Master Table Item")
@@ -400,8 +409,10 @@ func scanRowsForm(groupID int, parentId *int, username string, canSubmitDefault 
 		}
 		item.FormList = FormList.Form
 
-		if len(item.DataId) == 0 || !(canSubmit) {
-			canSubmit = false
+		if item.IsMandatory {
+			if len(item.DataId) == 0 || !(canSubmit) {
+				canSubmit = false
+			}
 		}
 
 		result = append(result, item)
