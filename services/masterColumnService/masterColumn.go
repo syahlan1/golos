@@ -19,6 +19,27 @@ func CreateMasterColumn(claims string, tableId int, data models.MasterColumn) (e
 		return err
 	}
 
+	if err := utils.IsValidSqlName(data.FieldName); err != nil {
+		return err
+	}
+	
+	if data.Disable && data.IsMandatory {
+		return errors.New("is_mandatory cannot be true when disable is true")
+	}
+
+	// prevent SQL injection
+	if data.AutoFill {
+		if err := utils.IsValidSQL(*data.FillQuery); err != nil {
+			return err
+		}
+	}
+
+	if data.UiSourceType == "Q" {
+		if err := utils.IsValidSQL(*data.UiSourceQuery); err != nil {
+			return err
+		}
+	}
+
 	data.CreatedBy = user.Username
 	data.TableId = tableId
 
@@ -70,6 +91,23 @@ func UpdateMasterColumn(claims, masterColumnId string, updatedMasterColumn model
 		return result, errors.New("data Not Found")
 	}
 
+	if updatedMasterColumn.Disable && updatedMasterColumn.IsMandatory {
+		return result, errors.New("is_mandatory cannot be true when disable is true")
+	}
+
+	// prevent SQL injection
+	if updatedMasterColumn.AutoFill {
+		if err := utils.IsValidSQL(*updatedMasterColumn.FillQuery); err != nil {
+			return result, err
+		}
+	}
+
+	if updatedMasterColumn.UiSourceType == "Q" {
+		if err := utils.IsValidSQL(*updatedMasterColumn.UiSourceQuery); err != nil {
+			return result, err
+		}
+	}
+
 	masterColumn.UpdatedBy = user.Username
 	masterColumn.UpdatedAt = time.Now()
 
@@ -89,6 +127,9 @@ func UpdateMasterColumn(claims, masterColumnId string, updatedMasterColumn model
 	masterColumn.IsNegative = updatedMasterColumn.IsNegative
 	masterColumn.SqlFunction = updatedMasterColumn.SqlFunction
 	masterColumn.OnblurScript = updatedMasterColumn.OnblurScript
+	masterColumn.AutoFill = updatedMasterColumn.AutoFill
+	masterColumn.FillQuery = updatedMasterColumn.FillQuery
+	masterColumn.Disable = updatedMasterColumn.Disable
 
 	if err := connection.DB.Save(&masterColumn).Error; err != nil {
 		return result, errors.New("failed to update Master Column")
@@ -120,7 +161,9 @@ func GetFormColumn(masterTableId string) (result models.TableForm, err error) {
 	}
 
 	rows, err := connection.DB.Debug().
-		Select("master_columns.id AS field_id, description AS name, english_description AS name_en ,field_name, is_mandatory, need_first_empty, ut.name as ui_type, ut.name_ui as ui_name, ui_source_type, ui_source_query, code_group_id").
+		Select("master_columns.id AS field_id, description AS name, english_description AS name_en ,field_name, is_mandatory, need_first_empty, ut.name as ui_type, ui_source_type, ui_source_query, code_group_id, auto_fill, fill_query, disable",
+		"(CASE WHEN field_type = 'N' OR field_type = 'F' THEN 'number' ELSE ut.name_ui END) AS ui_name",
+		"(CASE WHEN field_type = 'N' THEN 1 WHEN field_type = 'F' THEN 0.01 ELSE NULL END) AS ui_step").
 		Joins("JOIN ui_types ut ON ut.id = master_columns.ui_type_id").
 		Model(&models.MasterColumn{}).
 		Where("table_id = ?", masterTableId).
@@ -138,6 +181,15 @@ func GetFormColumn(masterTableId string) (result models.TableForm, err error) {
 		err = connection.DB.ScanRows(rows, &data)
 		if err != nil {
 			return result, err
+		}
+
+		if data.AutoFill {
+			err = connection.DB.
+				Raw(fmt.Sprintf(`select * from(select %s) t`, data.FillQuery)).
+				Scan(&data.Fill).Error
+			if err != nil {
+				return result, err
+			}
 		}
 
 		var UiSource []models.DropdownEn

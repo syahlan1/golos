@@ -27,6 +27,10 @@ func CreateMasterModule(claims string, data models.MasterModule) (err error) {
 		return fmt.Errorf("database_name : %s already exist", data.DatabaseName)
 	}
 
+	if err := utils.IsValidSqlName(data.DatabaseName); err != nil {
+		return err
+	}
+
 	data.CreatedBy = user.Username
 
 	if err := connection.DB.Create(&data).Error; err != nil {

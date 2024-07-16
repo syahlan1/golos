@@ -25,6 +25,7 @@ type MasterTableItem struct {
 	TableId         int    `json:"table_id"`
 	Type            int    `json:"type"`
 	IsMaster        bool   `json:"is_master"`
+	IsMandatory     bool   `json:"is_mandatory"`
 	ModelMasterForm `json:"-"`
 	Group           MasterTableGroup `json:"-" gorm:"foreignKey:GroupId"`
 	MasterTable     MasterTable      `json:"-" gorm:"foreignKey:TableId"`
@@ -63,16 +64,16 @@ type DataDetailApprovalTableGroup struct {
 }
 
 type ShowDetailApprovalTableGroupParent struct {
-	Id                 int                                  `json:"id"`
-	Status             string                               `json:"status,omitempty"`
-	Description        string                               `json:"description"`
-	EnglishDescription string                               `json:"english_description"`
-	Reason             *string                              `json:"reason,omitempty"`
-	GroupId            int                                  `json:"group_id,omitempty"`
-	ParentType         string                               `json:"-"`
+	Id                 int     `json:"id"`
+	Status             string  `json:"status,omitempty"`
+	Description        string  `json:"description"`
+	EnglishDescription string  `json:"english_description"`
+	Reason             *string `json:"reason,omitempty"`
+	GroupId            int     `json:"group_id,omitempty"`
+	ParentType         string  `json:"-"`
 	// ParentId           *int                                 `json:"-"`
-	Data               []DataDetailApprovalTableGroup       `json:"data,omitempty" gorm:"-"`
-	Child              []ShowDetailApprovalTableGroupParent `json:"child,omitempty" gorm:"-"`
+	Data  []DataDetailApprovalTableGroup       `json:"data,omitempty" gorm:"-"`
+	Child []ShowDetailApprovalTableGroupParent `json:"child,omitempty" gorm:"-"`
 }
 
 type FormMasterTableGroup struct {
@@ -85,13 +86,14 @@ type FormMasterTableGroup struct {
 }
 
 type FormMasterTableItem struct {
-	Id        int        `json:"id"`
-	TableId   int        `json:"table_id"`
-	TableName string     `json:"table_name"`
-	DataId    []int      `json:"data_id" gorm:"-"`
-	Type      int        `json:"type"`
-	Sequence  int        `json:"sequence"`
-	FormList  []FormList `json:"form_list"  gorm:"-"`
+	Id          int        `json:"id"`
+	IsMandatory bool       `json:"-"`
+	TableId     int        `json:"table_id"`
+	TableName   string     `json:"table_name"`
+	DataId      []int      `json:"data_id" gorm:"-"`
+	Type        int        `json:"type"`
+	Sequence    int        `json:"sequence"`
+	FormList    []FormList `json:"form_list"  gorm:"-"`
 }
 
 type FormMasterTableGroupParent struct {

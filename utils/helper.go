@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"unicode"
@@ -316,4 +317,24 @@ func Decrypt(encryptedText string) (string, error) {
 	}
 
 	return string(plainText), nil
+}
+
+func IsValidSqlName(name string) error {
+    match, _ := regexp.MatchString(`^[a-zA-Z_][a-zA-Z0-9_]*$`, name)
+    if !match {
+        return errors.New("invalid field_name")
+    }
+
+	if len(name) > 63 {
+		return errors.New("name too long")
+	}
+    return nil
+}
+
+func IsValidSQL(query string) error {
+    match, _ := regexp.MatchString(`^[a-zA-Z0-9_ ,.*()]+$`, query)
+    if !match {
+        return errors.New("invalid characters in query")
+    }
+    return nil
 }
