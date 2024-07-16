@@ -27,16 +27,6 @@ func CreateParameter(claims string, data models.MasterParameter) (err error) {
 	}
 	data.CreatedBy = user.Username
 
-	// masterParameter := models.MasterParameter{
-	// 	CreatedBy:          user.Username,
-	// 	CreatedDate:        timeNow,
-	// 	Status:             "L",
-	// 	Description:        data.Description,
-	// 	EnglishDescription: data.EnglishDescription,
-	// 	ParamKey:           data.ParamKey,
-	// 	ParamValue:         data.ParamValue,
-	// }
-
 	if err := connection.DB.Create(&data).Error; err != nil {
 		return errors.New("failed to create Parameter")
 	}
@@ -46,13 +36,12 @@ func CreateParameter(claims string, data models.MasterParameter) (err error) {
 
 func ShowAllParameter() (result []models.ShowAllMasterParameter, err error) {
 
-	rows, err := connection.DB.
-		Select("md.id as module_id, COALESCE(md.module_name, 'Default') as module_name").
-		Joins("LEFT JOIN master_modules md ON md.id = master_parameters.module_id AND md.is_active IS TRUE").
-		Model(&models.MasterParameter{}).
-		Group("md.id").
-		Order("(case when md.id is null then 1 else 0 end) desc").
-		Where("is_encrypted <> ? and md.deleted_at IS NULL", 1).Rows()
+	rows, err := connection.DB.Raw(`
+	select 0 as module_id, 'Default' as module_name 
+	union
+	select id as module_id, module_name from master_modules
+	where is_active is true and deleted_at is null
+	order by module_id`).Rows()
 	if err != nil {
 		return result, err
 	}
@@ -64,17 +53,12 @@ func ShowAllParameter() (result []models.ShowAllMasterParameter, err error) {
 		if err := connection.DB.ScanRows(rows, &data); err != nil {
 			return result, err
 		}
-
-		if data.ModuleId != nil {
-			if err := connection.DB.Where("module_id = ?", *data.ModuleId).Find(&data.Parameter, "is_encrypted <> ?", 1).Error; err != nil {
-				return result, err
-			}
-		} else {
-			if err := connection.DB.Where("module_id IS NULL").Find(&data.Parameter, "is_encrypted <> ?", 1).Error; err != nil {
-				return result, err
-			}
+		var param []models.MasterParameter
+		if err := connection.DB.Debug().Where("module_id = ?", data.ModuleId).Find(&param, "is_encrypted <> ?", 1).Error; err != nil {
+			return result, err
 		}
 
+		data.Parameter = param
 		result = append(result, data)
 	}
 
@@ -83,7 +67,10 @@ func ShowAllParameter() (result []models.ShowAllMasterParameter, err error) {
 
 func ShowParameterDetail(parameterId string) (result models.MasterParameter, err error) {
 
-	if err := connection.DB.Where("id = ?", parameterId).First(&result).Error; err != nil {
+	if err := connection.DB.
+		Select("master_parameters.*, COALESCE(md.module_name, 'Default') as module_name").
+		Joins("LEFT JOIN master_modules md ON md.id = master_parameters.module_id").
+		Where("master_parameters.id = ?", parameterId).First(&result).Error; err != nil {
 		return result, err
 	}
 
