@@ -1,8 +1,13 @@
 package utils
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -253,4 +258,62 @@ func InterfaceToString(i interface{}) string {
 	default:
 		return fmt.Sprintf("%v", v)
 	}
+}
+
+func Encrypt(plainText []byte) (string, error) {
+	key, err := hex.DecodeString(os.Getenv("PARAM_KEY"))
+	if err != nil {
+		return "", err
+	}
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return "", err
+	}
+
+	nonce := make([]byte, 12)
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		return "", err
+	}
+
+	aesGCM, err := cipher.NewGCM(block)
+	if err != nil {
+		return "", err
+	}
+
+	cipherText := aesGCM.Seal(nil, nonce, plainText, nil)
+	return hex.EncodeToString(nonce) + hex.EncodeToString(cipherText), nil
+}
+
+func Decrypt(encryptedText string) (string, error) {
+	key, err := hex.DecodeString(os.Getenv("PARAM_KEY"))
+	if err != nil {
+		return "", err
+	}
+	data, err := hex.DecodeString(encryptedText)
+	if err != nil {
+		return "", err
+	}
+
+	if len(data) < 12 {
+		return "", fmt.Errorf("invalid data size")
+	}
+
+	nonce, cipherText := data[:12], data[12:]
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return "", err
+	}
+
+	aesGCM, err := cipher.NewGCM(block)
+	if err != nil {
+		return "", err
+	}
+
+	plainText, err := aesGCM.Open(nil, nonce, cipherText, nil)
+	if err != nil {
+		return "", err
+	}
+
+	return string(plainText), nil
 }

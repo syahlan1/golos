@@ -34,7 +34,7 @@ func CreateParameter(c *fiber.Ctx) error {
 
 	// Return success response
 	return c.JSON(models.Response{
-		Code:    fiber.StatusOK,
+		Code:    fiber.StatusCreated,
 		Message: "Master Parameter Created!",
 	})
 }

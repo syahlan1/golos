@@ -1,19 +1,14 @@
 package models
 
 type MasterParameter struct {
-	Id int `json:"id"`
-	// CreatedDate        time.Time `json:"created_date"`
-	// CreatedBy          string    `json:"created_by"`
-	// UpdatedDate        time.Time `json:"updated_date"`
-	// UpdatedBy          string    `json:"updated_by"`
-	// Status             string    `json:"status"`
+	Id                 int    `json:"id"`
 	IsEncrypted        int    `json:"is_encrypted"`
 	ModuleId           int    `json:"module_id"`
 	Description        string `json:"description"`
 	EnglishDescription string `json:"english_description"`
 	ParamKey           string `json:"param_key"`
 	ParamValue         string `json:"param_value"`
-	ModelMasterForm
+	ModelMasterForm    `json:"-"`
 }
 
 type CreateMasterParameter struct {
@@ -21,4 +16,10 @@ type CreateMasterParameter struct {
 	EnglishDescription string `json:"english_description"`
 	ParamKey           string `json:"param_key"`
 	ParamValue         string `json:"param_value"`
+}
+
+type ShowAllMasterParameter struct {
+	ModuleId   *int               `json:"module_id"`
+	ModuleName string            `json:"module_name"`
+	Parameter  []MasterParameter `json:"parameter" gorm:"-"`
 }
