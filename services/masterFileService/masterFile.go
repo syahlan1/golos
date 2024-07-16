@@ -15,8 +15,8 @@ func UploadFile(file *multipart.FileHeader, groupId, moduleId, username string) 
 	var paramPath models.MasterParameter
 	if groupId != "" {
 		connection.DB.
-		Joins("JOIN master_table_groups mtg ON mtg.module_id = master_parameters.module_id").
-		Where("param_key = ? AND mtg.id = ? AND mtg.deleted_at is null", "DOC_PATH", groupId).First(&paramPath)
+			Joins("JOIN master_table_groups mtg ON mtg.module_id = master_parameters.module_id").
+			Where("param_key = ? AND mtg.id = ? AND mtg.deleted_at is null", "DOC_PATH", groupId).First(&paramPath)
 	} else {
 		connection.DB.Where("param_key = ? AND module_id = ?", "DOC_PATH", moduleId).First(&paramPath)
 	}
@@ -27,6 +27,14 @@ func UploadFile(file *multipart.FileHeader, groupId, moduleId, username string) 
 
 	if paramPath.Id == 0 {
 		return result, errors.New("DOC_PATH must be configured")
+	}
+
+	if paramPath.IsEncrypted == 1 {
+		hashed, err := utils.Decrypt(paramPath.ParamValue)
+		if err != nil {
+			return result, err
+		}
+		paramPath.ParamValue = string(hashed)
 	}
 
 	result.FileName, result.FilePath, err = utils.UploadFile(file, paramPath.ParamValue)
