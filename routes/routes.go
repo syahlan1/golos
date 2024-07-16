@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/syahlan1/golos/controllers/masterFileController"
 	"github.com/syahlan1/golos/controllers/masterTableGroupController"
 	"github.com/syahlan1/golos/controllers/masterTemplateController"
 
@@ -223,6 +224,7 @@ func Setup(app *fiber.App) {
 	api.Post("/data-master-table-group/:table_group/:table_item/create", masterTableGroupController.CreateDataMasterTableGroup)
 	api.Put("/data-master-table-group/:table_group/:table_item/update", masterTableGroupController.UpdateDataMasterTableGroup)
 	api.Delete("/data-master-table-group/:table_group/:table_item/delete", masterTableGroupController.DeleteDataMasterTableGroup)
+	api.Post("/data-master-table-group/:table_group/:table_item/upload-file", masterFileController.UploadFileTableGroup)
 
 	api.Get("/form-master-table-group/:group_name/show", masterTableGroupController.ShowFormMasterTableGroup)
 	api.Get("/approval-master-table-group/:group_name/show", masterTableGroupController.ShowApprovalTableGroupItem)
@@ -261,7 +263,8 @@ func Setup(app *fiber.App) {
 
 	api.Get("/master-template/:module/:table/show", masterTemplateController.ShowMasterTemplate)
 	api.Get("/master-template/:module/:table/show/:id", masterTemplateController.ShowMasterTemplateById)
-	api.Post("/master-template/:module/:table/Create", masterTemplateController.CreateMasterTemplate)
+	api.Post("/master-template/:module/:table/create", masterTemplateController.CreateMasterTemplate)
 	api.Put("/master-template/:module/:table/update/:id", masterTemplateController.UpdateMasterTemplate)
 	api.Delete("/master-template/:module/:table/delete/:id", masterTemplateController.DeleteMasterTemplate)
+	api.Post("/master-template/:module/:table/upload-file", masterFileController.UploadFileTableTemplate)
 }

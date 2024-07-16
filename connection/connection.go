@@ -88,6 +88,7 @@ func Connect() {
 
 		&models.MasterValidation{},
 
+		&models.MasterFile{},
 		&models.MasterCode{},
 		&models.MasterCodeGroup{},
 
