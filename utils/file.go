@@ -27,6 +27,9 @@ func UploadFile(file *multipart.FileHeader, dir string) (filename, filepath stri
 		return "", "", err
 	}
 
+	// log.Println(filename,filepath)
+	// return
+
 	destinationFile, err := os.Create(filepath)
 	if err != nil {
 		return "", "", err
@@ -40,7 +43,7 @@ func UploadFile(file *multipart.FileHeader, dir string) (filename, filepath stri
 		return "", "", err
 	}
 
-	return filename, "/"+filepath, nil
+	return filename, "/" + filepath, nil
 }
 
 func GetFileExtension(filename string) (ext string) {
