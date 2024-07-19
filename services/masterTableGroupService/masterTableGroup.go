@@ -318,26 +318,39 @@ func DeleteMasterTableItem(claims, masterTableItemId string) (err error) {
 	return connection.DB.Model(&masterTableItem).Where("id = ?", masterTableItemId).Updates(&masterTableItem).Error
 }
 
-func ShowFormMasterTableGroup(groupName, username string) (result models.FormMasterTableGroupParent, err error) {
+func ShowFormMasterTableGroup(groupName, username, idChild string) (result models.FormMasterTableGroupParent, err error) {
 
-	if err = connection.DB.
-		Select("master_table_groups.id, type, parent_type, description, english_description").
-		Model(&models.MasterTableGroup{}).
-		Where("group_name = ?", groupName).
-		Find(&result).Error; err != nil {
-		return result, err
-	}
+	if idChild != "" {
+		subQuery := connection.DB.Select("id").Model(&models.MasterTableGroup{}).Where("group_name = ?", groupName)
+		if err = connection.DB.
+			Select("master_table_groups.id, parent_id, type, parent_type, description, english_description").
+			Model(&models.MasterTableGroup{}).
+			Where("parent_id = (?) AND id = ?", subQuery, idChild).Find(&result).Error; err != nil {
+			return result, err
+		}
 
-	if result.ParentType == "P" {
-		result.Child, result.CanSubmit, err = scanRowsChild(result.Id, username, true)
+		idChildInt, _ := strconv.Atoi(idChild)
+		result.Form, result.CanSubmit, err = scanRowsForm(idChildInt, &result.Id, username, true, true)
 	} else {
-		result.Form, result.CanSubmit, err = scanRowsForm(result.Id, nil, username, true)
+		if err = connection.DB.
+			Select("master_table_groups.id, type, parent_type, description, english_description").
+			Model(&models.MasterTableGroup{}).
+			Where("group_name = ?", groupName).
+			Find(&result).Error; err != nil {
+			return result, err
+		}
+
+		if result.ParentType == "P" {
+			result.Child, result.CanSubmit, err = scanRowsChild(result.Id, username, result.Type, true)
+		} else {
+			result.Form, result.CanSubmit, err = scanRowsForm(result.Id, nil, username, true, true)
+		}
 	}
 
 	return
 }
 
-func scanRowsChild(parentId int, username string, canSubmitDefault bool) (result []models.FormMasterTableGroupParent, canSubmit bool, err error) {
+func scanRowsChild(parentId int, username, tipe string, canSubmitDefault bool) (result []models.FormMasterTableGroupParent, canSubmit bool, err error) {
 
 	rows, err := connection.DB.
 		Select("master_table_groups.id, parent_id, type, parent_type, description, english_description").
@@ -360,9 +373,16 @@ func scanRowsChild(parentId int, username string, canSubmitDefault bool) (result
 		if err := connection.DB.ScanRows(rows, &child); err != nil {
 			return result, canSubmit, err
 		}
-		child.Form, child.CanSubmit, err = scanRowsForm(child.Id, &parentId, username, child.CanSubmit)
-		if err != nil {
-			return result, canSubmit, err
+		if tipe == "STEP" {
+			_, child.CanSubmit, err = scanRowsForm(child.Id, &parentId, username, child.CanSubmit, false)
+			if err != nil {
+				return
+			}
+		} else {
+			child.Form, child.CanSubmit, err = scanRowsForm(child.Id, &parentId, username, child.CanSubmit, true)
+			if err != nil {
+				return result, canSubmit, err
+			}
 		}
 
 		if !child.CanSubmit {
@@ -375,7 +395,7 @@ func scanRowsChild(parentId int, username string, canSubmitDefault bool) (result
 	return result, canSubmit, nil
 }
 
-func scanRowsForm(groupID int, parentId *int, username string, canSubmitDefault bool) (result []models.FormMasterTableItem, canSubmit bool, err error) {
+func scanRowsForm(groupID int, parentId *int, username string, canSubmitDefault, needColumn bool) (result []models.FormMasterTableItem, canSubmit bool, err error) {
 
 	canSubmit = canSubmitDefault
 	rows, err := connection.DB.
@@ -403,11 +423,13 @@ func scanRowsForm(groupID int, parentId *int, username string, canSubmitDefault 
 		if err != nil {
 			return result, canSubmit, err
 		}
-		FormList, err := masterColumnService.GetFormColumn(strconv.Itoa(item.TableId))
-		if err != nil {
-			return result, canSubmit, err
+		if needColumn {
+			FormList, err := masterColumnService.GetFormColumn(strconv.Itoa(item.TableId))
+			if err != nil {
+				return result, canSubmit, err
+			}
+			item.FormList = FormList.Form
 		}
-		item.FormList = FormList.Form
 
 		if item.IsMandatory {
 			if len(item.DataId) == 0 || !(canSubmit) {
