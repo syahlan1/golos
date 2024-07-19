@@ -58,20 +58,6 @@ func CreateMasterCode(claims string, data models.MasterCode) (err error) {
 
 	data.CreatedBy = user.Username
 
-	// newMasterCode := models.MasterCode{
-	// 	// Authoriser:         user.Username,
-	// 	// AuthorizeDate:      timeNow,
-	// 	// CreatedBy:          user.Username,
-	// 	// CreatedDate:        timeNow,
-	// 	Code:               data.Code,
-	// 	CodeGroupId:        data.CodeGroupId,
-	// 	// Status:             "L",
-	// 	Description:        data.Description,
-	// 	EnglishDescription: data.EnglishDescription,
-	// 	Sequence:           data.Sequence,
-	// 	CodeGroup:          data.CodeGroup,
-	// }
-
 	if err := connection.DB.Create(&data).Error; err != nil {
 		return errors.New("failed to create Master Code")
 	}
@@ -93,17 +79,6 @@ func CreateMasterCodeGroup(claims string, data models.MasterCodeGroup) (err erro
 	}
 
 	data.CreatedBy = user.Username
-
-	// newMasterCodeGroup := models.MasterCodeGroup{
-	// 	// Authoriser:         user.Username,
-	// 	// AuthorizeDate:      timeNow,
-	// 	// CreatedBy:          user.Username,
-	// 	// CreatedDate:        timeNow,
-	// 	// Status:             "L",
-	// 	CodeGroup:          data.CodeGroup,
-	// 	Description:        data.Description,
-	// 	EnglishDescription: data.EnglishDescription,
-	// }
 
 	if err := connection.DB.Create(&data).Error; err != nil {
 		return errors.New("failed to Master Code Group")

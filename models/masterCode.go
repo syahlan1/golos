@@ -1,22 +1,16 @@
 package models
 
 type MasterCode struct {
-	Id int `json:"id"`
-	// Authoriser         string          `json:"authoriser"`
-	// AuthorizeDate      time.Time       `json:"authorize_time"`
-	// CreatedBy          string          `json:"created_by"`
-	// CreatedDate        time.Time       `json:"created_date"`
-	// Status             string          `json:"status"`
-	// UpdatedBy          string          `json:"updated_by"`
-	// UpdatedDate        time.Time       `json:"updated_date"`
+	Id                 int    `json:"id"`
 	Code               string `json:"code"`
 	CodeGroupId        int    `json:"code_group_id"`
 	Description        string `json:"description"`
 	EnglishDescription string `json:"english_description"`
 	Sequence           int    `json:"sequence"`
+	Parent             *int   `json:"parent"`
 	CodeGroup          string `json:"code_group"`
-	ModelMasterForm
-	MasterCodeGroup MasterCodeGroup `json:"-" gorm:"foreignKey:CodeGroupId"`
+	ModelMasterForm    `json:"-"`
+	MasterCodeGroup    MasterCodeGroup `json:"-" gorm:"foreignKey:CodeGroupId"`
 }
 
 type CreateMasterCode struct {
@@ -29,16 +23,11 @@ type CreateMasterCode struct {
 }
 
 type MasterCodeGroup struct {
-	Id int `json:"id"`
-	// Authoriser         string    `json:"authoriser"`
-	// AuthorizeDate      time.Time `json:"authorize_date"`
-	// CreatedBy          string    `json:"created_by"`
-	// CreatedDate        time.Time `json:"created_date"`
-	// Status             string    `json:"status"`
-	// UpdatedBy          string    `json:"updated_by"`
-	// UpdatedDate        time.Time `json:"updated_date"`
+	Id                 int    `json:"id"`
 	CodeGroup          string `json:"code_group"`
 	Description        string `json:"description"`
 	EnglishDescription string `json:"english_description"`
-	ModelMasterForm
+	Parent             *int   `json:"parent"`
+	Sequence           int    `json:"sequence"`
+	ModelMasterForm    `json:"-"`
 }
