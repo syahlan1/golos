@@ -205,7 +205,7 @@ func ShowAllRoleMenu(roleId string) (result []models.ShowRoleMenu, err error) {
 		Select("rm.id, menus.id as menu_id, menus.menu_code as menu, COALESCE(rm.read, FALSE) as read",
 			"COALESCE(rm.delete, FALSE) as delete, COALESCE(rm.update, FALSE) as update",
 			"COALESCE(rm.download, FALSE) as download, COALESCE(rm.write, FALSE) as write").
-		Joins("left join role_menu rm on rm.menu_id = menus.id and rm.role_id = ?", roleId).
+		Joins("left join role_menus rm on rm.menu_id = menus.id and rm.role_id = ?", roleId).
 		Where("menus.type = 'C' and rm.deleted_at is null").
 		Model(models.Menu{}).
 		Find(&result).Error; err != nil {
