@@ -277,7 +277,7 @@ func UserPermission(userId string) (result models.UserPermission, err error) {
 			SELECT id, parent_id
 			FROM menus
 			WHERE id IN(select m.id 
-						from role_menu rm 
+						from role_menus rm 
 						join menus m on m.id = rm.menu_id 
 						where rm.role_id = ? and
 						rm.deleted_at is null and m.deleted_at is null and (rm.read = true or rm.write = true or rm.update = true or rm.delete = true or rm.download = true))
@@ -338,10 +338,10 @@ func findChild(parentId, roleId int) ([]models.ShowMenu, error) {
 	var child []models.ShowMenu
 	if err := connection.DB.
 		Select(`menus.id, parent_id, "type", icon, label as title, command as path`).
-		Joins("LEFT JOIN role_menu rm ON rm.menu_id = menus.id").
+		Joins("LEFT JOIN role_menus rm ON rm.menu_id = menus.id").
 		Model(models.Menu{}).
 		Where(`rm.role_id = ? OR (menus."type" = ? AND (select count(*) from menus m 
-				left join role_menu rm on rm.menu_id = m.id 
+				left join role_menus rm on rm.menu_id = m.id 
 				where parent_id = menus.id 
 				AND m."deleted_at" IS NULL 
 				AND rm."deleted_at" IS NULL  
