@@ -230,6 +230,7 @@ func Setup(app *fiber.App) {
 	api.Post("/data-master-table-group/:table_group/:table_item/upload-file", masterFileController.UploadFileTableGroup)
 
 	api.Get("/form-master-table-group/:group_name/show", masterTableGroupController.ShowFormMasterTableGroup)
+	api.Get("/form-master-table-group/:group_name/show/:id", masterTableGroupController.ShowFormMasterTableGroupChild)
 	api.Get("/approval-master-table-group/:group_name/show", masterTableGroupController.ShowApprovalTableGroupItem)
 	api.Post("/approval-master-table-group", masterTableGroupController.ApprovalTableGroupItem)
 	api.Get("/approval-master-table-group/:group_name/show/:id", masterTableGroupController.ShowDetailApprovalTableGroupItem)
