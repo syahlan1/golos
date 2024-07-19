@@ -37,6 +37,7 @@ type Register struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	IsActive  int    `json:"is_active"`
+	RoleId    uint   `json:"role_id"`
 	Password  string `json:"password"`
 }
 

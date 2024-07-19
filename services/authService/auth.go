@@ -2,6 +2,7 @@ package authService
 
 import (
 	"errors"
+	"log"
 	"strconv"
 	"time"
 
@@ -75,6 +76,12 @@ func Register(data models.Register) (err error) {
 		return errors.New("username already exists")
 	}
 
+	// Check apakah email sudah ada
+	var existingEmail models.Users
+	if err := connection.DB.Where("email = ?", data.Email).First(&existingEmail).Error; !errors.Is(err, gorm.ErrRecordNotFound) {
+		return errors.New("email already exists")
+	}
+
 	// Generate hashed password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -91,9 +98,10 @@ func Register(data models.Register) (err error) {
 		Password:           hashedPassword,
 		LastPasswordChange: time.Now(),
 		IsLogin:            0, // IsLogin default nya 0
-		RoleId:             1,
+		RoleId:             data.RoleId,
 		Status:             "L",
 	}
+	log.Println(newUser.RoleId)
 	if err := connection.DB.Create(&newUser).Error; err != nil {
 		return errors.New("failed to create user")
 	}
