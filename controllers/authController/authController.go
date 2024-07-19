@@ -161,6 +161,34 @@ func User(c *fiber.Ctx) error {
 	})
 }
 
+func ShowAllUser(c *fiber.Ctx) error {
+	result := authService.ShowAllUser()
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func LogoutFromAdmin(c *fiber.Ctx) error {
+	userId := c.Params("id")
+
+	result, err := authService.LogoutFromAdmin(userId)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Logged out",
+		Data:    result,
+	})
+}
+
 func UserPermission(c *fiber.Ctx) error {
 	claims, err := utils.ExtractJWT(c)
 	if err != nil {
@@ -182,7 +210,6 @@ func UserPermission(c *fiber.Ctx) error {
 		Data:    result,
 	})
 }
-
 
 // logout
 func Logout(c *fiber.Ctx) error {
@@ -222,5 +249,3 @@ func Logout(c *fiber.Ctx) error {
 
 // 	return uint(userId)
 // }
-
-

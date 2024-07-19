@@ -77,6 +77,7 @@ func UpdateMasterTable(claims, masterTableId string, updatedMasterTable models.M
 
 	masterTable.UpdatedBy = user.Username
 	masterTable.UpdatedAt = time.Now()
+	masterTable.TableName = updatedMasterTable.TableName
 	masterTable.Description = updatedMasterTable.Description
 	masterTable.EnglishDescription = updatedMasterTable.EnglishDescription
 	masterTable.OrderField = updatedMasterTable.OrderField
@@ -265,19 +266,19 @@ func GenerateItemGroup(db *gorm.DB, schema string) (err error) {
 	}
 
 	createTableSQL := fmt.Sprintf(`CREATE TABLE "%s"."%s" (`+"\n", schema, "item_groups")
-		createTableSQL += "\tID SERIAL PRIMARY KEY,\n"
+	createTableSQL += "\tID SERIAL PRIMARY KEY,\n"
 
-		// Add mandatory columns to createTableSQL
-		for _, column := range mandatoryColumns {
-			fieldSQL := fmt.Sprintf("\t%s %s", column.FieldName, utils.MapFieldType(column.FieldType, column.FieldLength))
-			createTableSQL += fieldSQL + ",\n"
-		}
+	// Add mandatory columns to createTableSQL
+	for _, column := range mandatoryColumns {
+		fieldSQL := fmt.Sprintf("\t%s %s", column.FieldName, utils.MapFieldType(column.FieldType, column.FieldLength))
+		createTableSQL += fieldSQL + ",\n"
+	}
 
-		createTableSQL = createTableSQL[:len(createTableSQL)-2] + "\n);"
+	createTableSQL = createTableSQL[:len(createTableSQL)-2] + "\n);"
 
-		if err := db.Exec(createTableSQL).Error; err != nil {
-			return err
-		}
+	if err := db.Exec(createTableSQL).Error; err != nil {
+		return err
+	}
 
 	return
 }

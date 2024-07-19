@@ -20,6 +20,29 @@ func getParameterValue(key string) (string, error) {
 	return param.ParamValue, nil
 }
 
+func ShowAllUser() []models.Users {
+	var users []models.Users
+	if err := connection.DB.Where("status = ?", "L").Preload("Role.Permissions").Find(&users).Error; err != nil {
+		return nil
+	}
+	return users
+}
+
+func LogoutFromAdmin(userId string) (result models.Users, err error) {
+	var users models.Users
+	if err := connection.DB.First(&users, userId).Error; err != nil {
+		return result, errors.New("data Not Found")
+	}
+
+	users.IsLogin = 0
+
+	if err := connection.DB.Save(&users).Error; err != nil {
+		return result, errors.New("failed to logout account")
+	}
+
+	return result, nil
+}
+
 func Register(data models.Register) (err error) {
 	minLengthStr, err := getParameterValue("USR_MIN")
 	if err != nil {
@@ -244,7 +267,7 @@ func ChangePassword(UserID string, data models.Register) (user models.Users, err
 // 	}()
 // }
 
-func User(userId string) (result models.Users, err error) { 
+func User(userId string) (result models.Users, err error) {
 	var user models.Users
 	if err := connection.DB.Where("id = ?", userId).Preload("Role").First(&user).Error; err != nil {
 		return user, err
@@ -351,7 +374,6 @@ func findChild(parentId, roleId int) ([]models.ShowMenu, error) {
 		Find(&child).Error; err != nil {
 		return nil, err
 	}
-
 
 	for i, data := range child {
 		subChild, err := findChild(data.Id, roleId)
