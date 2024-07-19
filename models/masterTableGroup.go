@@ -103,7 +103,7 @@ type FormMasterTableGroupParent struct {
 	Description        string                       `json:"description"`
 	EnglishDescription string                       `json:"english_description"`
 	CanSubmit          bool                         `json:"can_submit"`
-	Form               []FormMasterTableItem        `json:"form,omitempty" gorm:"-"`
 	ParentId           *int                         `json:"parent_id,omitempty"`
+	Form               []FormMasterTableItem        `json:"form,omitempty" gorm:"-"`
 	Child              []FormMasterTableGroupParent `json:"child,omitempty" gorm:"-"`
 }

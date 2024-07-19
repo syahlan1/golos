@@ -251,7 +251,33 @@ func ShowFormMasterTableGroup(c *fiber.Ctx) error {
 	}
 
 
-	result ,err := masterTableGroupService.ShowFormMasterTableGroup(groupName, claims)
+	result ,err := masterTableGroupService.ShowFormMasterTableGroup(groupName, claims, "")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+func ShowFormMasterTableGroupChild(c *fiber.Ctx) error {
+	// Ambil ID tabel dari parameter rute
+	groupName := c.Params("group_name")
+	idChild := c.Params("id")
+
+	claims, err := utils.TakeUsername(c)
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{"message": "Unauthorized"})
+	}
+
+
+	result ,err := masterTableGroupService.ShowFormMasterTableGroup(groupName, claims, idChild)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
 			Code:    fiber.StatusBadRequest,
