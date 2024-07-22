@@ -479,10 +479,11 @@ func ShowDataMasterTableGroup(tableGroupId, tableItemId, username, id string) (d
 	if err := connection.DB.
 		Select("master_tables.module_id, master_tables.id").
 		Joins("JOIN master_table_items mti ON mti.table_id = master_tables.id").
+		Joins("JOIN master_table_groups mtg ON mtg.id = mti.group_id").
 		Model(&models.MasterTable{}).
 		Where("mti.deleted_at is null").
-		Where("mti.id = ? AND mti.group_id = ?", tableItemId, tableGroupId).Row().Scan(&schemaId, &tableId); err != nil {
-		return data, errors.New("data not found")
+		Where("mti.id = ? AND (mtg.id = ? OR mtg.parent_id = ?)", tableItemId, tableGroupId, tableGroupId).Row().Scan(&schemaId, &tableId); err != nil {
+		return data, errors.New("data not found : "+ err.Error())
 	}
 
 	data, err = masterTemplateService.ShowMasterTemplate(schemaId, tableId, username, tableGroupId, "", "", id)
