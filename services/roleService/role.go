@@ -252,24 +252,40 @@ func CreateRoleMenu(claims, roleId string, data []models.RoleMenu) (err error) {
 
 func ShowRoleModules(roleId string) (result []models.ShowRoleModules, err error) {
 
-	if err := connection.DB.Select("rm.id, master_modules.id AS module_id, master_modules.module_name AS module").
-		Joins("left join role_modules rm on rm.module_id = master_modules.id AND rm.roles_id = ?", roleId).
-		Where("rm.deleted_at is null").
-		Model(models.MasterModule{}).
-		Find(&result).Error; err != nil {
+	db := connection.DB.Select("rm.id, master_modules.id AS module_id, master_modules.module_name AS module").
+		Model(models.MasterModule{})
+
+	if roleId != "" {
+		db = db.Joins("left join role_modules rm on rm.module_id = master_modules.id AND rm.roles_id = ?", roleId).
+			Where("rm.deleted_at is null")
+	} else {
+		db = db.Select("0 AS id, master_modules.id AS module_id, master_modules.module_name AS module")
+	}
+
+	err = db.Find(&result).Error
+	if err != nil {
 		return result, err
 	}
 
 	for i, value := range result {
 
-		rows, err := connection.DB.Select("COALESCE(rt.id, 0), master_tables.id as table_id , master_tables.table_name as table",
+		db := connection.DB.Select("COALESCE(rt.id, 0), master_tables.id as table_id , master_tables.table_name as table",
 			"COALESCE(rt.read, FALSE) as read, COALESCE(rt.delete, FALSE) as delete, COALESCE(rt.update, FALSE) as update",
 			"COALESCE(rt.download, FALSE) as download, COALESCE(rt.write, FALSE) as write ",
 			"(case when read is true or delete is true or update is true or write is true then true else false end) as selected").
-			Joins("left join role_tables rt on rt.table_id = master_tables.id AND rt.role_modules_id = ?", value.Id).
 			Model(models.MasterTable{}).
-			Where("master_tables.module_id = ? and rt.deleted_at is null", value.ModuleId).
-			Rows()
+			Where("master_tables.module_id = ?", value.ModuleId)
+
+		if roleId != "" {
+			db = db.Joins("left join role_tables rt on rt.table_id = master_tables.id AND rt.role_modules_id = ?", value.Id).
+				Where("rt.deleted_at is null")
+		} else {
+			db = db.Select("0 as id, master_tables.id as table_id , master_tables.table_name as table",
+				"FALSE as read, FALSE as delete, FALSE as update, FALSE as download, FALSE as write ",
+				"FALSE as selected")
+		}
+
+		rows, err := db.Rows()
 
 		if err != nil {
 			return result, err
