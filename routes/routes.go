@@ -262,6 +262,13 @@ func Setup(app *fiber.App) {
 	api.Delete("/master-workflow/delete/:id", masterWorkflowController.DeleteMasterWorkflow)
 	api.Get("/master-workflow/show", masterWorkflowController.ShowMasterWorkflow)
 
+	// master workflow step
+	api.Post("/master-workflow-step/create", masterWorkflowController.CreateMasterWorkflowStep)
+	api.Get("/master-workflow-step/show", masterWorkflowController.ShowMasterWorkflowStep)
+	api.Get("/master-workflow-step/show/:id", masterWorkflowController.ShowMasterWorkflowStepById)
+	api.Put("/master-workflow-step/update/:id", masterWorkflowController.UpdateMasterWorkflowStep)
+	api.Delete("/master-workflow-step/delete/:id", masterWorkflowController.DeleteMasterWorkflowStep)
+
 	api.Get("/master-template/:module/:table/show", masterTemplateController.ShowMasterTemplate)
 	api.Get("/master-template/:module/:table/show/:id", masterTemplateController.ShowMasterTemplateById)
 	api.Post("/master-template/:module/:table/create", masterTemplateController.CreateMasterTemplate)

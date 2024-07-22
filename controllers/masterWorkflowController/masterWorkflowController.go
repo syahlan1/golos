@@ -105,3 +105,112 @@ func DeleteMasterWorkflow(c *fiber.Ctx) error {
 		Message: "Deleted!",
 	})
 }
+
+func CreateMasterWorkflowStep(c *fiber.Ctx) error {
+	var data models.MasterWorkflowStep
+
+	if err := c.BodyParser(&data); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	// Get user role ID
+	claims, err := utils.ExtractJWT(c)
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{"message": "Unauthorized"})
+	}
+
+	err = masterWorkflowService.CreateMasterWorkflowStep(claims, data)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	// Return success response
+	return c.JSON(models.Response{
+		Code:    fiber.StatusCreated,
+		Message: "Master Workflow Step Created!",
+	})
+}
+
+func ShowMasterWorkflowStep(c *fiber.Ctx) error {
+	result := masterWorkflowService.ShowMasterWorkflowStep("")
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func ShowMasterWorkflowStepById(c *fiber.Ctx) error {
+	masterWorkflowStepId := c.Params("id")
+	result := masterWorkflowService.ShowMasterWorkflowStep(masterWorkflowStepId)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func UpdateMasterWorkflowStep(c *fiber.Ctx) error {
+	masterWorkflowStepId := c.Params("id")
+
+	// Get user role ID
+	claims, err := utils.ExtractJWT(c)
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{"message": "Unauthorized"})
+	}
+
+	var data models.MasterWorkflowStep
+	if err := c.BodyParser(&data); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: "Invalid Master Workflow Step Data",
+		})
+	}
+
+	result, err := masterWorkflowService.UpdateMasterWorkflowStep(claims, masterWorkflowStepId, data)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Updated!",
+		Data:    result,
+	})
+}
+
+func DeleteMasterWorkflowStep(c *fiber.Ctx) error {
+	masterWorkflowStepId := c.Params("id")
+
+	// Get user role ID
+	claims, err := utils.ExtractJWT(c)
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{"message": "Unauthorized"})
+	}
+
+	err = masterWorkflowService.DeleteMasterWorkflowStep(claims, masterWorkflowStepId)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Deleted!",
+	})
+}

@@ -22,6 +22,8 @@ func Authorize(permissionName string) fiber.Handler {
 			return err
 		}
 
+		//ngecek table user if is_login = 0 = return kau sudah logout
+
 		// Preload izin-izin (permissions) dari peran (role) pengguna
 		connection.DB.Model(&user.Role).Association("Permissions").Find(&user.Role.Permissions)
 
