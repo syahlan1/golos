@@ -171,9 +171,25 @@ func CreateRoleModules(c *fiber.Ctx) error {
 	})
 }
 
-func ShowAllRoleMenu(c *fiber.Ctx) error {
+func ShowRoleMenu(c *fiber.Ctx) error {
 	roleId := c.Params("id")
-	result, err := roleService.ShowAllRoleMenu(roleId)
+	result, err := roleService.ShowRoleMenu(roleId)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func ShowAllRoleMenu(c *fiber.Ctx) error {
+	result, err := roleService.ShowRoleMenu("")
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
 			Code:    fiber.StatusInternalServerError,

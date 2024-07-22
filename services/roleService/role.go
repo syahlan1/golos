@@ -199,16 +199,24 @@ func CreateRoleModules(userId string, data models.CreateRoleModules) (err error)
 	return
 }
 
-func ShowAllRoleMenu(roleId string) (result []models.ShowRoleMenu, err error) {
+func ShowRoleMenu(roleId string) (result []models.ShowRoleMenu, err error) {
 
-	if err := connection.DB.
+	db := connection.DB.
 		Select("rm.id, menus.id as menu_id, menus.menu_code as menu, COALESCE(rm.read, FALSE) as read",
 			"COALESCE(rm.delete, FALSE) as delete, COALESCE(rm.update, FALSE) as update",
 			"COALESCE(rm.download, FALSE) as download, COALESCE(rm.write, FALSE) as write").
-		Joins("left join role_menus rm on rm.menu_id = menus.id and rm.role_id = ?", roleId).
-		Where("menus.type = 'C' and rm.deleted_at is null").
-		Model(models.Menu{}).
-		Find(&result).Error; err != nil {
+		Where("menus.type = 'C'").
+		Model(models.Menu{})
+
+	if roleId != "" {
+		db = db.Joins("left join role_menus rm on rm.menu_id = menus.id and rm.role_id = ?", roleId).
+			Where("and rm.deleted_at is null")
+	} else {
+		db = db.Select("0 AS id, menus.id as menu_id, menus.menu_code as menu, FALSE as read",
+			"FALSE as delete, FALSE as update, FALSE as download, FALSE as write")
+	}
+
+	if err := db.Find(&result).Error; err != nil {
 		return result, err
 	}
 
