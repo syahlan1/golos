@@ -791,7 +791,27 @@ func ApprovalTableGroupItem(username string, data models.TableGroupItemStatus) (
 	data.Username = username
 	data.UpdatedBy = username
 
-	err = db.Model(&data).Where("id = ?", data.Id).Updates(data).Error
+	err = db.Transaction(func(tx *gorm.DB) error {
+
+		err = tx.Model(&data).Where("id = ?", data.Id).Updates(data).Error
+		if err != nil {
+			return err
+		}
+
+		MasterWorkflowHistory := models.TableGroupStatusHistory{
+			ItemStatusId: data.Id,
+			Process:      data.Status,
+			ModelMasterForm: models.ModelMasterForm{
+				CreatedBy: data.CreatedBy,
+			},
+		}
+
+		if err = tx.Create(&MasterWorkflowHistory).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
 
 	return
 }
