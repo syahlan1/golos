@@ -20,7 +20,9 @@ type ShowRoles struct {
 type CreateRole struct {
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
-	Permissions []string `json:"permissions"`
+	// Permissions []string `json:"permissions"`
+	RoleWorkflows []RoleWorkflowDropdown `json:"role_workflows"`
+	RoleModules []CreateRoleModuleTables `json:"role_modules"`
 }
 
 type Permission struct {

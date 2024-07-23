@@ -7,6 +7,7 @@ import (
 
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
+	"github.com/syahlan1/golos/utils"
 	"gorm.io/gorm"
 )
 
@@ -59,61 +60,123 @@ func CreateRole(userId string, data models.CreateRole) (err error) {
 		ModelMasterForm: models.ModelMasterForm{CreatedBy: user.Username},
 	}
 
-	// Simpan role baru ke dalam database
-	if err := connection.DB.Create(&newRole).Error; err != nil {
-		return err
-	}
+	err = connection.DB.Transaction(func(tx *gorm.DB) error {
 
-	// Dapatkan ID permissions berdasarkan nama permissions yang diberikan
-	var permissions []models.Permission
-	if err := connection.DB.Where("name IN ?", data.Permissions).Find(&permissions).Error; err != nil {
-		return err
-	}
+		// Simpan role baru ke dalam database
+		if err := tx.Create(&newRole).Error; err != nil {
+			return err
+		}
 
-	// Buat entri RolePermission untuk setiap permission yang terkait dengan role baru
-	for _, permission := range permissions {
-		// Periksa apakah RolePermission sudah ada
-		var existingRolePermission models.RolePermission
-		if err := connection.DB.Where("roles_id = ? AND permission_id = ?", newRole.Id, permission.Id).First(&existingRolePermission).Error; err != nil {
-			// RolePermission belum ada, tambahkan entri baru
-			rolePermission := models.RolePermission{RolesId: newRole.Id, PermissionId: permission.Id}
-			if err := connection.DB.Create(&rolePermission).Error; err != nil {
+		// Simpan Role Workflows
+		var roleWorkflows []models.RoleWorkflow
+		for _, value := range data.RoleWorkflows {
+			roleWorkflow := models.RoleWorkflow{
+				Id:              uint(value.Id),
+				RolesId:         uint(newRole.Id),
+				WorkflowId:      value.WorkflowId,
+				Selected:        true,
+				ModelMasterForm: models.ModelMasterForm{CreatedBy: user.Username},
+			}
+
+			roleWorkflows = append(roleWorkflows, roleWorkflow)
+		}
+
+		if err := tx.Save(&roleWorkflows).Error; err != nil {
+			return err
+		}
+
+		// Simpan Role Module
+		for _, value := range data.RoleModules {
+			roleModule := models.RoleModules{
+				Id:              value.Id,
+				RolesId:         uint(newRole.Id),
+				ModuleId:        value.ModuleId,
+				ModelMasterForm: models.ModelMasterForm{CreatedBy: user.Username},
+			}
+
+			if err := tx.Save(&roleModule).Error; err != nil {
 				return err
 			}
-		}
-	}
 
-	return nil
+			if value.Tables != nil {
+				for i := range value.Tables {
+					value.Tables[i].RoleModulesId = roleModule.Id
+					value.Tables[i].CreatedBy = user.Username
+				}
+
+				if err := tx.Save(&value.Tables).Error; err != nil {
+					return err
+				}
+			}
+		}
+
+		return nil
+	})
+
+	// Dapatkan ID permissions berdasarkan nama permissions yang diberikan
+	// var permissions []models.Permission
+	// if err := connection.DB.Where("name IN ?", data.Permissions).Find(&permissions).Error; err != nil {
+	// 	return err
+	// }
+
+	// // Buat entri RolePermission untuk setiap permission yang terkait dengan role baru
+	// for _, permission := range permissions {
+	// 	// Periksa apakah RolePermission sudah ada
+	// 	var existingRolePermission models.RolePermission
+	// 	if err := connection.DB.Where("roles_id = ? AND permission_id = ?", newRole.Id, permission.Id).First(&existingRolePermission).Error; err != nil {
+	// 		// RolePermission belum ada, tambahkan entri baru
+	// 		rolePermission := models.RolePermission{RolesId: newRole.Id, PermissionId: permission.Id}
+	// 		if err := connection.DB.Create(&rolePermission).Error; err != nil {
+	// 			return err
+	// 		}
+	// 	}
+	// }
+
+	return
 
 }
 
-func DeleteRole(roleID string) (err error) {
-	tx := connection.DB.Begin()
+func DeleteRole(claims, RoleId string) (err error) {
 
-	// Hapus role permission yang terkait dengan role yang akan dihapus
-	if err := tx.Where("roles_id = ?", roleID).Delete(&models.RolePermission{}).Error; err != nil {
-		tx.Rollback()
+	var user models.Users
+	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
+		log.Println("error retrieving user:", err)
 		return err
 	}
 
-	// Update role_id user menjadi 0 untuk user yang memiliki role yang akan dihapus
-	if err := tx.Model(&models.Users{}).Where("role_id = ?", roleID).Update("role_id", 0).Error; err != nil {
-		tx.Rollback()
-		return err
-	}
+	var role models.Roles
 
-	// Hapus role
-	if err := tx.Where("id = ?", roleID).Delete(&models.Roles{}).Error; err != nil {
-		tx.Rollback()
-		return err
-	}
+	role.ModelMasterForm = utils.SoftDelete(user.Username)
+	return connection.DB.Model(&role).Where("id = ?", RoleId).Updates(&role).Error
 
-	// Commit transaksi
-	if err := tx.Commit().Error; err != nil {
-		return err
-	}
+	// tx := connection.DB.Begin()
 
-	return nil
+	// // Hapus role permission yang terkait dengan role yang akan dihapus
+	// if err := tx.Where("roles_id = ?", roleID).Delete(&models.RolePermission{}).Error; err != nil {
+	// 	tx.Rollback()
+	// 	return err
+	// }
+
+	// // Update role_id user menjadi 0 untuk user yang memiliki role yang akan dihapus
+	// if err := tx.Model(&models.Users{}).Where("role_id = ?", roleID).Update("role_id", 0).Error; err != nil {
+	// 	tx.Rollback()
+	// 	return err
+	// }
+
+	// // Hapus role
+	// if err := tx.Where("id = ?", roleID).Delete(&models.Roles{}).Error; err != nil {
+	// 	tx.Rollback()
+	// 	return err
+	// }
+
+	// // Commit transaksi
+	// if err := tx.Commit().Error; err != nil {
+	// 	return err
+	// }
+
+
+
+	// return nil
 }
 
 func UpdateRole(userID, roleID string, data models.CreateRole) (err error) {
@@ -134,44 +197,98 @@ func UpdateRole(userID, roleID string, data models.CreateRole) (err error) {
 	existingRole.Description = data.Description
 	existingRole.UpdatedBy = user.Username
 
-	// Save the updated role to database
-	if err := connection.DB.Save(&existingRole).Error; err != nil {
-		return err
-	}
+	err = connection.DB.Transaction(func(tx *gorm.DB) error {
+		// Save the updated role to database
+		if err := tx.Save(&existingRole).Error; err != nil {
+			return err
+		}
 
-	// Get IDs of permissions from the input
-	var permissions []models.Permission
-	if err := connection.DB.Where("name IN ?", data.Permissions).Find(&permissions).Error; err != nil {
-		return err
-	}
+		// Update role workflows
+		var roleWorkflows []models.RoleWorkflow
+		err = connection.DB.Model(&models.RoleWorkflow{}).
+			Where("roles_id = ?", existingRole.Id).
+			Update("selected", false).Error
+		if err != nil {
+			return err
+		}
 
-	// Collect IDs of permissions from the input
-	var permissionIDs []uint
-	for _, permission := range permissions {
-		permissionIDs = append(permissionIDs, permission.Id)
-	}
+		for _, value := range data.RoleWorkflows {
+			roleWorkflow := models.RoleWorkflow{
+				Id:              uint(value.Id),
+				RolesId:         existingRole.Id,
+				WorkflowId:      value.WorkflowId,
+				Selected:        true,
+				ModelMasterForm: models.ModelMasterForm{CreatedBy: user.Username},
+			}
 
-	// Update RolePermission entries for the role
-	// Update existing RolePermission entries based on input permissions
-	for _, permission := range permissions {
-		// Check if the RolePermission already exists
-		var existingRolePermission models.RolePermission
-		err := connection.DB.Where("roles_id = ? AND permission_id = ?", existingRole.Id, permission.Id).First(&existingRolePermission).Error
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			// RolePermission doesn't exist, create a new one
-			rolePermission := models.RolePermission{RolesId: existingRole.Id, PermissionId: permission.Id}
-			if err := connection.DB.Create(&rolePermission).Error; err != nil {
+			roleWorkflows = append(roleWorkflows, roleWorkflow)
+		}
+
+		if err := tx.Save(&roleWorkflows).Error; err != nil {
+			return err
+		}
+
+		// Update role modules
+		for _, value := range data.RoleModules {
+			roleModule := models.RoleModules{
+				Id:              value.Id,
+				RolesId:         existingRole.Id,
+				ModuleId:        value.ModuleId,
+				ModelMasterForm: models.ModelMasterForm{CreatedBy: user.Username},
+			}
+
+			if err := tx.Save(&roleModule).Error; err != nil {
 				return err
 			}
+
+			if value.Tables != nil {
+				for i := range value.Tables {
+					value.Tables[i].RoleModulesId = roleModule.Id
+					value.Tables[i].CreatedBy = user.Username
+				}
+
+				if err := tx.Save(&value.Tables).Error; err != nil {
+					return err
+				}
+			}
 		}
-	}
 
-	// Delete existing RolePermission entries not present in data.Permissions
-	if err := connection.DB.Where("roles_id = ? AND permission_id NOT IN ?", existingRole.Id, permissionIDs).Delete(&models.RolePermission{}).Error; err != nil {
-		return err
-	}
+		return nil
+	})
 
-	return nil
+	// // Get IDs of permissions from the input
+	// var permissions []models.Permission
+	// if err := connection.DB.Where("name IN ?", data.Permissions).Find(&permissions).Error; err != nil {
+	// 	return err
+	// }
+
+	// // Collect IDs of permissions from the input
+	// var permissionIDs []uint
+	// for _, permission := range permissions {
+	// 	permissionIDs = append(permissionIDs, permission.Id)
+	// }
+
+	// // Update RolePermission entries for the role
+	// // Update existing RolePermission entries based on input permissions
+	// for _, permission := range permissions {
+	// 	// Check if the RolePermission already exists
+	// 	var existingRolePermission models.RolePermission
+	// 	err := connection.DB.Where("roles_id = ? AND permission_id = ?", existingRole.Id, permission.Id).First(&existingRolePermission).Error
+	// 	if errors.Is(err, gorm.ErrRecordNotFound) {
+	// 		// RolePermission doesn't exist, create a new one
+	// 		rolePermission := models.RolePermission{RolesId: existingRole.Id, PermissionId: permission.Id}
+	// 		if err := connection.DB.Create(&rolePermission).Error; err != nil {
+	// 			return err
+	// 		}
+	// 	}
+	// }
+
+	// // Delete existing RolePermission entries not present in data.Permissions
+	// if err := connection.DB.Where("roles_id = ? AND permission_id NOT IN ?", existingRole.Id, permissionIDs).Delete(&models.RolePermission{}).Error; err != nil {
+	// 	return err
+	// }
+
+	return
 }
 
 func CreateRoleModules(userId string, data models.CreateRoleModules) (err error) {

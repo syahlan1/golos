@@ -94,7 +94,16 @@ func CreateRole(c *fiber.Ctx) error {
 func DeleteRole(c *fiber.Ctx) error {
 	roleID := c.Params("id")
 
-	err := roleService.DeleteRole(roleID)
+	claims, err := utils.ExtractJWT(c)
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.Status(fiber.StatusUnauthorized).JSON(models.Response{
+			Code:    fiber.StatusUnauthorized,
+			Message: "Unauthorized",
+		})
+	}
+
+	err = roleService.DeleteRole(claims,roleID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
 			Code:    fiber.StatusInternalServerError,
