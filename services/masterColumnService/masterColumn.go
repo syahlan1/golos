@@ -22,7 +22,7 @@ func CreateMasterColumn(claims string, tableId int, data models.MasterColumn) (e
 	if err := utils.IsValidSqlName(data.FieldName); err != nil {
 		return err
 	}
-	
+
 	if data.Disable && data.IsMandatory {
 		return errors.New("is_mandatory cannot be true when disable is true")
 	}
@@ -162,8 +162,8 @@ func GetFormColumn(masterTableId string) (result models.TableForm, err error) {
 
 	rows, err := connection.DB.Debug().
 		Select("master_columns.id AS field_id, description AS name, english_description AS name_en ,field_name, is_mandatory, need_first_empty, ut.name as ui_type, ui_source_type, ui_source_query, code_group_id, auto_fill, fill_query, disable",
-		"(CASE WHEN field_type = 'N' OR field_type = 'F' THEN 'number' ELSE ut.name_ui END) AS ui_name",
-		"(CASE WHEN field_type = 'N' THEN 1 WHEN field_type = 'F' THEN 0.01 ELSE NULL END) AS ui_step").
+			"(CASE WHEN field_type = 'N' OR field_type = 'F' THEN 'number' ELSE ut.name_ui END) AS ui_name",
+			"(CASE WHEN field_type = 'N' THEN 1 WHEN field_type = 'F' THEN 0.01 ELSE NULL END) AS ui_step").
 		Joins("JOIN ui_types ut ON ut.id = master_columns.ui_type_id").
 		Model(&models.MasterColumn{}).
 		Where("table_id = ?", masterTableId).
@@ -226,6 +226,86 @@ func GetFormColumn(masterTableId string) (result models.TableForm, err error) {
 	}
 
 	return
+}
+
+func GetFormColumnCh(masterTableId string, dataCh chan<- models.TableForm) {
+
+	var result models.TableForm
+
+	if err := connection.DB.
+		Select("description").
+		Model(&models.MasterTable{}).
+		Where("id = ?", masterTableId).Scan(&result.FormName).Error; err != nil {
+		return 
+	}
+
+	rows, err := connection.DB.Debug().
+		Select("master_columns.id AS field_id, description AS name, english_description AS name_en ,field_name, is_mandatory, need_first_empty, ut.name as ui_type, ui_source_type, ui_source_query, code_group_id, auto_fill, fill_query, disable",
+			"(CASE WHEN field_type = 'N' OR field_type = 'F' THEN 'number' ELSE ut.name_ui END) AS ui_name",
+			"(CASE WHEN field_type = 'N' THEN 1 WHEN field_type = 'F' THEN 0.01 ELSE NULL END) AS ui_step").
+		Joins("JOIN ui_types ut ON ut.id = master_columns.ui_type_id").
+		Model(&models.MasterColumn{}).
+		Where("table_id = ?", masterTableId).
+		Order("sequence").
+		Rows()
+
+	var data models.FormList
+
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err = connection.DB.ScanRows(rows, &data)
+		if err != nil {
+			return
+		}
+
+		if data.AutoFill {
+			err = connection.DB.
+				Raw(fmt.Sprintf(`select * from(select %s) t`, data.FillQuery)).
+				Scan(&data.Fill).Error
+			if err != nil {
+				return
+			}
+		}
+
+		var UiSource []models.DropdownEn
+
+		if data.UiSourceType == "C" {
+			err = connection.DB.
+				Select("code, description, english_description").
+				Model(&models.MasterCode{}).
+				Where("code_group_id = ?", data.CodeGroupId).
+				Order("sequence").
+				Scan(&UiSource).Error
+			if err != nil {
+				return 
+			}
+			// if data.NeedFirstEmpty {
+			// 	UiSource = utils.Prepend(UiSource, models.DropdownEn{Code: "", Description: "", EnglishDescription: ""})
+			// }
+
+		} else if data.UiSourceType == "Q" {
+			err = connection.DB.
+				Raw(fmt.Sprintf(`select * from(%s) t order by "code"`, data.UiSourceQuery)).
+				Scan(&UiSource).Error
+			if err != nil {
+				return
+			}
+			// if data.NeedFirstEmpty {
+			// 	UiSource = utils.Prepend(UiSource, models.DropdownEn{Code: "", Description: "", EnglishDescription: ""})
+			// }
+		}
+
+		data.UiSource = UiSource
+
+		result.Form = append(result.Form, data)
+	}
+
+	dataCh <- result
+	close(dataCh)
 }
 
 func CheckQuery(data models.CheckQuery) (err error) {

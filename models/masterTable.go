@@ -108,6 +108,7 @@ type FormList struct {
 	UiSourceType   string       `json:"-"`
 	UiSourceQuery  string       `json:"-"`
 	CodeGroupId    *int         `json:"-"`
+	Sequence       int          `json:"-"`
 	UiSource       []DropdownEn `json:"ui_source,omitempty" gorm:"-"`
 }
 

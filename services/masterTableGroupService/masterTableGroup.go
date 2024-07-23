@@ -418,11 +418,24 @@ func scanRowsForm(groupID int, parentId *int, username string, canSubmitDefault,
 			return result, canSubmit, err
 		}
 		if needColumn {
-			FormList, err := masterColumnService.GetFormColumn(strconv.Itoa(item.TableId))
-			if err != nil {
+			FormListCh := make(chan models.TableForm)
+			errCh := make(chan error)
+
+			go func() {
+				form, err := masterColumnService.GetFormColumn(strconv.Itoa(item.TableId))
+				if err != nil {
+					errCh <- err
+					return
+				}
+				FormListCh <- form
+			}()
+
+			select {
+			case form := <-FormListCh:
+				item.FormList = form.Form
+			case err := <-errCh:
 				return result, canSubmit, err
 			}
-			item.FormList = FormList.Form
 		}
 
 		if item.IsMandatory {
@@ -434,7 +447,77 @@ func scanRowsForm(groupID int, parentId *int, username string, canSubmitDefault,
 		result = append(result, item)
 	}
 
+	log.Println("done")
+
 	return result, canSubmit, nil
+}
+
+func scanRowsFormCh(groupID int, parentId *int, username string, canSubmitDefault, needColumn bool, result chan<- models.FormMasterTableItem, canSubmit chan bool, errCh chan<- error) {
+
+	canSubmit <- canSubmitDefault
+	rows, err := connection.DB.
+		Select("master_table_items.*, mt.id as table_id, mt.description as table_name").
+		Joins("JOIN master_tables mt ON mt.id = master_table_items.table_id").
+		Joins("JOIN master_table_groups mtg ON mtg.id = master_table_items.group_id").
+		Model(&models.MasterTableItem{}).
+		Where("mtg.id = ?", groupID).
+		Order("master_table_items.sequence").
+		Rows()
+
+	if err != nil {
+		errCh <- err
+		return
+	}
+
+	defer rows.Close()
+
+	var item models.FormMasterTableItem
+
+	log.Println("start")
+
+	for rows.Next() {
+		if err := connection.DB.ScanRows(rows, &item); err != nil {
+			errCh <- err
+			return
+		}
+		item.DataId, err = GetIdDataTableItem(groupID, item.Id, parentId, username)
+		if err != nil {
+			errCh <- err
+			return
+		}
+		if needColumn {
+			FormListCh := make(chan models.TableForm)
+			errCh := make(chan error)
+
+			go func() {
+				form, err := masterColumnService.GetFormColumn(strconv.Itoa(item.TableId))
+				if err != nil {
+					errCh <- err
+					return
+				}
+				FormListCh <- form
+			}()
+
+			select {
+			case form := <-FormListCh:
+				item.FormList = form.Form
+			case err := <-errCh:
+				errCh <- err
+				return
+			}
+			// item.FormList = FormList.Form
+		}
+
+		if item.IsMandatory {
+			if len(item.DataId) == 0 || !(<-canSubmit) {
+				canSubmit <- false
+			}
+		}
+
+		result <- item
+	}
+
+	log.Println("done")
 }
 
 func GetIdDataTableItem(tableGroupId, tableItemId int, parentId *int, username string) (id []int, err error) {
