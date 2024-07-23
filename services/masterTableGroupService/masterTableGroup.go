@@ -341,7 +341,7 @@ func ShowFormMasterTableGroup(groupName, username, idChild string) (result model
 		}
 
 		if result.ParentType == "P" {
-			result.Child, result.CanSubmit, err = scanRowsChild(result.Id, username, result.Type, true)
+			result.Child, result.CanSubmit, err = scanRowsChild(result.Id, username, true)
 		} else {
 			result.Form, result.CanSubmit, err = scanRowsForm(result.Id, nil, username, true, true)
 		}
@@ -350,7 +350,7 @@ func ShowFormMasterTableGroup(groupName, username, idChild string) (result model
 	return
 }
 
-func scanRowsChild(parentId int, username, tipe string, canSubmitDefault bool) (result []models.FormMasterTableGroupParent, canSubmit bool, err error) {
+func scanRowsChild(parentId int, username string, canSubmitDefault bool) (result []models.FormMasterTableGroupParent, canSubmit bool, err error) {
 
 	rows, err := connection.DB.
 		Select("master_table_groups.id, parent_id, type, parent_type, description, english_description").
@@ -373,16 +373,10 @@ func scanRowsChild(parentId int, username, tipe string, canSubmitDefault bool) (
 		if err := connection.DB.ScanRows(rows, &child); err != nil {
 			return result, canSubmit, err
 		}
-		if tipe == "STEP" {
-			_, child.CanSubmit, err = scanRowsForm(child.Id, &parentId, username, child.CanSubmit, false)
-			if err != nil {
-				return
-			}
-		} else {
-			child.Form, child.CanSubmit, err = scanRowsForm(child.Id, &parentId, username, child.CanSubmit, true)
-			if err != nil {
-				return result, canSubmit, err
-			}
+
+		child.Form, child.CanSubmit, err = scanRowsForm(child.Id, &parentId, username, child.CanSubmit, true)
+		if err != nil {
+			return result, canSubmit, err
 		}
 
 		if !child.CanSubmit {
@@ -483,7 +477,7 @@ func ShowDataMasterTableGroup(tableGroupId, tableItemId, username, id string) (d
 		Model(&models.MasterTable{}).
 		Where("mti.deleted_at is null").
 		Where("mti.id = ? AND (mtg.id = ? OR mtg.parent_id = ?)", tableItemId, tableGroupId, tableGroupId).Row().Scan(&schemaId, &tableId); err != nil {
-		return data, errors.New("data not found : "+ err.Error())
+		return data, errors.New("data not found : " + err.Error())
 	}
 
 	data, err = masterTemplateService.ShowMasterTemplate(schemaId, tableId, username, tableGroupId, "", "", id)
