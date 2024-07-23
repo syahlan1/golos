@@ -229,6 +229,7 @@ func Setup(app *fiber.App) {
 
 	api.Get("/form-master-table-group/:group_name/show", masterTableGroupController.ShowFormMasterTableGroup)
 	api.Get("/approval-master-table-group/:group_name/show", masterTableGroupController.ShowApprovalTableGroupItem)
+	api.Get("/all-approval-master-table-group/:group_name/show", masterTableGroupController.ShowAllApprovalTableGroupItem)
 	api.Post("/approval-master-table-group", masterTableGroupController.ApprovalTableGroupItem)
 	api.Get("/approval-master-table-group/:group_name/show/:id", masterTableGroupController.ShowDetailApprovalTableGroupItem)
 	api.Post("/submit-master-table-group", masterTableGroupController.SubmitTableGroupItem)
