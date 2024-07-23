@@ -170,6 +170,23 @@ func ShowAllUser(c *fiber.Ctx) error {
 		Data:    result,
 	})
 }
+func UserDetailShow(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	result, err := authService.UserDetailShow(id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
 
 func LogoutFromAdmin(c *fiber.Ctx) error {
 	userId := c.Params("id")

@@ -29,6 +29,14 @@ func ShowAllUser() []models.Users {
 	return users
 }
 
+func UserDetailShow(id string) (result models.Users, err error) {
+	if err := connection.DB.Where("id = ?", id).First(&result).Error; err != nil {
+		return result, err
+	}
+
+	return
+}
+
 func LogoutFromAdmin(userId string) (result models.Users, err error) {
 	var users models.Users
 	if err := connection.DB.First(&users, userId).Error; err != nil {

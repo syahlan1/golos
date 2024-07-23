@@ -51,6 +51,7 @@ func Setup(app *fiber.App) {
 	api.Post("/login", authController.Login)
 	api.Get("/user", authController.User)
 	api.Get("/user/show", authController.ShowAllUser)
+	api.Get("/user/show/:id", authController.UserDetailShow)
 	api.Get("/user/permission", authController.UserPermission)
 	api.Post("/logout", authController.Logout)
 	api.Put("/adminlogout/:id", authController.LogoutFromAdmin)
