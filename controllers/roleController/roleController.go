@@ -94,7 +94,16 @@ func CreateRole(c *fiber.Ctx) error {
 func DeleteRole(c *fiber.Ctx) error {
 	roleID := c.Params("id")
 
-	err := roleService.DeleteRole(roleID)
+	claims, err := utils.ExtractJWT(c)
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.Status(fiber.StatusUnauthorized).JSON(models.Response{
+			Code:    fiber.StatusUnauthorized,
+			Message: "Unauthorized",
+		})
+	}
+
+	err = roleService.DeleteRole(claims,roleID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
 			Code:    fiber.StatusInternalServerError,
@@ -171,9 +180,25 @@ func CreateRoleModules(c *fiber.Ctx) error {
 	})
 }
 
-func ShowAllRoleMenu(c *fiber.Ctx) error {
+func ShowRoleMenu(c *fiber.Ctx) error {
 	roleId := c.Params("id")
-	result, err := roleService.ShowAllRoleMenu(roleId)
+	result, err := roleService.ShowRoleMenu(roleId)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func ShowAllRoleMenu(c *fiber.Ctx) error {
+	result, err := roleService.ShowRoleMenu("")
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
 			Code:    fiber.StatusInternalServerError,
@@ -237,6 +262,22 @@ func ShowRoleModules(c *fiber.Ctx) error {
 	})
 }
 
+func ShowAllRoleModules(c *fiber.Ctx) error {
+	result, err := roleService.ShowRoleModules("")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
 func CreateRoleModuleTables(c *fiber.Ctx) error {
 	var data []models.CreateRoleModuleTables
 	roleID := c.Params("id")
@@ -271,6 +312,22 @@ func CreateRoleModuleTables(c *fiber.Ctx) error {
 func ShowRoleWorkflows(c *fiber.Ctx) error {
 	roleID := c.Params("id")
 	result, err := roleService.ShowRoleWorkflows(roleID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func ShowAllRoleWorkflows(c *fiber.Ctx) error {
+	result, err := roleService.ShowRoleWorkflows("")
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
 			Code:    fiber.StatusInternalServerError,

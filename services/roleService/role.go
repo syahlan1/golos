@@ -7,6 +7,7 @@ import (
 
 	"github.com/syahlan1/golos/connection"
 	"github.com/syahlan1/golos/models"
+	"github.com/syahlan1/golos/utils"
 	"gorm.io/gorm"
 )
 
@@ -59,61 +60,123 @@ func CreateRole(userId string, data models.CreateRole) (err error) {
 		ModelMasterForm: models.ModelMasterForm{CreatedBy: user.Username},
 	}
 
-	// Simpan role baru ke dalam database
-	if err := connection.DB.Create(&newRole).Error; err != nil {
-		return err
-	}
+	err = connection.DB.Transaction(func(tx *gorm.DB) error {
 
-	// Dapatkan ID permissions berdasarkan nama permissions yang diberikan
-	var permissions []models.Permission
-	if err := connection.DB.Where("name IN ?", data.Permissions).Find(&permissions).Error; err != nil {
-		return err
-	}
+		// Simpan role baru ke dalam database
+		if err := tx.Create(&newRole).Error; err != nil {
+			return err
+		}
 
-	// Buat entri RolePermission untuk setiap permission yang terkait dengan role baru
-	for _, permission := range permissions {
-		// Periksa apakah RolePermission sudah ada
-		var existingRolePermission models.RolePermission
-		if err := connection.DB.Where("roles_id = ? AND permission_id = ?", newRole.Id, permission.Id).First(&existingRolePermission).Error; err != nil {
-			// RolePermission belum ada, tambahkan entri baru
-			rolePermission := models.RolePermission{RolesId: newRole.Id, PermissionId: permission.Id}
-			if err := connection.DB.Create(&rolePermission).Error; err != nil {
+		// Simpan Role Workflows
+		var roleWorkflows []models.RoleWorkflow
+		for _, value := range data.RoleWorkflows {
+			roleWorkflow := models.RoleWorkflow{
+				Id:              uint(value.Id),
+				RolesId:         uint(newRole.Id),
+				WorkflowId:      value.WorkflowId,
+				Selected:        true,
+				ModelMasterForm: models.ModelMasterForm{CreatedBy: user.Username},
+			}
+
+			roleWorkflows = append(roleWorkflows, roleWorkflow)
+		}
+
+		if err := tx.Save(&roleWorkflows).Error; err != nil {
+			return err
+		}
+
+		// Simpan Role Module
+		for _, value := range data.RoleModules {
+			roleModule := models.RoleModules{
+				Id:              value.Id,
+				RolesId:         uint(newRole.Id),
+				ModuleId:        value.ModuleId,
+				ModelMasterForm: models.ModelMasterForm{CreatedBy: user.Username},
+			}
+
+			if err := tx.Save(&roleModule).Error; err != nil {
 				return err
 			}
-		}
-	}
 
-	return nil
+			if value.Tables != nil {
+				for i := range value.Tables {
+					value.Tables[i].RoleModulesId = roleModule.Id
+					value.Tables[i].CreatedBy = user.Username
+				}
+
+				if err := tx.Save(&value.Tables).Error; err != nil {
+					return err
+				}
+			}
+		}
+
+		return nil
+	})
+
+	// Dapatkan ID permissions berdasarkan nama permissions yang diberikan
+	// var permissions []models.Permission
+	// if err := connection.DB.Where("name IN ?", data.Permissions).Find(&permissions).Error; err != nil {
+	// 	return err
+	// }
+
+	// // Buat entri RolePermission untuk setiap permission yang terkait dengan role baru
+	// for _, permission := range permissions {
+	// 	// Periksa apakah RolePermission sudah ada
+	// 	var existingRolePermission models.RolePermission
+	// 	if err := connection.DB.Where("roles_id = ? AND permission_id = ?", newRole.Id, permission.Id).First(&existingRolePermission).Error; err != nil {
+	// 		// RolePermission belum ada, tambahkan entri baru
+	// 		rolePermission := models.RolePermission{RolesId: newRole.Id, PermissionId: permission.Id}
+	// 		if err := connection.DB.Create(&rolePermission).Error; err != nil {
+	// 			return err
+	// 		}
+	// 	}
+	// }
+
+	return
 
 }
 
-func DeleteRole(roleID string) (err error) {
-	tx := connection.DB.Begin()
+func DeleteRole(claims, RoleId string) (err error) {
 
-	// Hapus role permission yang terkait dengan role yang akan dihapus
-	if err := tx.Where("roles_id = ?", roleID).Delete(&models.RolePermission{}).Error; err != nil {
-		tx.Rollback()
+	var user models.Users
+	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {
+		log.Println("error retrieving user:", err)
 		return err
 	}
 
-	// Update role_id user menjadi 0 untuk user yang memiliki role yang akan dihapus
-	if err := tx.Model(&models.Users{}).Where("role_id = ?", roleID).Update("role_id", 0).Error; err != nil {
-		tx.Rollback()
-		return err
-	}
+	var role models.Roles
 
-	// Hapus role
-	if err := tx.Where("id = ?", roleID).Delete(&models.Roles{}).Error; err != nil {
-		tx.Rollback()
-		return err
-	}
+	role.ModelMasterForm = utils.SoftDelete(user.Username)
+	return connection.DB.Model(&role).Where("id = ?", RoleId).Updates(&role).Error
 
-	// Commit transaksi
-	if err := tx.Commit().Error; err != nil {
-		return err
-	}
+	// tx := connection.DB.Begin()
 
-	return nil
+	// // Hapus role permission yang terkait dengan role yang akan dihapus
+	// if err := tx.Where("roles_id = ?", roleID).Delete(&models.RolePermission{}).Error; err != nil {
+	// 	tx.Rollback()
+	// 	return err
+	// }
+
+	// // Update role_id user menjadi 0 untuk user yang memiliki role yang akan dihapus
+	// if err := tx.Model(&models.Users{}).Where("role_id = ?", roleID).Update("role_id", 0).Error; err != nil {
+	// 	tx.Rollback()
+	// 	return err
+	// }
+
+	// // Hapus role
+	// if err := tx.Where("id = ?", roleID).Delete(&models.Roles{}).Error; err != nil {
+	// 	tx.Rollback()
+	// 	return err
+	// }
+
+	// // Commit transaksi
+	// if err := tx.Commit().Error; err != nil {
+	// 	return err
+	// }
+
+
+
+	// return nil
 }
 
 func UpdateRole(userID, roleID string, data models.CreateRole) (err error) {
@@ -134,44 +197,98 @@ func UpdateRole(userID, roleID string, data models.CreateRole) (err error) {
 	existingRole.Description = data.Description
 	existingRole.UpdatedBy = user.Username
 
-	// Save the updated role to database
-	if err := connection.DB.Save(&existingRole).Error; err != nil {
-		return err
-	}
+	err = connection.DB.Transaction(func(tx *gorm.DB) error {
+		// Save the updated role to database
+		if err := tx.Save(&existingRole).Error; err != nil {
+			return err
+		}
 
-	// Get IDs of permissions from the input
-	var permissions []models.Permission
-	if err := connection.DB.Where("name IN ?", data.Permissions).Find(&permissions).Error; err != nil {
-		return err
-	}
+		// Update role workflows
+		var roleWorkflows []models.RoleWorkflow
+		err = connection.DB.Model(&models.RoleWorkflow{}).
+			Where("roles_id = ?", existingRole.Id).
+			Update("selected", false).Error
+		if err != nil {
+			return err
+		}
 
-	// Collect IDs of permissions from the input
-	var permissionIDs []uint
-	for _, permission := range permissions {
-		permissionIDs = append(permissionIDs, permission.Id)
-	}
+		for _, value := range data.RoleWorkflows {
+			roleWorkflow := models.RoleWorkflow{
+				Id:              uint(value.Id),
+				RolesId:         existingRole.Id,
+				WorkflowId:      value.WorkflowId,
+				Selected:        true,
+				ModelMasterForm: models.ModelMasterForm{CreatedBy: user.Username},
+			}
 
-	// Update RolePermission entries for the role
-	// Update existing RolePermission entries based on input permissions
-	for _, permission := range permissions {
-		// Check if the RolePermission already exists
-		var existingRolePermission models.RolePermission
-		err := connection.DB.Where("roles_id = ? AND permission_id = ?", existingRole.Id, permission.Id).First(&existingRolePermission).Error
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			// RolePermission doesn't exist, create a new one
-			rolePermission := models.RolePermission{RolesId: existingRole.Id, PermissionId: permission.Id}
-			if err := connection.DB.Create(&rolePermission).Error; err != nil {
+			roleWorkflows = append(roleWorkflows, roleWorkflow)
+		}
+
+		if err := tx.Save(&roleWorkflows).Error; err != nil {
+			return err
+		}
+
+		// Update role modules
+		for _, value := range data.RoleModules {
+			roleModule := models.RoleModules{
+				Id:              value.Id,
+				RolesId:         existingRole.Id,
+				ModuleId:        value.ModuleId,
+				ModelMasterForm: models.ModelMasterForm{CreatedBy: user.Username},
+			}
+
+			if err := tx.Save(&roleModule).Error; err != nil {
 				return err
 			}
+
+			if value.Tables != nil {
+				for i := range value.Tables {
+					value.Tables[i].RoleModulesId = roleModule.Id
+					value.Tables[i].CreatedBy = user.Username
+				}
+
+				if err := tx.Save(&value.Tables).Error; err != nil {
+					return err
+				}
+			}
 		}
-	}
 
-	// Delete existing RolePermission entries not present in data.Permissions
-	if err := connection.DB.Where("roles_id = ? AND permission_id NOT IN ?", existingRole.Id, permissionIDs).Delete(&models.RolePermission{}).Error; err != nil {
-		return err
-	}
+		return nil
+	})
 
-	return nil
+	// // Get IDs of permissions from the input
+	// var permissions []models.Permission
+	// if err := connection.DB.Where("name IN ?", data.Permissions).Find(&permissions).Error; err != nil {
+	// 	return err
+	// }
+
+	// // Collect IDs of permissions from the input
+	// var permissionIDs []uint
+	// for _, permission := range permissions {
+	// 	permissionIDs = append(permissionIDs, permission.Id)
+	// }
+
+	// // Update RolePermission entries for the role
+	// // Update existing RolePermission entries based on input permissions
+	// for _, permission := range permissions {
+	// 	// Check if the RolePermission already exists
+	// 	var existingRolePermission models.RolePermission
+	// 	err := connection.DB.Where("roles_id = ? AND permission_id = ?", existingRole.Id, permission.Id).First(&existingRolePermission).Error
+	// 	if errors.Is(err, gorm.ErrRecordNotFound) {
+	// 		// RolePermission doesn't exist, create a new one
+	// 		rolePermission := models.RolePermission{RolesId: existingRole.Id, PermissionId: permission.Id}
+	// 		if err := connection.DB.Create(&rolePermission).Error; err != nil {
+	// 			return err
+	// 		}
+	// 	}
+	// }
+
+	// // Delete existing RolePermission entries not present in data.Permissions
+	// if err := connection.DB.Where("roles_id = ? AND permission_id NOT IN ?", existingRole.Id, permissionIDs).Delete(&models.RolePermission{}).Error; err != nil {
+	// 	return err
+	// }
+
+	return
 }
 
 func CreateRoleModules(userId string, data models.CreateRoleModules) (err error) {
@@ -199,16 +316,24 @@ func CreateRoleModules(userId string, data models.CreateRoleModules) (err error)
 	return
 }
 
-func ShowAllRoleMenu(roleId string) (result []models.ShowRoleMenu, err error) {
+func ShowRoleMenu(roleId string) (result []models.ShowRoleMenu, err error) {
 
-	if err := connection.DB.
+	db := connection.DB.
 		Select("rm.id, menus.id as menu_id, menus.menu_code as menu, COALESCE(rm.read, FALSE) as read",
 			"COALESCE(rm.delete, FALSE) as delete, COALESCE(rm.update, FALSE) as update",
 			"COALESCE(rm.download, FALSE) as download, COALESCE(rm.write, FALSE) as write").
-		Joins("left join role_menus rm on rm.menu_id = menus.id and rm.role_id = ?", roleId).
-		Where("menus.type = 'C' and rm.deleted_at is null").
-		Model(models.Menu{}).
-		Find(&result).Error; err != nil {
+		Where("menus.type = 'C'").
+		Model(models.Menu{})
+
+	if roleId != "" {
+		db = db.Joins("left join role_menus rm on rm.menu_id = menus.id and rm.role_id = ?", roleId).
+			Where("and rm.deleted_at is null")
+	} else {
+		db = db.Select("0 AS id, menus.id as menu_id, menus.menu_code as menu, FALSE as read",
+			"FALSE as delete, FALSE as update, FALSE as download, FALSE as write")
+	}
+
+	if err := db.Find(&result).Error; err != nil {
 		return result, err
 	}
 
@@ -252,24 +377,40 @@ func CreateRoleMenu(claims, roleId string, data []models.RoleMenu) (err error) {
 
 func ShowRoleModules(roleId string) (result []models.ShowRoleModules, err error) {
 
-	if err := connection.DB.Select("rm.id, master_modules.id AS module_id, master_modules.module_name AS module").
-		Joins("left join role_modules rm on rm.module_id = master_modules.id AND rm.roles_id = ?", roleId).
-		Where("rm.deleted_at is null").
-		Model(models.MasterModule{}).
-		Find(&result).Error; err != nil {
+	db := connection.DB.Select("rm.id, master_modules.id AS module_id, master_modules.module_name AS module").
+		Model(models.MasterModule{})
+
+	if roleId != "" {
+		db = db.Joins("left join role_modules rm on rm.module_id = master_modules.id AND rm.roles_id = ?", roleId).
+			Where("rm.deleted_at is null")
+	} else {
+		db = db.Select("0 AS id, master_modules.id AS module_id, master_modules.module_name AS module")
+	}
+
+	err = db.Find(&result).Error
+	if err != nil {
 		return result, err
 	}
 
 	for i, value := range result {
 
-		rows, err := connection.DB.Select("COALESCE(rt.id, 0), master_tables.id as table_id , master_tables.table_name as table",
+		db := connection.DB.Select("COALESCE(rt.id, 0), master_tables.id as table_id , master_tables.table_name as table",
 			"COALESCE(rt.read, FALSE) as read, COALESCE(rt.delete, FALSE) as delete, COALESCE(rt.update, FALSE) as update",
 			"COALESCE(rt.download, FALSE) as download, COALESCE(rt.write, FALSE) as write ",
 			"(case when read is true or delete is true or update is true or write is true then true else false end) as selected").
-			Joins("left join role_tables rt on rt.table_id = master_tables.id AND rt.role_modules_id = ?", value.Id).
 			Model(models.MasterTable{}).
-			Where("master_tables.module_id = ? and rt.deleted_at is null", value.ModuleId).
-			Rows()
+			Where("master_tables.module_id = ?", value.ModuleId)
+
+		if roleId != "" {
+			db = db.Joins("left join role_tables rt on rt.table_id = master_tables.id AND rt.role_modules_id = ?", value.Id).
+				Where("rt.deleted_at is null")
+		} else {
+			db = db.Select("0 as id, master_tables.id as table_id , master_tables.table_name as table",
+				"FALSE as read, FALSE as delete, FALSE as update, FALSE as download, FALSE as write ",
+				"FALSE as selected")
+		}
+
+		rows, err := db.Rows()
 
 		if err != nil {
 			return result, err
@@ -335,19 +476,32 @@ func CreateRoleModuleTables(userId, roleId string, data []models.CreateRoleModul
 
 func ShowRoleWorkflows(roleId string) (result models.ShowRoleWorkflows, err error) {
 
-	if err := connection.DB.Select("rw.id, master_workflows.id as workflow_id,CONCAT(master_workflows.status_name, ' - ', master_workflows.status_description) as name, COALESCE(rw.selected, FALSE) as selected").
-		Joins("left join role_workflows rw on rw.workflow_id = master_workflows.id AND rw.roles_id = ?", roleId).
-		Where("rw.deleted_at is null").
-		Model(models.MasterWorkflow{}).
-		Scan(&result.All).Error; err != nil {
+	dbAll := connection.DB.Select("rw.id, master_workflows.id as workflow_id,CONCAT(master_workflows.status_name, ' - ', master_workflows.status_description) as name, COALESCE(rw.selected, FALSE) as selected").
+		Model(models.MasterWorkflow{})
+
+	dbSelected := connection.DB.Select("rw.id, master_workflows.id as workflow_id,CONCAT(master_workflows.status_name, ' - ', master_workflows.status_description) as name, COALESCE(rw.selected, FALSE) as selected").
+		Model(models.MasterWorkflow{})
+
+	if roleId != "" {
+		dbAll = dbAll.Joins("left join role_workflows rw on rw.workflow_id = master_workflows.id AND rw.roles_id = ?", roleId).
+			Where("rw.deleted_at is null")
+
+		dbSelected = dbSelected.Joins("left join role_workflows rw on rw.workflow_id = master_workflows.id AND rw.roles_id = ?", roleId).
+			Where("rw.deleted_at is null AND rw.selected = true")
+
+	} else {
+		dbAll = dbAll.Select("0 as id, master_workflows.id as workflow_id,CONCAT(master_workflows.status_name, ' - ', master_workflows.status_description) as name, FALSE as selected")
+
+		dbSelected = dbSelected.Select("0 as id, master_workflows.id as workflow_id,CONCAT(master_workflows.status_name, ' - ', master_workflows.status_description) as name, FALSE as selected").
+			Where("1 <> 1")
+
+	}
+
+	if err := dbAll.Scan(&result.All).Error; err != nil {
 		return result, err
 	}
 
-	if err := connection.DB.Select("rw.id, master_workflows.id as workflow_id,CONCAT(master_workflows.status_name, ' - ', master_workflows.status_description) as name, COALESCE(rw.selected, FALSE) as selected").
-		Joins("left join role_workflows rw on rw.workflow_id = master_workflows.id AND rw.roles_id = ?", roleId).
-		Where("rw.deleted_at is null and rw.selected = true").
-		Model(models.MasterWorkflow{}).
-		Scan(&result.Selected).Error; err != nil {
+	if err := dbSelected.Scan(&result.Selected).Error; err != nil {
 		return result, err
 	}
 
