@@ -41,6 +41,19 @@ type TableGroupItemStatus struct {
 	Group           MasterTableGroup `json:"-" gorm:"foreignKey:GroupId"`
 }
 
+type TableGroupStatusHistory struct {
+	Id              int    `json:"id"`
+	ItemStatusId    int    `json:"item_status_id"`
+	Process         string `json:"process"`
+	ModelMasterForm `json:"-"`
+	ItemStatus      TableGroupItemStatus `json:"-" gorm:"foreignKey:ItemStatusId"`
+}
+
+type ShowAllApprovalTableGroup struct {
+	Status string `json:"status"`
+	Data []map[string]interface{} `json:"data"`
+}
+
 type ShowApprovalTableGroup struct {
 	Submitted []map[string]interface{} `json:"submitted"`
 	Approved  []map[string]interface{} `json:"approved"`

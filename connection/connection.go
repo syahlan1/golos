@@ -96,6 +96,7 @@ func Connect() {
 		&models.MasterTable{},
 		&models.MasterTableGroup{},
 		&models.MasterTableItem{},
+		&models.TableGroupStatusHistory{},
 		&models.TableGroupItemStatus{},
 		&models.UiType{},
 		&models.MasterColumn{},
@@ -104,6 +105,7 @@ func Connect() {
 		&models.MasterMapperTable{},
 		&models.MasterParameter{},
 		&models.MasterWorkflow{},
+		&models.MasterWorkflowStep{},
 
 		&models.OwnershipData{},
 		&models.RelationWithBank{},

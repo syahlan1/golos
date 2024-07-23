@@ -521,9 +521,13 @@ func CreateRoleWorkflows(userId, roleId string, data []models.RoleWorkflowDropdo
 	err = connection.DB.Transaction(func(tx *gorm.DB) error {
 		log.Println("data", roleIdInt)
 		var roleWorkflows []models.RoleWorkflow
-		err = connection.DB.Model(&models.RoleWorkflow{}).
+		err = tx.Model(&models.RoleWorkflow{}).
 			Where("roles_id = ?", roleIdInt).
-			Update("selected", false).Error
+			Updates(map[string]interface{}{
+				"selected": false,
+				"updated_by": user.Username,
+				"updated_at": utils.GetDateTimeNow(),
+				}).Error
 		if err != nil {
 			return err
 		}
@@ -534,7 +538,7 @@ func CreateRoleWorkflows(userId, roleId string, data []models.RoleWorkflowDropdo
 				RolesId:         uint(roleIdInt),
 				WorkflowId:      value.WorkflowId,
 				Selected:        true,
-				ModelMasterForm: models.ModelMasterForm{CreatedBy: user.Username},
+				ModelMasterForm: models.ModelMasterForm{CreatedBy: user.Username, UpdatedBy: user.Username},
 			}
 
 			roleWorkflows = append(roleWorkflows, roleWorkflow)

@@ -236,6 +236,7 @@ func Setup(app *fiber.App) {
 	api.Get("/form-master-table-group/:group_name/show", masterTableGroupController.ShowFormMasterTableGroup)
 	api.Get("/form-master-table-group/:group_name/show/:id", masterTableGroupController.ShowFormMasterTableGroupChild)
 	api.Get("/approval-master-table-group/:group_name/show", masterTableGroupController.ShowApprovalTableGroupItem)
+	api.Get("/all-approval-master-table-group/:group_name/show", masterTableGroupController.ShowAllApprovalTableGroupItem)
 	api.Post("/approval-master-table-group", masterTableGroupController.ApprovalTableGroupItem)
 	api.Get("/approval-master-table-group/:group_name/show/:id", masterTableGroupController.ShowDetailApprovalTableGroupItem)
 	api.Post("/submit-master-table-group", masterTableGroupController.SubmitTableGroupItem)
@@ -268,6 +269,13 @@ func Setup(app *fiber.App) {
 	api.Put("/master-workflow/update/:id", masterWorkflowController.UpdateMasterWorkflow)
 	api.Delete("/master-workflow/delete/:id", masterWorkflowController.DeleteMasterWorkflow)
 	api.Get("/master-workflow/show", masterWorkflowController.ShowMasterWorkflow)
+
+	// master workflow step
+	api.Post("/master-workflow-step/create", masterWorkflowController.CreateMasterWorkflowStep)
+	api.Get("/master-workflow-step/show", masterWorkflowController.ShowMasterWorkflowStep)
+	api.Get("/master-workflow-step/show/:id", masterWorkflowController.ShowMasterWorkflowStepById)
+	api.Put("/master-workflow-step/update/:id", masterWorkflowController.UpdateMasterWorkflowStep)
+	api.Delete("/master-workflow-step/delete/:id", masterWorkflowController.DeleteMasterWorkflowStep)
 
 	api.Get("/master-template/:module/:table/show", masterTemplateController.ShowMasterTemplate)
 	api.Get("/master-template/:module/:table/show/:id", masterTemplateController.ShowMasterTemplateById)

@@ -511,11 +511,39 @@ func SubmitTableGroupItem(username string, data models.TableGroupItemStatus) (er
 
 	db := connection.DB
 
-	data.Status = "SUBMITTED"
+	if err = db.Select("status_name").
+		Joins("JOIN master_workflows mw ON mw.id = master_workflow_steps.workflow_id ").
+		Model(&models.MasterWorkflowStep{}).
+		Where("group_id = ?", data.GroupId).
+		Order("step").
+		Limit(1).
+		Scan(&data.Status).Error; err != nil {
+		return err
+	}
+
 	data.Username = username
 	data.CreatedBy = username
 
-	if err := db.Create(&data).Error; err != nil {
+	if err = db.Transaction(func(tx *gorm.DB) error {
+
+		if err := tx.Create(&data).Error; err != nil {
+			return err
+		}
+
+		MasterWorkflowHistory := models.TableGroupStatusHistory{
+			ItemStatusId: data.Id,
+			Process:      data.Status,
+			ModelMasterForm: models.ModelMasterForm{
+				CreatedBy: data.CreatedBy,
+			},
+		}
+
+		if err := tx.Create(&MasterWorkflowHistory).Error; err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
 		return err
 	}
 
@@ -547,6 +575,82 @@ func SubmitTableGroupItem(username string, data models.TableGroupItemStatus) (er
 		if err != nil {
 			return err
 		}
+
+	}
+
+	return
+}
+
+func ShowAllApprovalTableGroupItem(groupName, username string) (data []models.ShowAllApprovalTableGroup, err error) {
+
+	var schemaId, tableId, tableGroupId, ParentType, ParentId, status string
+
+	if err := connection.DB.
+		Select("id, parent_type").
+		Model(&models.MasterTableGroup{}).
+		Where("group_name = ?", groupName).Row().Scan(&ParentId, &ParentType); err != nil {
+		return data, errors.New("data not found")
+	}
+
+	db := connection.DB.Debug().
+		Select("master_tables.module_id, master_tables.id, mti.group_id as table_group_id").
+		Joins("JOIN master_table_items mti ON mti.table_id = master_tables.id").
+		Model(&models.MasterTable{}).
+		Where("mti.deleted_at is null").
+		Where("mti.is_master = ?", true)
+
+	if ParentType == "P" {
+
+		db = db.
+			Select("master_tables.module_id, master_tables.id, mtg.parent_id as table_group_id").
+			Joins("JOIN master_table_groups mtg ON mtg.id = mti.group_id").
+			Where("mtg.deleted_at is null").
+			Where("mtg.parent_id = ?", ParentId).
+			Order(`mtg.order`).
+			Limit(1)
+
+	} else {
+
+		db = db.
+			Where("mti.group_id = ?", ParentId)
+
+	}
+
+	if err = db.Row().Scan(&schemaId, &tableId, &tableGroupId); err != nil {
+		return data, err
+	}
+
+	rows, err := connection.DB.
+		Select("mw.status_name as status").
+		Joins("JOIN users u on u.role_id = role_workflows.roles_id").
+		Joins("JOIN master_workflow_steps mws on mws.workflow_id = role_workflows.workflow_id").
+		Joins("JOIN master_workflows mw on mw.id = mws.workflow_id").
+		Model(&models.RoleWorkflow{}).
+		Where("u.username = ? and mws.group_id = ?", username, tableGroupId).
+		Order("mws.step").
+		Rows()
+
+	if err != nil {
+		return data, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+
+		if err := rows.Scan(&status); err != nil {
+			return data, err
+		}
+
+		approval, err := masterTemplateService.ShowMasterTemplate(schemaId, tableId, "", tableGroupId, status, "", "")
+		if err != nil {
+			return data, err
+		}
+
+		data = append(data, models.ShowAllApprovalTableGroup{
+			Status: status,
+			Data:   approval,
+		})
 
 	}
 
@@ -704,7 +808,27 @@ func ApprovalTableGroupItem(username string, data models.TableGroupItemStatus) (
 	data.Username = username
 	data.UpdatedBy = username
 
-	err = db.Model(&data).Where("id = ?", data.Id).Updates(data).Error
+	err = db.Transaction(func(tx *gorm.DB) error {
+
+		err = tx.Model(&data).Where("id = ?", data.Id).Updates(data).Error
+		if err != nil {
+			return err
+		}
+
+		MasterWorkflowHistory := models.TableGroupStatusHistory{
+			ItemStatusId: data.Id,
+			Process:      data.Status,
+			ModelMasterForm: models.ModelMasterForm{
+				CreatedBy: data.CreatedBy,
+			},
+		}
+
+		if err = tx.Create(&MasterWorkflowHistory).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
 
 	return
 }
