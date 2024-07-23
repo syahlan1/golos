@@ -359,19 +359,32 @@ func CreateRoleModuleTables(userId, roleId string, data []models.CreateRoleModul
 
 func ShowRoleWorkflows(roleId string) (result models.ShowRoleWorkflows, err error) {
 
-	if err := connection.DB.Select("rw.id, master_workflows.id as workflow_id,CONCAT(master_workflows.status_name, ' - ', master_workflows.status_description) as name, COALESCE(rw.selected, FALSE) as selected").
-		Joins("left join role_workflows rw on rw.workflow_id = master_workflows.id AND rw.roles_id = ?", roleId).
-		Where("rw.deleted_at is null").
-		Model(models.MasterWorkflow{}).
-		Scan(&result.All).Error; err != nil {
+	dbAll := connection.DB.Select("rw.id, master_workflows.id as workflow_id,CONCAT(master_workflows.status_name, ' - ', master_workflows.status_description) as name, COALESCE(rw.selected, FALSE) as selected").
+		Model(models.MasterWorkflow{})
+
+	dbSelected := connection.DB.Select("rw.id, master_workflows.id as workflow_id,CONCAT(master_workflows.status_name, ' - ', master_workflows.status_description) as name, COALESCE(rw.selected, FALSE) as selected").
+		Model(models.MasterWorkflow{})
+
+	if roleId != "" {
+		dbAll = dbAll.Joins("left join role_workflows rw on rw.workflow_id = master_workflows.id AND rw.roles_id = ?", roleId).
+			Where("rw.deleted_at is null")
+
+		dbSelected = dbSelected.Joins("left join role_workflows rw on rw.workflow_id = master_workflows.id AND rw.roles_id = ?", roleId).
+			Where("rw.deleted_at is null AND rw.selected = true")
+
+	} else {
+		dbAll = dbAll.Select("0 as id, master_workflows.id as workflow_id,CONCAT(master_workflows.status_name, ' - ', master_workflows.status_description) as name, FALSE as selected")
+
+		dbSelected = dbSelected.Select("0 as id, master_workflows.id as workflow_id,CONCAT(master_workflows.status_name, ' - ', master_workflows.status_description) as name, FALSE as selected").
+			Where("1 <> 1")
+
+	}
+
+	if err := dbAll.Scan(&result.All).Error; err != nil {
 		return result, err
 	}
 
-	if err := connection.DB.Select("rw.id, master_workflows.id as workflow_id,CONCAT(master_workflows.status_name, ' - ', master_workflows.status_description) as name, COALESCE(rw.selected, FALSE) as selected").
-		Joins("left join role_workflows rw on rw.workflow_id = master_workflows.id AND rw.roles_id = ?", roleId).
-		Where("rw.deleted_at is null and rw.selected = true").
-		Model(models.MasterWorkflow{}).
-		Scan(&result.Selected).Error; err != nil {
+	if err := dbSelected.Scan(&result.Selected).Error; err != nil {
 		return result, err
 	}
 

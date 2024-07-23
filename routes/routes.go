@@ -167,6 +167,7 @@ func Setup(app *fiber.App) {
 	api.Get("/role/menu", roleController.ShowAllRoleMenu)
 	api.Get("/role/:id/menu", roleController.ShowRoleMenu)
 	api.Post("/role/:id/menu", roleController.CreateRoleMenu)
+	api.Get("/role/workflow", roleController.ShowAllRoleWorkflows)
 	api.Get("/role/:id/workflow", roleController.ShowRoleWorkflows)
 	api.Post("/role/:id/workflow", roleController.CreateRoleWorkflows)
 

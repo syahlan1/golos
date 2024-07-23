@@ -317,6 +317,22 @@ func ShowRoleWorkflows(c *fiber.Ctx) error {
 	})
 }
 
+func ShowAllRoleWorkflows(c *fiber.Ctx) error {
+	result, err := roleService.ShowRoleWorkflows("")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
 func CreateRoleWorkflows(c *fiber.Ctx) error {
 	var data []models.RoleWorkflowDropdown
 	roleID := c.Params("id")
