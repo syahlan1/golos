@@ -315,6 +315,31 @@ func ShowApprovalTableGroupItem(c *fiber.Ctx) error {
 	})
 }
 
+func ShowAllApprovalTableGroupItem(c *fiber.Ctx) error {
+	groupName := c.Params("group_name")
+
+	claims, err := utils.TakeUsername(c)
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{"message": "Unauthorized"})
+	}
+
+
+	result ,err := masterTableGroupService.ShowAllApprovalTableGroupItem(groupName, claims)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.Response{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
 func ShowDataMasterTableGroupById(c *fiber.Ctx) error {
 	tableGroup := c.Params("table_group")
 	tableItem := c.Params("table_item")

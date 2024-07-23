@@ -49,6 +49,11 @@ type TableGroupStatusHistory struct {
 	ItemStatus      TableGroupItemStatus `json:"-" gorm:"foreignKey:ItemStatusId"`
 }
 
+type ShowAllApprovalTableGroup struct {
+	Status string `json:"status"`
+	Data []map[string]interface{} `json:"data"`
+}
+
 type ShowApprovalTableGroup struct {
 	Submitted []map[string]interface{} `json:"submitted"`
 	Approved  []map[string]interface{} `json:"approved"`

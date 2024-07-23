@@ -46,7 +46,7 @@ func ShowMasterTemplate(schema, tableName, username, tableGroup, approval, appro
 		Order(tableName + ".id")
 
 	if approval != "" {
-		db = db.Select(column,"tgis.id AS id_status").
+		db = db.Select(column,"tgis.id AS id_status, tgis.status").
 		Joins("JOIN table_group_item_statuses tgis on tgis.id = "+tableName+".item_status_id AND tgis.status = ?", approval)
 	}
 
