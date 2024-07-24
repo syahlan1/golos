@@ -596,7 +596,7 @@ func ShowDataMasterTableGroup(tableGroupId, tableItemId, username, id string) (d
 		return data, errors.New("data not found : " + err.Error())
 	}
 
-	data, err = masterTemplateService.ShowMasterTemplate(schemaId, tableId, username, tableGroupId, "", "", id)
+	data, err = masterTemplateService.ShowMasterTemplate(schemaId, tableId, username, tableGroupId, "", "null", id)
 	if err != nil {
 		return data, err
 	}

@@ -46,12 +46,16 @@ func ShowMasterTemplate(schema, tableName, username, tableGroup, approval, appro
 		Order(tableName + ".id")
 
 	if approval != "" {
-		db = db.Select(column,"tgis.id AS id_status").
-		Joins("JOIN table_group_item_statuses tgis on tgis.id = "+tableName+".item_status_id AND tgis.status = ?", approval)
+		db = db.Select(column, "tgis.id AS id_status").
+			Joins("JOIN table_group_item_statuses tgis on tgis.id = "+tableName+".item_status_id AND tgis.status = ?", approval)
 	}
 
 	if approvalId != "" {
-		db = db.Where("item_status_id = ?", approvalId)
+		if approvalId == "null" {
+			db = db.Where("item_status_id is null")
+		} else {
+			db = db.Where("item_status_id = ?", approvalId)
+		}
 	}
 
 	if id != "" {
@@ -61,7 +65,6 @@ func ShowMasterTemplate(schema, tableName, username, tableGroup, approval, appro
 	if username != "" {
 		db = db.Where("created_by = ?", username)
 	}
-
 
 	if checkTableGroup {
 		if tableGroup == "" {
