@@ -6,6 +6,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/syahlan1/golos/connection"
@@ -352,39 +353,84 @@ func ShowFormMasterTableGroup(groupName, username, idChild string) (result model
 
 func scanRowsChild(parentId int, username string, canSubmitDefault bool) (result []models.FormMasterTableGroupParent, canSubmit bool, err error) {
 
-	rows, err := connection.DB.
+	err = connection.DB.
 		Select("master_table_groups.id, parent_id, type, parent_type, description, english_description").
 		Model(&models.MasterTableGroup{}).
 		Where("parent_id = ?", parentId).
 		Order(`"order"`).
-		Rows()
+		Scan(&result).Error
 
 	if err != nil {
 		return result, canSubmit, err
 	}
 
-	defer rows.Close()
+	// defer rows.Close()
 
-	var child models.FormMasterTableGroupParent
-	child.CanSubmit = canSubmitDefault
+	// var child models.FormMasterTableGroupParent
+	// child.CanSubmit = canSubmitDefault
 	canSubmit = canSubmitDefault
+	formCh := make(chan models.FormMasterTableGroupParent)
+	errCh := make(chan error)
 
-	for rows.Next() {
-		if err := connection.DB.ScanRows(rows, &child); err != nil {
-			return result, canSubmit, err
-		}
+	log.Printf("result: %+v\n", result)
 
-		child.Form, child.CanSubmit, err = scanRowsForm(child.Id, &parentId, username, child.CanSubmit, true)
-		if err != nil {
-			return result, canSubmit, err
-		}
+	var wg sync.WaitGroup
+	for i := range result {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			result[i].CanSubmit = canSubmitDefault
+			result[i].Form, result[i].CanSubmit, err = scanRowsForm(result[i].Id, &parentId, username, result[i].CanSubmit, true)
+			if err != nil {
+				errCh <- err
+				return
+			}
 
-		if !child.CanSubmit {
-			canSubmit = false
-		}
+			if !result[i].CanSubmit {
+				canSubmit = false
+			}
 
-		result = append(result, child)
+			formCh <- result[i]
+		}(i)
 	}
+
+	go func() {
+		wg.Wait()
+		close(formCh)
+	}()
+
+	for form := range formCh {
+		for i := range result {
+			if result[i].Id == form.Id {
+				result[i] = form
+				break
+			}
+		}
+	}
+
+	select {
+	case err = <-errCh:
+		log.Printf("Error: %v", err)
+		return result, canSubmit, err
+	default:
+	}
+
+	// for rows.Next() {
+	// 	if err := connection.DB.ScanRows(rows, &child); err != nil {
+	// 		return result, canSubmit, err
+	// 	}
+
+	// 	child.Form, child.CanSubmit, err = scanRowsForm(child.Id, &parentId, username, child.CanSubmit, true)
+	// 	if err != nil {
+	// 		return result, canSubmit, err
+	// 	}
+
+	// 	if !child.CanSubmit {
+	// 		canSubmit = false
+	// 	}
+
+	// 	result = append(result, child)
+	// }
 
 	return result, canSubmit, nil
 }
@@ -392,132 +438,119 @@ func scanRowsChild(parentId int, username string, canSubmitDefault bool) (result
 func scanRowsForm(groupID int, parentId *int, username string, canSubmitDefault, needColumn bool) (result []models.FormMasterTableItem, canSubmit bool, err error) {
 
 	canSubmit = canSubmitDefault
-	rows, err := connection.DB.
+	err = connection.DB.
 		Select("master_table_items.*, mt.id as table_id, mt.description as table_name").
 		Joins("JOIN master_tables mt ON mt.id = master_table_items.table_id").
 		Joins("JOIN master_table_groups mtg ON mtg.id = master_table_items.group_id").
 		Model(&models.MasterTableItem{}).
 		Where("mtg.id = ?", groupID).
 		Order("master_table_items.sequence").
-		Rows()
+		Scan(&result).Error
 
 	if err != nil {
 		return result, canSubmit, err
 	}
 
-	defer rows.Close()
+	formCh := make(chan models.FormMasterTableItem)
+	errCh := make(chan error)
 
-	var item models.FormMasterTableItem
-
-	for rows.Next() {
-		if err := connection.DB.ScanRows(rows, &item); err != nil {
-			return result, canSubmit, err
-		}
-		item.DataId, err = GetIdDataTableItem(groupID, item.Id, parentId, username)
-		if err != nil {
-			return result, canSubmit, err
-		}
-		if needColumn {
-			FormListCh := make(chan models.TableForm)
-			errCh := make(chan error)
-
-			go func() {
-				form, err := masterColumnService.GetFormColumn(strconv.Itoa(item.TableId))
-				if err != nil {
-					errCh <- err
-					return
-				}
-				FormListCh <- form
-			}()
-
-			select {
-			case form := <-FormListCh:
-				item.FormList = form.Form
-			case err := <-errCh:
-				return result, canSubmit, err
-			}
-		}
-
-		if item.IsMandatory {
-			if len(item.DataId) == 0 || !(canSubmit) {
-				canSubmit = false
-			}
-		}
-
-		result = append(result, item)
-	}
-
-	log.Println("done")
-
-	return result, canSubmit, nil
-}
-
-func scanRowsFormCh(groupID int, parentId *int, username string, canSubmitDefault, needColumn bool, result chan<- models.FormMasterTableItem, canSubmit chan bool, errCh chan<- error) {
-
-	canSubmit <- canSubmitDefault
-	rows, err := connection.DB.
-		Select("master_table_items.*, mt.id as table_id, mt.description as table_name").
-		Joins("JOIN master_tables mt ON mt.id = master_table_items.table_id").
-		Joins("JOIN master_table_groups mtg ON mtg.id = master_table_items.group_id").
-		Model(&models.MasterTableItem{}).
-		Where("mtg.id = ?", groupID).
-		Order("master_table_items.sequence").
-		Rows()
-
-	if err != nil {
-		errCh <- err
-		return
-	}
-
-	defer rows.Close()
-
-	var item models.FormMasterTableItem
-
-	log.Println("start")
-
-	for rows.Next() {
-		if err := connection.DB.ScanRows(rows, &item); err != nil {
-			errCh <- err
-			return
-		}
-		item.DataId, err = GetIdDataTableItem(groupID, item.Id, parentId, username)
-		if err != nil {
-			errCh <- err
-			return
-		}
-		if needColumn {
-			FormListCh := make(chan models.TableForm)
-			errCh := make(chan error)
-
-			go func() {
-				form, err := masterColumnService.GetFormColumn(strconv.Itoa(item.TableId))
-				if err != nil {
-					errCh <- err
-					return
-				}
-				FormListCh <- form
-			}()
-
-			select {
-			case form := <-FormListCh:
-				item.FormList = form.Form
-			case err := <-errCh:
+	wg := sync.WaitGroup{}
+	for i := range result {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			result[i].DataId, err = GetIdDataTableItem(groupID, result[i].Id, parentId, username)
+			if err != nil {
 				errCh <- err
 				return
 			}
-			// item.FormList = FormList.Form
-		}
 
-		if item.IsMandatory {
-			if len(item.DataId) == 0 || !(<-canSubmit) {
-				canSubmit <- false
+			if needColumn {
+				form, err := masterColumnService.GetFormColumn(strconv.Itoa(result[i].TableId))
+				if err != nil {
+					errCh <- err
+					return
+				}
+
+				result[i].FormList = form.Form
 			}
-		}
 
-		result <- item
+			if result[i].IsMandatory {
+				if len(result[i].DataId) == 0 || !(canSubmit) {
+					canSubmit = false
+				}
+			}
+
+			formCh <- result[i]
+
+		}(i)
+
 	}
 
-	log.Println("done")
+	go func() {
+		wg.Wait()
+		close(formCh)
+	}()
+
+	for form := range formCh {
+		for i := range result {
+			if result[i].Id == form.Id {
+				result[i] = form
+				break
+			}
+		}
+	}
+
+	select {
+	case err = <-errCh:
+		log.Printf("Error: %v", err)
+		return result, canSubmit, err
+	default:
+	}
+
+	// defer rows.Close()
+
+	// var item models.FormMasterTableItem
+
+	// for rows.Next() {
+	// 	if err := connection.DB.ScanRows(rows, &item); err != nil {
+	// 		return result, canSubmit, err
+	// 	}
+	// 	item.DataId, err = GetIdDataTableItem(groupID, item.Id, parentId, username)
+	// 	if err != nil {
+	// 		return result, canSubmit, err
+	// 	}
+	// 	if needColumn {
+	// 		FormListCh := make(chan models.TableForm)
+	// 		errCh := make(chan error)
+
+	// 		go func() {
+	// 			form, err := masterColumnService.GetFormColumn(strconv.Itoa(item.TableId))
+	// 			if err != nil {
+	// 				errCh <- err
+	// 				return
+	// 			}
+	// 			FormListCh <- form
+	// 		}()
+
+	// 		select {
+	// 		case form := <-FormListCh:
+	// 			item.FormList = form.Form
+	// 		case err := <-errCh:
+	// 			return result, canSubmit, err
+	// 		}
+	// 	}
+
+	// 	if item.IsMandatory {
+	// 		if len(item.DataId) == 0 || !(canSubmit) {
+	// 			canSubmit = false
+	// 		}
+	// 	}
+
+	// 	result = append(result, item)
+	// }
+
+	return result, canSubmit, nil
 }
 
 func GetIdDataTableItem(tableGroupId, tableItemId int, parentId *int, username string) (id []int, err error) {
