@@ -158,6 +158,16 @@ func ShowMasterWorkflowStepById(c *fiber.Ctx) error {
 	})
 }
 
+func ShowMasterWorkflowStepByGroupId(c *fiber.Ctx) error {
+	groupId := c.Params("group_id")
+	result := masterWorkflowService.ShowMasterWorkflowStepByGroupId(groupId)
+	return c.JSON(models.Response{
+		Code:    fiber.StatusOK,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
 func UpdateMasterWorkflowStep(c *fiber.Ctx) error {
 	masterWorkflowStepId := c.Params("id")
 

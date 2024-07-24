@@ -31,6 +31,23 @@ type MasterTableItem struct {
 	MasterTable     MasterTable      `json:"-" gorm:"foreignKey:TableId"`
 }
 
+type MasterTableItemApprovalCustom struct {
+	Id              int `json:"id"`
+	GroupId         int `json:"group_id"`
+	ColumnId        int `json:"column_id"`
+	Sequence        int `json:"sequence"`
+	ModelMasterForm `json:"-"`
+	Group           MasterTableGroup `json:"-" gorm:"foreignKey:GroupId"`
+	Column          MasterColumn     `json:"-" gorm:"foreignKey:ColumnId"`
+}
+
+// type MasterTableItemApprovalShowColumn struct {
+// 	Id       int    `json:"id"`
+// 	Sequence int    `json:"sequence"`
+// 	Name     string `json:"name"`
+// 	Type     int    `json:"type"`
+// }
+
 type TableGroupItemStatus struct {
 	Id              int     `json:"id"`
 	GroupId         int     `json:"group_id"`
@@ -44,14 +61,16 @@ type TableGroupItemStatus struct {
 type TableGroupStatusHistory struct {
 	Id              int    `json:"id"`
 	ItemStatusId    int    `json:"item_status_id"`
+	ProcessId       int    `json:"process_id"`
 	Process         string `json:"process"`
 	ModelMasterForm `json:"-"`
 	ItemStatus      TableGroupItemStatus `json:"-" gorm:"foreignKey:ItemStatusId"`
+	ProcessWorkflow MasterWorkflow       `json:"-" gorm:"foreignKey:ProcessId"`
 }
 
 type ShowAllApprovalTableGroup struct {
-	Status string `json:"status"`
-	Data []map[string]interface{} `json:"data"`
+	Status string                   `json:"status"`
+	Data   []map[string]interface{} `json:"data"`
 }
 
 type ShowApprovalTableGroup struct {
@@ -120,3 +139,7 @@ type FormMasterTableGroupParent struct {
 	ParentId           *int                         `json:"parent_id,omitempty"`
 	Child              []FormMasterTableGroupParent `json:"child,omitempty" gorm:"-"`
 }
+
+// type ApprovalStatus struct {
+
+// }

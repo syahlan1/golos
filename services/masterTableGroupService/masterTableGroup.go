@@ -494,13 +494,17 @@ func SubmitTableGroupItem(username string, data models.TableGroupItemStatus) (er
 
 	db := connection.DB
 
-	if err = db.Select("status_name").
+	var processId int
+
+	if err = db.Debug().
+		Select("status_name, mw.id").
 		Joins("JOIN master_workflows mw ON mw.id = master_workflow_steps.workflow_id ").
 		Model(&models.MasterWorkflowStep{}).
 		Where("group_id = ?", data.GroupId).
 		Order("step").
 		Limit(1).
-		Scan(&data.Status).Error; err != nil {
+		Row().
+		Scan(&data.Status, &processId); err != nil {
 		return err
 	}
 
@@ -516,6 +520,7 @@ func SubmitTableGroupItem(username string, data models.TableGroupItemStatus) (er
 		MasterWorkflowHistory := models.TableGroupStatusHistory{
 			ItemStatusId: data.Id,
 			Process:      data.Status,
+			ProcessId:    processId,
 			ModelMasterForm: models.ModelMasterForm{
 				CreatedBy: data.CreatedBy,
 			},
@@ -603,13 +608,13 @@ func ShowAllApprovalTableGroupItem(groupName, username string) (data []models.Sh
 		return data, err
 	}
 
-	rows, err := connection.DB.
+	rows, err := connection.DB.Debug().
 		Select("mw.status_name as status").
 		Joins("JOIN users u on u.role_id = role_workflows.roles_id").
 		Joins("JOIN master_workflow_steps mws on mws.workflow_id = role_workflows.workflow_id").
 		Joins("JOIN master_workflows mw on mw.id = mws.workflow_id").
 		Model(&models.RoleWorkflow{}).
-		Where("u.username = ? and mws.group_id = ?", username, tableGroupId).
+		Where("u.username = ? and mws.group_id = ? and selected is true", username, tableGroupId).
 		Order("mws.step").
 		Rows()
 
@@ -852,6 +857,8 @@ func DeleteDataMasterTableGroup(tableGroupId, tableItemId, idData, username stri
 
 	return
 }
+
+// func CheckApprovalStatus(tableGroupId string) (data models.TableGroupApprovalStatus, err error) {}
 
 func GenerateTableGroup(tableID string) (err error) {
 	db := connection.DB

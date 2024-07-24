@@ -487,7 +487,7 @@ func SubmitTableGroupItem(c *fiber.Ctx) error {
 	}
 	return c.JSON(models.Response{
 		Code:    fiber.StatusOK,
-		Message: "Success Update",
+		Message: "Success Submit",
 	})
 
 }

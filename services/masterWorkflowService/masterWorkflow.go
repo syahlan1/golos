@@ -88,6 +88,16 @@ func ShowMasterWorkflowStep(id string) (result []models.MasterWorkflowStep) {
 	return
 }
 
+func ShowMasterWorkflowStepByGroupId(groupId string) (result []models.ShowMasterWorkflowStep) {
+	connection.DB.Select("master_workflow_steps.*, mw.status_name as workflow, mwg.description as group, mwg.english_description as group_en").
+		Joins("JOIN master_workflows mw ON mw.id = master_workflow_steps.workflow_id").
+		Joins("JOIN master_table_groups mwg ON mwg.id = master_workflow_steps.group_id").
+		Model(&models.MasterWorkflowStep{}).Where("group_id = ?", groupId).
+		Order("step, next_step").
+		Scan(&result)
+	return
+}
+
 func UpdateMasterWorkflowStep(claims string, masterWorkflowStepId string, data models.MasterWorkflowStep) (result models.MasterWorkflowStep, err error) {
 	var user models.Users
 	if err := connection.DB.Where("id = ?", claims).First(&user).Error; err != nil {

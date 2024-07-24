@@ -9,12 +9,23 @@ type MasterWorkflow struct {
 }
 
 type MasterWorkflowStep struct {
-	Id              int    `json:"id" gorm:"primaryKey"`
-	NextStep        *int   `json:"next_step"`
-	Step            int    `json:"step"`
-	WorkflowId      int    `json:"workflow_id"`
-	GroupId         int    `json:"group_id"`
+	Id              int  `json:"id" gorm:"primaryKey"`
+	NextStep        *int `json:"next_step"`
+	Step            int  `json:"step"`
+	WorkflowId      int  `json:"workflow_id"`
+	GroupId         int  `json:"group_id"`
 	ModelMasterForm `json:"-"`
 	Workflow        MasterWorkflow   `json:"-" gorm:"foreignKey:WorkflowId"`
 	Group           MasterTableGroup `json:"-" gorm:"foreignKey:GroupId"`
+}
+
+type ShowMasterWorkflowStep struct {
+	Id         int    `json:"id" gorm:"primaryKey"`
+	NextStep   *int   `json:"next_step"`
+	Step       int    `json:"step"`
+	WorkflowId int    `json:"workflow_id"`
+	Workflow   string `json:"workflow"`
+	GroupId    int    `json:"group_id"`
+	Group      string `json:"group"`
+	GroupEn    string `json:"group_en"`
 }

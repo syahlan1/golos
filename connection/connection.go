@@ -96,6 +96,7 @@ func Connect() {
 		&models.MasterTable{},
 		&models.MasterTableGroup{},
 		&models.MasterTableItem{},
+		&models.MasterTableItemApprovalCustom{},
 		&models.TableGroupStatusHistory{},
 		&models.TableGroupItemStatus{},
 		&models.UiType{},

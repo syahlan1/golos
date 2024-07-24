@@ -267,6 +267,7 @@ func Setup(app *fiber.App) {
 	api.Post("/master-workflow-step/create", masterWorkflowController.CreateMasterWorkflowStep)
 	api.Get("/master-workflow-step/show", masterWorkflowController.ShowMasterWorkflowStep)
 	api.Get("/master-workflow-step/show/:id", masterWorkflowController.ShowMasterWorkflowStepById)
+	api.Get("/master-workflow-step/show-group/:group_id", masterWorkflowController.ShowMasterWorkflowStepByGroupId)
 	api.Put("/master-workflow-step/update/:id", masterWorkflowController.UpdateMasterWorkflowStep)
 	api.Delete("/master-workflow-step/delete/:id", masterWorkflowController.DeleteMasterWorkflowStep)
 
